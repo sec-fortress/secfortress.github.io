@@ -667,3 +667,6 @@ Here are the interesting resources I found during the resolution of this lab.
 - [UsnJournal explanation - Forensafe](https://forensafe.com/blogs/usnjournal.html)
 - [Volume Shadow Copy explanation - ADSecurity](https://adsecurity.org/?p=451)
 
+## Have fun 
+
+xd
