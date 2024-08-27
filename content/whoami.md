@@ -43,14 +43,14 @@ This is a non-exhaustive list of certifications and courses I have taken.
 
 ### 🪟 Life outside of infosec, the last 20%
 
-Outside of cybersecurity, I am also passionate about other things. I enjoy making good food, building positive relationships, watching anime, and listening to good music. I listen to music while doing almost all of my day-to-day activities, which helps me achieve total concentration. Additionally, I am pursuing a degree in Criminology (BSc) at an open university to expand my knowledge in addressing real-world challenges. This program enhances my understanding of criminal behavior and law enforcement, providing a broader perspective on how to protect systems and data from various threats.
+Outside of cybersecurity, I am also passionate about other things. I enjoy making good food, building positive relationships, watching anime, and listening to good music. I listen to music while doing almost all of my day-to-day activities, which helps me achieve total concentration. Additionally, I am currently pursuing a degree in Criminology and Security Studies (BSc) at an Open University to expand my knowledge in addressing real-world challenges. This program enhances my understanding of criminal behavior and law enforcement, providing a broader perspective on how to protect systems and data from various threats.
 
 ---
 
 ### ✨ Future plans
 
-I plan to pursue in the field of Cloud security and Red teaming. My goal, is never to be the best but to always keep learning, improving, and making a meaningful impact in the field of cybersecurity.
+I plan to pursue in the field of Cloud Security and Penetration Testing. My goal, is never to be the best but to always keep learning, improving, and making a meaningful impact in the field of cybersecurity.
 
 “The only way to do great work is to love what you do.” – Steve Jobs
 
-![](https://i.imgur.com/iAqjMWW.gif#center)
+![](https://i.imgur.com/1T6zEtv.jpeg#center)
