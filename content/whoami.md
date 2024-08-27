@@ -53,4 +53,4 @@ I plan to pursue in the field of Cloud security and Red teaming. My goal, is nev
 
 “The only way to do great work is to love what you do.” – Steve Jobs
 
-![](https://i.imgur.com/pUFX825.png)
+![](https://i.imgur.com/iAqjMWW.gif#center)
