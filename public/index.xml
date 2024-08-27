@@ -1,40 +1,36 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title></title>
-    <link>//localhost:1313/</link>
-    <description>Recent content on </description>
-    <generator>Hugo</generator>
+    <title>SecFortess</title>
+    <link>http://localhost:34337/secfortress.github.io/</link>
+    <description>Recent content on SecFortess</description>
+    <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
     <lastBuildDate>Mon, 26 Aug 2024 22:39:10 +0100</lastBuildDate>
-    <atom:link href="//localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:34337/secfortress.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>CFSS</title>
-      <link>//localhost:1313/hacking/cfss/</link>
+      <link>http://localhost:34337/secfortress.github.io/hacking/cfss/</link>
       <pubDate>Mon, 26 Aug 2024 22:39:10 +0100</pubDate>
-      <guid>//localhost:1313/hacking/cfss/</guid>
-      <description>Challenge 1. We are given this challenge&#xA;Using curl we can see the that we need to make a POST request together with the username and password parameter&#xA;❯ curl http://165.227.106.113/post.php &amp;lt;h1&amp;gt;This site takes POST data that you have not submitted!&amp;lt;/h1&amp;gt;&amp;lt;!-- username: admin | password: 71urlkufpsdnlkadsf --&amp;gt; We can then use curl again this time specifying the -X flag for POST request and -d for data&#xA;❯ curl http://165.227.106.113/post.php -X POST -d username=admin -d password=71urlkufpsdnlkadsf &amp;lt;h1&amp;gt;flag{p0st_d4t4_4ll_d4y}&amp;lt;/h1&amp;gt; Challenge 2.</description>
+      <guid>http://localhost:34337/secfortress.github.io/hacking/cfss/</guid>
+      <description>Challenge 1. We are given this challenge
+Using curl we can see the that we need to make a POST request together with the username and password parameter
+❯ curl http://165.227.106.113/post.php &amp;lt;h1&amp;gt;This site takes POST data that you have not submitted!&amp;lt;/h1&amp;gt;&amp;lt;!-- username: admin | password: 71urlkufpsdnlkadsf --&amp;gt; We can then use curl again this time specifying the -X flag for POST request and -d for data
+❯ curl http://165.227.106.113/post.php -X POST -d username=admin -d password=71urlkufpsdnlkadsf &amp;lt;h1&amp;gt;flag{p0st_d4t4_4ll_d4y}&amp;lt;/h1&amp;gt; Challenge 2.</description>
     </item>
     <item>
       <title>Whoami</title>
-      <link>//localhost:1313/whoami/</link>
+      <link>http://localhost:34337/secfortress.github.io/whoami/</link>
       <pubDate>Mon, 26 Aug 2024 21:53:51 +0100</pubDate>
-      <guid>//localhost:1313/whoami/</guid>
-      <description>❓ Introduction Hii, I am a 19 yr/old security researcher/penetration tester with extensive networking, scripting, linux administration, active directory and a little cloud experience. Familiarity with security frameworks including OWASP Top 10, Microsoft SDL, MITRE ATT&amp;amp;CK Framework and SANS Top 25. Knowledgeable on defensive security concepts including SIEM and threat hunting. Actively pursuing the OSCP certification and cloud security to further validate proficiency and skill set.&#xA;💻 Infosec, or about 80% of my life My love for Infosec started six years ago.</description>
+      <guid>http://localhost:34337/secfortress.github.io/whoami/</guid>
+      <description>WHO AM I THOUGH _&amp;lt;</description>
     </item>
     <item>
       <title>Nara || PG Practice</title>
-      <link>//localhost:1313/hacking/nara/</link>
+      <link>http://localhost:34337/secfortress.github.io/hacking/nara/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>//localhost:1313/hacking/nara/</guid>
-      <description>Running an nmap scan we have :&#xA;# Nmap 7.94SVN scan initiated Wed Aug 14 21:11:54 2024 as: nmap -p- -T4 -v --min-rate=1000 -sCV -oN nmap.txt -Pn 192.168.209.30 Increasing send delay for 192.168.209.30 from 0 to 5 due to 11 out of 21 dropped probes since last increase. Increasing send delay for 192.168.209.30 from 5 to 10 due to 11 out of 26 dropped probes since last increase. Nmap scan report for 192.</description>
-    </item>
-    <item>
-      <title>Search</title>
-      <link>//localhost:1313/search/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>//localhost:1313/search/</guid>
-      <description>search</description>
+      <guid>http://localhost:34337/secfortress.github.io/hacking/nara/</guid>
+      <description>Solve a very hard community rated active directory machine from proving grounds practice</description>
     </item>
   </channel>
 </rss>

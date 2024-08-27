@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Hunting on </title>
-    <link>//localhost:1313/categories/hunting/</link>
-    <description>Recent content in Hunting on </description>
-    <generator>Hugo</generator>
+    <title>Hunting on SecFortess</title>
+    <link>http://localhost:34337/secfortress.github.io/categories/hunting/</link>
+    <description>Recent content in Hunting on SecFortess</description>
+    <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
-    <atom:link href="//localhost:1313/categories/hunting/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:34337/secfortress.github.io/categories/hunting/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Nara || PG Practice</title>
-      <link>//localhost:1313/hacking/nara/</link>
+      <link>http://localhost:34337/secfortress.github.io/hacking/nara/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>//localhost:1313/hacking/nara/</guid>
-      <description>Running an nmap scan we have :&#xA;# Nmap 7.94SVN scan initiated Wed Aug 14 21:11:54 2024 as: nmap -p- -T4 -v --min-rate=1000 -sCV -oN nmap.txt -Pn 192.168.209.30 Increasing send delay for 192.168.209.30 from 0 to 5 due to 11 out of 21 dropped probes since last increase. Increasing send delay for 192.168.209.30 from 5 to 10 due to 11 out of 26 dropped probes since last increase. Nmap scan report for 192.</description>
+      <guid>http://localhost:34337/secfortress.github.io/hacking/nara/</guid>
+      <description>Solve a very hard community rated active directory machine from proving grounds practice</description>
     </item>
   </channel>
 </rss>
