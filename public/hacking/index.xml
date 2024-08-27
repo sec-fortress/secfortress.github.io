@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Hackings on </title>
+    <link>//localhost:1313/hacking/</link>
+    <description>Recent content in Hackings on </description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 26 Aug 2024 22:39:10 +0100</lastBuildDate>
+    <atom:link href="//localhost:1313/hacking/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CFSS</title>
+      <link>//localhost:1313/hacking/cfss/</link>
+      <pubDate>Mon, 26 Aug 2024 22:39:10 +0100</pubDate>
+      <guid>//localhost:1313/hacking/cfss/</guid>
+      <description>Challenge 1. We are given this challenge&#xA;Using curl we can see the that we need to make a POST request together with the username and password parameter&#xA;❯ curl http://165.227.106.113/post.php &amp;lt;h1&amp;gt;This site takes POST data that you have not submitted!&amp;lt;/h1&amp;gt;&amp;lt;!-- username: admin | password: 71urlkufpsdnlkadsf --&amp;gt; We can then use curl again this time specifying the -X flag for POST request and -d for data&#xA;❯ curl http://165.227.106.113/post.php -X POST -d username=admin -d password=71urlkufpsdnlkadsf &amp;lt;h1&amp;gt;flag{p0st_d4t4_4ll_d4y}&amp;lt;/h1&amp;gt; Challenge 2.</description>
+    </item>
+    <item>
+      <title>Nara || PG Practice</title>
+      <link>//localhost:1313/hacking/nara/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/hacking/nara/</guid>
+      <description>Running an nmap scan we have :&#xA;# Nmap 7.94SVN scan initiated Wed Aug 14 21:11:54 2024 as: nmap -p- -T4 -v --min-rate=1000 -sCV -oN nmap.txt -Pn 192.168.209.30 Increasing send delay for 192.168.209.30 from 0 to 5 due to 11 out of 21 dropped probes since last increase. Increasing send delay for 192.168.209.30 from 5 to 10 due to 11 out of 26 dropped probes since last increase. Nmap scan report for 192.</description>
+    </item>
+  </channel>
+</rss>
