@@ -2,30 +2,30 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Tags on SecFortess</title>
-    <link>http://localhost:37131/tags/</link>
+    <link>http://localhost:1313/secfortress.github.io/tags/</link>
     <description>Recent content in Tags on SecFortess</description>
     <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
-    <atom:link href="http://localhost:37131/tags/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/secfortress.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Active Directory</title>
-      <link>http://localhost:37131/tags/active-directory/</link>
+      <link>http://localhost:1313/secfortress.github.io/tags/active-directory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:37131/tags/active-directory/</guid>
+      <guid>http://localhost:1313/secfortress.github.io/tags/active-directory/</guid>
       <description></description>
     </item>
     <item>
       <title>Phishing</title>
-      <link>http://localhost:37131/tags/phishing/</link>
+      <link>http://localhost:1313/secfortress.github.io/tags/phishing/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:37131/tags/phishing/</guid>
+      <guid>http://localhost:1313/secfortress.github.io/tags/phishing/</guid>
       <description></description>
     </item>
     <item>
       <title>Windows</title>
-      <link>http://localhost:37131/tags/windows/</link>
+      <link>http://localhost:1313/secfortress.github.io/tags/windows/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:37131/tags/windows/</guid>
+      <guid>http://localhost:1313/secfortress.github.io/tags/windows/</guid>
       <description></description>
     </item>
   </channel>
