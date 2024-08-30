@@ -15,10 +15,38 @@
       <description></description>
     </item>
     <item>
+      <title>API</title>
+      <link>http://localhost:1313/tags/api/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/api/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Burpsuite</title>
+      <link>http://localhost:1313/tags/burpsuite/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/burpsuite/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Fuzzing</title>
+      <link>http://localhost:1313/tags/fuzzing/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/fuzzing/</guid>
+      <description></description>
+    </item>
+    <item>
       <title>Phishing</title>
       <link>http://localhost:1313/tags/phishing/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/tags/phishing/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Web</title>
+      <link>http://localhost:1313/tags/web/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/web/</guid>
       <description></description>
     </item>
     <item>

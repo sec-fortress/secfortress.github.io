@@ -16,7 +16,17 @@
   </url><url>
     <loc>http://localhost:1313/tags/active-directory/</loc>
   </url><url>
+    <loc>http://localhost:1313/tags/api/</loc>
+  </url><url>
+    <loc>http://localhost:1313/categories/api/</loc>
+  </url><url>
+    <loc>http://localhost:1313/hacking/api_testing_portswigger/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/burpsuite/</loc>
+  </url><url>
     <loc>http://localhost:1313/categories/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/fuzzing/</loc>
   </url><url>
     <loc>http://localhost:1313/categories/hunting/</loc>
   </url><url>
@@ -27,6 +37,8 @@
     <loc>http://localhost:1313/search/</loc>
   </url><url>
     <loc>http://localhost:1313/tags/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/web/</loc>
   </url><url>
     <loc>http://localhost:1313/tags/windows/</loc>
   </url>

@@ -19,6 +19,13 @@ Using curl we can see the that we need to make a POST request together with the 
 ❯ curl http://165.227.106.113/post.php -X POST -d username=admin -d password=71urlkufpsdnlkadsf &amp;lt;h1&amp;gt;flag{p0st_d4t4_4ll_d4y}&amp;lt;/h1&amp;gt; Challenge 2.</description>
     </item>
     <item>
+      <title>API Testing || Portswigger</title>
+      <link>http://localhost:1313/hacking/api_testing_portswigger/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/hacking/api_testing_portswigger/</guid>
+      <description>Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.</description>
+    </item>
+    <item>
       <title>Nara || PG Practice</title>
       <link>http://localhost:1313/hacking/nara/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
