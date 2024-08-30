@@ -4,6 +4,7 @@ image: https://i.imgur.com/xeSd64L.png
 description: Solve a very hard community rated active directory machine from proving grounds practice
 categories: [Hunting]
 tags: [Active directory, Windows, Phishing]
+weight: 2
 author: SecFortress
 ---
 
