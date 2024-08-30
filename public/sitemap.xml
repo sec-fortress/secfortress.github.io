@@ -2,6 +2,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://localhost:1313/hacking/api_testing_portswigger/</loc>
+  </url><url>
+    <loc>http://localhost:1313/hacking/nara/</loc>
+  </url><url>
     <loc>http://localhost:1313/</loc>
     <lastmod>2024-08-27T19:12:16+01:00</lastmod>
   </url><url>
@@ -20,8 +24,6 @@
   </url><url>
     <loc>http://localhost:1313/categories/api/</loc>
   </url><url>
-    <loc>http://localhost:1313/hacking/api_testing_portswigger/</loc>
-  </url><url>
     <loc>http://localhost:1313/tags/burpsuite/</loc>
   </url><url>
     <loc>http://localhost:1313/categories/</loc>
@@ -29,8 +31,6 @@
     <loc>http://localhost:1313/tags/fuzzing/</loc>
   </url><url>
     <loc>http://localhost:1313/categories/hunting/</loc>
-  </url><url>
-    <loc>http://localhost:1313/hacking/nara/</loc>
   </url><url>
     <loc>http://localhost:1313/tags/phishing/</loc>
   </url><url>
