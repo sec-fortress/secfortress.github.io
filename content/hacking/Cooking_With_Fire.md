@@ -266,7 +266,7 @@ hashcat -m 13100 -a 0 hash.txt /path/to/wordlist.txt
 ```
 
 
-## Extras : Fixing Kerberos Clock Skew Too Great Resolved
+## **Extras : Fixing Kerberos Clock Skew Too Great Resolved**
 
 Ever seen the error “**Kerberos Clock Skew Too Great**” and wondered why your carefully planned attack — or legitimate authentication — isn’t working? This error occurs when there is a significant time difference (typically more than 5 minutes) between the client, server, and the Key Distribution Center (KDC) in a Kerberos environment.
 
