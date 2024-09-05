@@ -4,10 +4,9 @@ image: https://i.imgur.com/mStB3iJ.jpeg
 description: Just another yet random blog to practicing Kerberoasting on Linux and Windows, focusing on practical steps with tools like Rubeus and GetUserSPNs.py.
 categories: [Active Directory]
 tags: [Windows, Active Directory]
-weight: 1
+weight: 4
 author: SecFortress
 ---
-
 
 
 ## **Overview**
