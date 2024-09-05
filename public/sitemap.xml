@@ -4,6 +4,8 @@
   <url>
     <loc>http://localhost:1313/hacking/api_testing_portswigger/</loc>
   </url><url>
+    <loc>http://localhost:1313/hacking/cooking_with_fire/</loc>
+  </url><url>
     <loc>http://localhost:1313/hacking/nara/</loc>
   </url><url>
     <loc>http://localhost:1313/</loc>
@@ -19,6 +21,8 @@
     <lastmod>2024-08-26T21:53:51+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/active-directory/</loc>
+  </url><url>
+    <loc>http://localhost:1313/categories/active-directory/</loc>
   </url><url>
     <loc>http://localhost:1313/tags/api/</loc>
   </url><url>
