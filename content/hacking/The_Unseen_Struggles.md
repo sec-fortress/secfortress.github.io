@@ -33,3 +33,5 @@ These are some of the struggles we face. Sure, everyone has their battles, but m
 Despite these setbacks, I deeply appreciate what life has given me and the way I was raised—in a place where character, discipline, and perseverance are paramount. I've learned so much from my past employers, for which I am genuinely grateful, and I've soaked up all the knowledge I could, keeping that mindset of continuous self-growth close to my heart. I find strength in the bonds with my brothers—Nighthawk, Blackanon, Hackyou—and in the community of others who share this journey. I’m grateful to God that things are falling into place for some of us right now. And that's what really matters: looking back at the struggles, realizing how far we've come, and knowing we’re no longer where we used to be.
 
 There’s still so much more in store, and I believe that hard work, combined with the right connections, will eventually put every hustling soul—maybe even every techie in NG, as we like to call it—in the right place.
+
+![](https://i.imgur.com/EorH16C.jpeg#center)
