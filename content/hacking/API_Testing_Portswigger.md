@@ -1,10 +1,10 @@
 ---
-title: API Testing || Portswigger
+title: API Testing || Attacking REST, Swagger APIs {Portswigger}
 image: https://i.imgur.com/mStB3iJ.jpeg
 description: Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.
 categories: [API]
 tags: [Web, Burpsuite, Fuzzing, API]
-weight: 1
+weight: 2
 author: SecFortress
 ---
 

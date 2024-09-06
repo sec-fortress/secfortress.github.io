@@ -176,7 +176,7 @@
     <li><a href="#roasting-from-linux"><strong>Roasting From Linux</strong></a></li>
     <li><a href="#roasting-from-windows"><strong>Roasting From Windows</strong></a></li>
     <li><a href="#serving-dishes--hash-cracking"><strong>Serving Dishes ; Hash Cracking</strong></a></li>
-    <li><a href="#extras--fixing-kerberos-clock-skew-too-great-resolved">Extras : Fixing Kerberos Clock Skew Too Great Resolved</a></li>
+    <li><a href="#extras--fixing-kerberos-clock-skew-too-great-resolved"><strong>Extras : Fixing Kerberos Clock Skew Too Great Resolved</strong></a></li>
     <li><a href="#wrapping-up-the-danger-of-kerberoasting"><strong>Wrapping Up: The Danger of Kerberoasting</strong></a></li>
     <li><a href="#resources"><strong>Resources</strong></a></li>
   </ul>
@@ -402,7 +402,7 @@ and then execute smbexec.py again with -codec and the corresponding codec       
 </span></span><span class="line"><span class="cl"><span class="c1"># /path/to/wordlist.txt: The path to your wordlist.</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">hashcat -m <span class="m">13100</span> -a <span class="m">0</span> hash.txt /path/to/wordlist.txt
-</span></span></code></pre></div><h2 id="extras--fixing-kerberos-clock-skew-too-great-resolved">Extras : Fixing Kerberos Clock Skew Too Great Resolved<a hidden class="anchor" aria-hidden="true" href="#extras--fixing-kerberos-clock-skew-too-great-resolved">#</a></h2>
+</span></span></code></pre></div><h2 id="extras--fixing-kerberos-clock-skew-too-great-resolved"><strong>Extras : Fixing Kerberos Clock Skew Too Great Resolved</strong><a hidden class="anchor" aria-hidden="true" href="#extras--fixing-kerberos-clock-skew-too-great-resolved">#</a></h2>
 <p>Ever seen the error “<strong>Kerberos Clock Skew Too Great</strong>” and wondered why your carefully planned attack — or legitimate authentication — isn’t working? This error occurs when there is a significant time difference (typically more than 5 minutes) between the client, server, and the Key Distribution Center (KDC) in a Kerberos environment.</p>
 <p><img loading="lazy" src="https://i.imgur.com/NdOYs9o.png" alt="Image from: https://miro.medium.com/v2/resize:fit:828/format:webp/1*eRZmVfcphNLT9-5PWA1PBQ.png"  />
 </p>
@@ -447,15 +447,10 @@ and then execute smbexec.py again with -codec and the corresponding codec       
       <li><a href="http://localhost:1313/tags/active-directory/">Active Directory</a></li>
     </ul>
 <nav class="paginav">
-  <a class="prev" href="http://localhost:1313/hacking/api_testing_portswigger/">
-    <span class="title">« Prev</span>
-    <br>
-    <span>API Testing || Portswigger</span>
-  </a>
-  <a class="next" href="http://localhost:1313/hacking/nara/">
+  <a class="next" href="http://localhost:1313/hacking/api_testing_portswigger/">
     <span class="title">Next »</span>
     <br>
-    <span>Nara || PG Practice</span>
+    <span>API Testing || Attacking REST, Swagger APIs {Portswigger}</span>
   </a>
 </nav>
 

@@ -6,15 +6,8 @@
     <description>Recent content on SecFortess</description>
     <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 26 Aug 2024 22:39:10 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 06 Sep 2024 13:52:54 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>API Testing || Portswigger</title>
-      <link>http://localhost:1313/hacking/api_testing_portswigger/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/hacking/api_testing_portswigger/</guid>
-      <description>Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.</description>
-    </item>
     <item>
       <title>Cooking With Fire</title>
       <link>http://localhost:1313/hacking/cooking_with_fire/</link>
@@ -23,21 +16,18 @@
       <description>Just another yet random blog to practicing Kerberoasting on Linux and Windows, focusing on practical steps with tools like Rubeus and GetUserSPNs.py.</description>
     </item>
     <item>
-      <title>Nara || PG Practice</title>
-      <link>http://localhost:1313/hacking/nara/</link>
+      <title>API Testing || Attacking REST, Swagger APIs {Portswigger}</title>
+      <link>http://localhost:1313/hacking/api_testing_portswigger/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/hacking/nara/</guid>
-      <description>Solve a very hard community rated active directory machine from proving grounds practice</description>
+      <guid>http://localhost:1313/hacking/api_testing_portswigger/</guid>
+      <description>Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.</description>
     </item>
     <item>
-      <title>CFSS</title>
-      <link>http://localhost:1313/hacking/cfss/</link>
-      <pubDate>Mon, 26 Aug 2024 22:39:10 +0100</pubDate>
-      <guid>http://localhost:1313/hacking/cfss/</guid>
-      <description>Challenge 1. We are given this challenge
-Using curl we can see the that we need to make a POST request together with the username and password parameter
-❯ curl http://165.227.106.113/post.php &amp;lt;h1&amp;gt;This site takes POST data that you have not submitted!&amp;lt;/h1&amp;gt;&amp;lt;!-- username: admin | password: 71urlkufpsdnlkadsf --&amp;gt; We can then use curl again this time specifying the -X flag for POST request and -d for data
-❯ curl http://165.227.106.113/post.php -X POST -d username=admin -d password=71urlkufpsdnlkadsf &amp;lt;h1&amp;gt;flag{p0st_d4t4_4ll_d4y}&amp;lt;/h1&amp;gt; Challenge 2.</description>
+      <title>Where I&#39;ve Been, Isn&#39;t Where I Am Going</title>
+      <link>http://localhost:1313/hacking/the_unseen_struggles/</link>
+      <pubDate>Fri, 06 Sep 2024 13:52:54 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/the_unseen_struggles/</guid>
+      <description>‘In the middle of difficulty lies opportunity. -- Albert Einstein‘</description>
     </item>
     <item>
       <title>Whoami</title>
