@@ -2,6 +2,7 @@
 title = "Bait, Hook, and Hack"
 description = "Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD"
 date = 2024-09-07T07:40:10+01:00
+weight = 4
 +++
 
 Phishing is like fishing with a twist—except instead of catching fish, you're trying to reel in sensitive information. Cybercriminals use cunning tactics to craft emails and websites that look all too real, hoping you'll bite. In this post, we're going to break down the phishing process from the initial bait to the final hook. You'll learn how these attacks are set up, how to spot them, and what you can do to protect yourself.
