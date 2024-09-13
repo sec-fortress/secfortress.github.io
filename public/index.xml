@@ -6,7 +6,7 @@
     <description>Recent content on SecFortess</description>
     <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 07 Sep 2024 07:40:10 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 13 Sep 2024 13:44:33 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cooking With Fire</title>
@@ -35,6 +35,14 @@
       <pubDate>Sat, 07 Sep 2024 07:40:10 +0100</pubDate>
       <guid>http://localhost:1313/hacking/phishing_guide/</guid>
       <description>Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD</description>
+    </item>
+    <item>
+      <title>Am I a hecker yet 🤔? CVE-2024-44871 and CVE-2024-44872!</title>
+      <link>http://localhost:1313/hacking/are_you_a_hacker/</link>
+      <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
+      <description>WayBack Three months ago, smack in the middle of my first semester university exams, I found myself pondering a big question: &amp;ldquo;What minor skill can I pick up to keep my hacking chops sharp?&amp;rdquo; Something that would make me feel like a &amp;ldquo;hecker&amp;rdquo; and not just another stressed-out student.
+And then, a light bulb moment! 💡 CVEs! I dove headfirst into the wonderful (and sometimes daunting) world of CVEs. I came across three fantastic resources that became my road map to success:</description>
     </item>
     <item>
       <title>Whoami</title>
