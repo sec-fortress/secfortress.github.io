@@ -1,7 +1,7 @@
 +++
 title = "Azure Blob Container to Initial Access"
 date = 2024-09-26T23:32:03+01:00
-description = "Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them."
+description = "Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them"
 images = "https://i.pinimg.com/originals/86/41/a4/8641a4adec1d2b10746d02e664f6f9da.gif"
 +++
 
