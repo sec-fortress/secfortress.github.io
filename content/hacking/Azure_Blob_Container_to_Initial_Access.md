@@ -361,6 +361,7 @@ UserType                       : Member
 PS /home/marcus> 
 ```
 
+That would be all for today ( -_•)︻デ═一
 
 
 ## **References & Mitigations**
