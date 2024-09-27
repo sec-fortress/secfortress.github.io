@@ -2,6 +2,7 @@
 title = "Am I a hecker yet 🤔? CVE-2024-44871 and CVE-2024-44872!"
 description = "The big question....."
 date = 2024-09-13T13:44:33+01:00
+weight = 5
 +++
 
 ## **WayBack**
