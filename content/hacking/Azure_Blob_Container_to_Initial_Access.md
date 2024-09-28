@@ -7,6 +7,8 @@ tags: [Azure, Red Teaming, Entra-ID, Powershell]
 image: "https://i.pinimg.com/originals/86/41/a4/8641a4adec1d2b10746d02e664f6f9da.gif"
 ---
 
+**Note : This article was inspired by content from [Pwned Labs](https://pwnedlabs.io/labs/azure-blob-container-to-initial-access). Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.**
+
 ## **WalkThrough**
 
 

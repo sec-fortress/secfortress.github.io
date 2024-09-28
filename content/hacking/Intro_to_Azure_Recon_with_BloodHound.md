@@ -7,6 +7,7 @@ tags: [Azure, Red Teaming, Entra-ID, Powershell, Bloodhound]
 image: "https://i.pinimg.com/originals/86/41/a4/8641a4adec1d2b10746d02e664f6f9da.gif"
 ---
 
+**Note : This article was inspired by content from [Pwned Labs](https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound). Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.**
 
 > Overview => After discovering that a public company GitHub repository contained accidentally committed credentials, Mega Big Tech has requested us to investigate the extent of potential exposure. They want to determine if these credentials can be used to access their cloud environment and if any confidential data is at risk.
 
