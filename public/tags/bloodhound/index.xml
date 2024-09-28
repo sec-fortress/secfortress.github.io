@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Powershell on SecFortess</title>
-    <link>http://localhost:1313/tags/powershell/</link>
-    <description>Recent content in Powershell on SecFortess</description>
+    <title>Bloodhound on SecFortess</title>
+    <link>http://localhost:1313/tags/bloodhound/</link>
+    <description>Recent content in Bloodhound on SecFortess</description>
     <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
     <lastBuildDate>Sat, 28 Sep 2024 06:53:07 +0100</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/powershell/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/bloodhound/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Intro to Azure Recon with BloodHound</title>
       <link>http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/</link>
       <pubDate>Sat, 28 Sep 2024 06:53:07 +0100</pubDate>
       <guid>http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/</guid>
       <description>BloodHound together with an ingestor Azurehound can map Azure AD relationships, revealing roles, permissions, and attack paths, helping identify misconfigurations and privilege escalation opportunities in cloud environments.</description>
-    </item>
-    <item>
-      <title>Azure Blob Container to Initial Access</title>
-      <link>http://localhost:1313/hacking/azure_blob_container_to_initial_access/</link>
-      <pubDate>Thu, 26 Sep 2024 23:32:03 +0100</pubDate>
-      <guid>http://localhost:1313/hacking/azure_blob_container_to_initial_access/</guid>
-      <description>Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them</description>
     </item>
   </channel>
 </rss>
