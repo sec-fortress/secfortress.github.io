@@ -460,6 +460,8 @@ PartitionKey    RowKey    Card_expiry    Card_number       Customer_id          
 1               99                                                                               Flag: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
+Have fun ⋆.˚ ᡣ𐭩 .𖥔˚
+
 ## **Key Takeaways**
 
 
