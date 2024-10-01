@@ -53,4 +53,4 @@ I plan to pursue in the field of Cloud Security and Penetration Testing. My goal
 
 “The only way to do great work is to love what you do.” – Steve Jobs
 
-![](https://i.imgur.com/1T6zEtv.jpeg#center)
+![](https://i.pinimg.com/originals/45/f3/45/45f345f183f946bcdd039765783e3ce9.gif#center)
