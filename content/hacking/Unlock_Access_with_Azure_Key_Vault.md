@@ -26,7 +26,7 @@ Tools needed for this lab :
 
 
 
-We nned to enable tab completion in `pwsh` on  Kali for faster command entry and navigation through available cmdlets and parameters.
+We need to enable tab completion in `pwsh` on  Kali for faster command entry and navigation through available cmdlets and parameters.
 
 - Running "`mousepad $profile`" on the command line this should open up the powershell config file located at `/home/sec-fortress/.config/powershell/Microsoft.PowerShell_profile.ps1`
 
