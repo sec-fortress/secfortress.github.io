@@ -6,8 +6,16 @@
     <description>Recent content in Entra-ID on SecFortess</description>
     <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 28 Sep 2024 06:53:07 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 04 Oct 2024 10:46:06 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/tags/entra-id/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Loot Exchange, Teams and SharePoint with GraphRunner</title>
+      <link>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</link>
+      <pubDate>Fri, 04 Oct 2024 10:46:06 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</guid>
+      <description>Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.
+Overview -&amp;gt; Your red team is on an engagement and has successfully phished a Mega Big Tech employee to gain their credentials. So far increasing access within Azure has reached a dead end, and you have been tasked with unlocking further access. In scope is the entire on-premises and cloud infrastructure.</description>
+    </item>
     <item>
       <title>Intro to Azure Recon with BloodHound</title>
       <link>http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/</link>

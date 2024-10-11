@@ -6,7 +6,7 @@
     <description>Recent content in Hackings on SecFortess</description>
     <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 01 Oct 2024 11:13:09 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 04 Oct 2024 10:46:06 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/hacking/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cooking With Fire</title>
@@ -42,6 +42,14 @@
       <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
       <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
       <description>The big question.....</description>
+    </item>
+    <item>
+      <title>Loot Exchange, Teams and SharePoint with GraphRunner</title>
+      <link>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</link>
+      <pubDate>Fri, 04 Oct 2024 10:46:06 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</guid>
+      <description>Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.
+Overview -&amp;gt; Your red team is on an engagement and has successfully phished a Mega Big Tech employee to gain their credentials. So far increasing access within Azure has reached a dead end, and you have been tasked with unlocking further access. In scope is the entire on-premises and cloud infrastructure.</description>
     </item>
     <item>
       <title>Unlock Access with Azure Key Vault</title>
