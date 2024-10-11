@@ -13,8 +13,7 @@
       <link>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</link>
       <pubDate>Fri, 04 Oct 2024 10:46:06 +0100</pubDate>
       <guid>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</guid>
-      <description>Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.
-Overview -&amp;gt; Your red team is on an engagement and has successfully phished a Mega Big Tech employee to gain their credentials. So far increasing access within Azure has reached a dead end, and you have been tasked with unlocking further access. In scope is the entire on-premises and cloud infrastructure.</description>
+      <description>In this lab, We look ino the use of a tool, Graphrunner, a post-exploitation toolset for interacting with the Microsoft Graph API......</description>
     </item>
     <item>
       <title>Intro to Azure Recon with BloodHound</title>
