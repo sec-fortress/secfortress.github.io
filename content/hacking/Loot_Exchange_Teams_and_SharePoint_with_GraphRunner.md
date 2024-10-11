@@ -13,7 +13,7 @@ description: "In this lab, We look ino the use of a tool, Graphrunner, a post-ex
 
 
 
-![](https://i.pinimg.com/564x/51/7b/41/517b415151d8d4a7dc4303f139f9c95f.jpg)
+![](https://i.pinimg.com/originals/dd/80/04/dd8004f0c24c16fa33ed20b7a8d33d21.gif)
 
 
 
