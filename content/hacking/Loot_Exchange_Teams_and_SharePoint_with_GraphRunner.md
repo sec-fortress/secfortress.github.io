@@ -2,6 +2,7 @@
 title: "Loot Exchange, Teams and SharePoint with GraphRunner"
 date: 2024-10-04T10:46:06+01:00
 tags: [Azure, Red Teaming, Entra-ID, Powershell, MS SQL]
+description: "In this lab, We look ino the use of a tool, Graphrunner, a post-exploitation toolset for interacting with the Microsoft Graph API......"
 ---
 
 **Note : This article was inspired by content from [Pwned Labs](https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound). Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.**
