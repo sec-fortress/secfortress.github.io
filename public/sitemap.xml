@@ -15,13 +15,19 @@
     <loc>http://localhost:1313/hacking/are_you_a_hacker/</loc>
     <lastmod>2024-09-13T13:44:33+01:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/hacking/journey_through_uncertainty/</loc>
+    <lastmod>2024-10-13T19:18:06+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/hacking/</loc>
+    <lastmod>2024-10-13T19:18:06+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/</loc>
+    <lastmod>2024-10-13T19:18:06+01:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/tags/azure/</loc>
     <lastmod>2024-10-04T10:46:06+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/entra-id/</loc>
-    <lastmod>2024-10-04T10:46:06+01:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/hacking/</loc>
     <lastmod>2024-10-04T10:46:06+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</loc>
@@ -34,9 +40,6 @@
     <lastmod>2024-10-04T10:46:06+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/red-teaming/</loc>
-    <lastmod>2024-10-04T10:46:06+01:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/</loc>
     <lastmod>2024-10-04T10:46:06+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/</loc>

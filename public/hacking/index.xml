@@ -6,7 +6,7 @@
     <description>Recent content in Hackings on SecFortess</description>
     <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 04 Oct 2024 10:46:06 +0100</lastBuildDate>
+    <lastBuildDate>Sun, 13 Oct 2024 19:18:06 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/hacking/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cooking With Fire</title>
@@ -42,6 +42,14 @@
       <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
       <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
       <description>The big question.....</description>
+    </item>
+    <item>
+      <title>Embracing the Chaos; My Journey Through Uncertainty</title>
+      <link>http://localhost:1313/hacking/journey_through_uncertainty/</link>
+      <pubDate>Sun, 13 Oct 2024 19:18:06 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/journey_through_uncertainty/</guid>
+      <description>There are days when showing up feels like the hardest thing in the world. Sometimes I wonder, &amp;ldquo;Does any of this really count, or am I just working hard only to end up in a place that doesn&amp;rsquo;t even matter to me?&amp;rdquo;
+Life has taken on a different meaning for me after reading countless educational books, journals, and listening to all sorts of podcasts. Funny thing is, I was never that &amp;ldquo;smart kid&amp;rdquo; growing up.</description>
     </item>
     <item>
       <title>Loot Exchange, Teams and SharePoint with GraphRunner</title>
