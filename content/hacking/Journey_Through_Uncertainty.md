@@ -1,7 +1,8 @@
-+++
-title = 'Embracing the Chaos; My Journey Through Uncertainty'
-date = 2024-10-13T19:18:06+01:00
-+++
+---
+title: "Embracing the Chaos; My Journey Through Uncertainty"
+date: 2024-10-13T19:18:06+01:00
+description: "Arhhh, You don't have to understand....."
+---
 
 There are days when showing up feels like the hardest thing in the world. Sometimes I wonder, "Does any of this really count, or am I just working hard only to end up in a place that doesn't even matter to me?"
 
