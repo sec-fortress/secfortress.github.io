@@ -26,7 +26,7 @@ A lot of kids don’t even think about going into cybercrime. But picture this: 
 
 Cybercrime has blown up in Nigeria, with kids masking it behind crypto and forex so their parents can believe it's something legit. You see us pulling up in baggy pants and expensive hoodies, but the truth is, even if some people are doing things the right way, only about 10% of the kids on the block are actually playing it straight.
 
-I knew so many talented kids back in high school, ones who could’ve been brilliant and successful if they had the right opportunities. But without those chances, they’ve had to rely on a mix of grace and hustle just to pull themselves out of the trenches. The thing is, life happens. If there was a survey asking people why they ended up doing things they never wanted to do, the answer would be simple: life pushed them to the wall.
+I knew so many talented kids back in high school, ones who could’ve been brilliant and successful, if they had the right opportunities. But without those chances, they’ve had to rely on a mix of grace and hustle just to pull themselves out of the trenches. The thing is, life happens. If there was a survey asking people why they ended up doing things they never wanted to do, the answer would be simple: life pushed them to the wall.
 
 Sure, some people have the strength to hang on and bounce back, but not everyone can hold on long enough. And that’s how you find them falling into the trap committing sins with an iPhone in hand. So, whose fault is that really?
 
