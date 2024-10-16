@@ -642,7 +642,6 @@ foreach ($VM in $VMsToProcess)
 }
 
 Write-Output "Processed all VMs for action: $Action"
-
 ```
 
 
@@ -675,7 +674,7 @@ $cred.GetNetworkCredential().Password
 ```
 
 
-If you are still interested in knowing how to do this regardless then refer to my alternate blog, [Link Here](https://sec-fortress.github.io/posts/articles/posts/Edit%20a%20Runbook%20in%20Azure%20and%20append%20a%20PowerShell%20script%20to%20retrieve%20credentials.html).
+If you are still interested in knowing how to edit the Runbook regardless of the missing permissions then refer to my alternate blog, [Link Here](https://sec-fortress.github.io/posts/articles/posts/Edit%20a%20Runbook%20in%20Azure%20and%20append%20a%20PowerShell%20script%20to%20retrieve%20credentials.html).
 
 
 ## **Identifying Unencrypted Variables**
@@ -692,7 +691,13 @@ Get-AzAutomationVariable -ResourceGroupName "mbt-rg-5" -AutomationAccountName "a
 ![](https://i.imgur.com/M5qOssF.png)
 
 
-As shown above we have the flag value and a Global administrator credential, haha
+As shown above we have the flag value and a Global administrator credential, haha ᯓ★
+
+
+## **Summary/Defense**
+
+Employees often unintentionally expose sensitive information on social media, which red teams can exploit for phishing and password creation. In one case, an employee believed they had redacted sensitive data using iOS Markup, but it was recoverable due to transparency issues. Additionally, we exploited an exposed password in the `.bash_history` file, highlighting the risks of passing passwords via command lines, which can be logged in history files and Windows event logs, however to authenticate without a browser, we used `az login --use-device-code` to force device code authentication for more security. Finally, we obtained global admin credentials due to insecure secret storage, emphasizing the importance of saving sensitive data as encrypted variables, which are not encrypted by default.
+
 
 
 ## **Resources**
