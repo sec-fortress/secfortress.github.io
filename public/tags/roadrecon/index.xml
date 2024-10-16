@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>ROADrecon on SecFortess</title>
+    <link>http://localhost:1313/tags/roadrecon/</link>
+    <description>Recent content in ROADrecon on SecFortess</description>
+    <generator>Hugo -- 0.128.2</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 16 Oct 2024 11:54:55 +0100</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/roadrecon/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Unmask_Privileged_Access_In_Azure</title>
+      <link>http://localhost:1313/hacking/unmask_privileged_access_in_azure/</link>
+      <pubDate>Wed, 16 Oct 2024 11:54:55 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/unmask_privileged_access_in_azure/</guid>
+      <description>After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.</description>
+    </item>
+  </channel>
+</rss>

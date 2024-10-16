@@ -6,7 +6,7 @@
     <description>Recent content in Hackings on SecFortess</description>
     <generator>Hugo -- 0.128.2</generator>
     <language>en</language>
-    <lastBuildDate>Sun, 13 Oct 2024 19:18:06 +0100</lastBuildDate>
+    <lastBuildDate>Wed, 16 Oct 2024 11:54:55 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/hacking/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cooking With Fire</title>
@@ -42,6 +42,13 @@
       <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
       <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
       <description>The big question.....</description>
+    </item>
+    <item>
+      <title>Unmask Privileged Access In Azure</title>
+      <link>http://localhost:1313/hacking/unmask_privileged_access_in_azure/</link>
+      <pubDate>Wed, 16 Oct 2024 11:54:55 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/unmask_privileged_access_in_azure/</guid>
+      <description>After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.</description>
     </item>
     <item>
       <title>Embracing the Chaos; My Journey Through Uncertainty</title>
