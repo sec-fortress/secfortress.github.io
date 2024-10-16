@@ -668,8 +668,10 @@ We can check if we have write access to the `automation-dev` automation account 
 
 As shown above we only have the `Reader` role meaning we can't edit the Runbook, if we could we would append the following PowerShell to the script and see the credentials in the job output. 
 
-```
-$cred = Get-AutomationPSCredential -Name automate-default $cred.GetNetworkCredential().UserName $cred.GetNetworkCredential().Password
+```powershell
+$cred = Get-AutomationPSCredential -Name automate-default
+$cred.GetNetworkCredential().UserName
+$cred.GetNetworkCredential().Password
 ```
 
 
