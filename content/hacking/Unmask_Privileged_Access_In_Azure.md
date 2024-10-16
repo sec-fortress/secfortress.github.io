@@ -6,6 +6,7 @@ tags: [Azure, Red Teaming, Entra-ID, Powershell, ROADrecon]
 categories: [Cloud]
 ---
 
+
 **Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.**
 
 
@@ -667,6 +668,7 @@ As shown above we only have the `Reader` role meaning we can't edit the Runbook,
 $cred = Get-AutomationPSCredential -Name automate-default
 $cred.GetNetworkCredential().UserName
 $cred.GetNetworkCredential().Password
+
 ```
 
 
@@ -687,7 +689,7 @@ Get-AzAutomationVariable -ResourceGroupName "mbt-rg-5" -AutomationAccountName "a
 ![](https://i.imgur.com/M5qOssF.png)
 
 
-As shown above we have the flag value and a Global administrator credential, haha ᯓ★
+As shown above we have the flag value and a Global administrator credential, haha ᯓ★.
 
 
 ## **Summary/Defense**
