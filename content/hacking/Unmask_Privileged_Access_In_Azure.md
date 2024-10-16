@@ -462,7 +462,7 @@ PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab> az keyvault secret show
   "tags": {
     "file-encoding": "ascii"
   },
-  "value": "-----BEGIN RSA PRIVATE KEY-----\nMIIG4gIBAAKCAYEAupkdmQNcS8OMTjWvoUGKFRnJijGbVVPllUI0RHw4B7A2UiIw\n671wDzkHvX2pcbN1o9eBIzsz8grZ6t7Xha6lGlI4haIWmU3VOZiopFRYS8hvIR70\n6dUBCPWwWDlUotp96VFCqtelYGcKTyFibHHUSXBYjdN5oQtXJWcLuE/6e5RRTZRl\nt90sTTe72lwNOZV9pWhd1BkwY1OX80SeM8wtTZ+ThFMCMkSrBhOrsv62cYa+aq4x\nqbYS9uyqbLFynIPbSYEwbDE8EFrAUiwo1I6yb9VQkCpBpWOVF0XJNuE3VUkmLe4/\n5uhu9NobgtQ6wxLW410hlmdezE9UUSKgobHVGNpd/oPE0j2h8q8ZAuMuqvLHFFlY\nKyHL1B6rQCYWJhMnkVbYiXCknq6incLMjbiFG35ZHP5ffZ9A69XMo/yw0XcVc40o\n1sSjEcT4Fq2f5EPZguT4nF7i15UE3HoiJRMU+fVE2mBaR5qZp2qxN8--SNIP--\n-----END RSA PRIVATE KEY-----\n"
+  "value": "-----BEGIN RSA PRIVATE KEY-----\nMIIG4gIBAAKCAYEAupkdmQNcS8OMTjWvoUGKFRnJijGbVVPllUI0RHw4B7A2UiIw\n671wDzkHvX2pcbN1o9eBIzsz8grZ6t7Xha6lGlI4haIWmU3VOZiopFRYS8hvIR70\n6dUBCPWwWDlUotp96VFCqtelYGcKTyFibHHUSXBYjdN5oQtXJWcLuE/6e5RRTZRl\nt90sTTe72lwNOZV9pWhd1BkwY1OX80SeM8wtTZ+ThFMCMkSrBhOrsv62cYa+aq4x--SNIP--\n-----END RSA PRIVATE KEY-----\n"
 }
 ```
 
@@ -526,7 +526,7 @@ automation@AUTOMAT01:~$ hostnamectl
     Virtualization: microsoft
   Operating System: Ubuntu 20.04.6 LTS
             Kernel: Linux 5.15.0-1052-azure
-      Architecture: x86-64
+      Architecture: x86-64s
 ```
 
 
@@ -538,7 +538,7 @@ It is worth doing some laying off the land enumeration, finding sensitive files/
 
 
 ```
-az login -u "serene@megabigtech.com" -p "Galaxy9999!"
+az login -u "serene@megabigtech.com" -p "xxxxxxxxxxx"
 ```
 
 
@@ -642,6 +642,7 @@ foreach ($VM in $VMsToProcess)
 }
 
 Write-Output "Processed all VMs for action: $Action"
+
 ```
 
 
