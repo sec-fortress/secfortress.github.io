@@ -6,17 +6,12 @@ tags: [Azure, Red Teaming, Entra-ID, Powershell, ROADrecon]
 categories: [Cloud]
 ---
 
-
 **Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.**
-
-
 
 
 ## **Overview**
 
 As part of our pre-engagement reconnaissance several Mega Big Tech employee profiles on LinkedIn were reviewed. One of their new employees, Matteus Lundgren posted recently about his new role and office space. This caught the eye as there appeared to be a Post-It note on the wall that had later been obfuscated. You are tasked with gaining initial access and demonstrating impact by increasing privileges.
-
-
 
 ![](https://i.pinimg.com/originals/02/62/fd/0262fdab2584fec5301fea9314c66618.gif)
 
@@ -698,9 +693,7 @@ As shown above we have the flag value and a Global administrator credential, hah
 ## **Summary/Defense**
 
 Employees often unintentionally expose sensitive information on social media, which red teams can exploit for phishing and password creation. In one case, an employee believed they had redacted sensitive data using iOS Markup, but it was recoverable due to transparency issues. Additionally, we exploited an exposed password in the `.bash_history` file, highlighting the risks of passing passwords via command lines, which can be logged in history files and Windows event logs, however to authenticate without a browser, we used `az login --use-device-code` to force device code authentication for more security. Finally, we obtained global admin credentials due to insecure secret storage, emphasizing the importance of saving sensitive data as encrypted variables, which are not encrypted by default.
-
-
-
+s
 ## **Resources**
 
 - [https://trustedsec.com/blog/hacking-your-cloud-tokens-edition-2-0](https://trustedsec.com/blog/hacking-your-cloud-tokens-edition-2-0)
