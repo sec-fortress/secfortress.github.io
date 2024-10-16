@@ -692,10 +692,11 @@ Get-AzAutomationVariable -ResourceGroupName "mbt-rg-5" -AutomationAccountName "a
 As shown above we have the flag value and a Global administrator credential, haha ᯓ★.
 
 
-## **Summary/Defense**
+## **Summary X Defense**
 
 Employees often unintentionally expose sensitive information on social media, which red teams can exploit for phishing and password creation. In one case, an employee believed they had redacted sensitive data using iOS Markup, but it was recoverable due to transparency issues. Additionally, we exploited an exposed password in the `.bash_history` file, highlighting the risks of passing passwords via command lines, which can be logged in history files and Windows event logs, however to authenticate without a browser, we used `az login --use-device-code` to force device code authentication for more security. Finally, we obtained global admin credentials due to insecure secret storage, emphasizing the importance of saving sensitive data as encrypted variables, which are not encrypted by default.
-s
+
+
 ## **Resources**
 
 - [https://trustedsec.com/blog/hacking-your-cloud-tokens-edition-2-0](https://trustedsec.com/blog/hacking-your-cloud-tokens-edition-2-0)
