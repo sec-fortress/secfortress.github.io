@@ -1,7 +1,7 @@
 ---
 title: "Unmask Privileged Access In Azure"
 date: 2024-10-16T11:54:55+01:00
-description: After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.
+description: "After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01."
 tags: [Azure, Red Teaming, Entra-ID, Powershell, ROADrecon]
 categories: [Cloud]
 ---

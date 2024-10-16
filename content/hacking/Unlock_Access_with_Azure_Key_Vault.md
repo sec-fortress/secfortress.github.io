@@ -1,8 +1,10 @@
-+++
-title = 'Unlock Access with Azure Key Vault'
-date = 2024-10-01T11:13:09+01:00
-description = 'Explore how Azure Key Vault securely stores and manages secrets, keys, and certificates, and how misconfigurations can lead to the retrieval of sensitive information'
-+++
+---
+title: "Unlock Access with Azure Key Vault"
+date: 2024-10-01T11:13:09+01:00
+description: "Explore how Azure Key Vault securely stores and manages secrets, keys, and certificates, and how misconfigurations can lead to the retrieval of sensitive information"
+tags: [Azure, Red Teaming, Entra-ID, Powershell]
+categories: [Cloud]
+---
 
 **Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.**
 

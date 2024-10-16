@@ -23,6 +23,13 @@
       <description>In this lab, We look ino the use of a tool, Graphrunner, a post-exploitation toolset for interacting with the Microsoft Graph API......:D</description>
     </item>
     <item>
+      <title>Unlock Access with Azure Key Vault</title>
+      <link>http://localhost:1313/hacking/unlock_access_with_azure_key_vault/</link>
+      <pubDate>Tue, 01 Oct 2024 11:13:09 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/unlock_access_with_azure_key_vault/</guid>
+      <description>Explore how Azure Key Vault securely stores and manages secrets, keys, and certificates, and how misconfigurations can lead to the retrieval of sensitive information</description>
+    </item>
+    <item>
       <title>Intro to Azure Recon with BloodHound</title>
       <link>http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/</link>
       <pubDate>Sat, 28 Sep 2024 06:53:07 +0100</pubDate>
