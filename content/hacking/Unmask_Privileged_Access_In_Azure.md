@@ -666,13 +666,16 @@ We can check if we have write access to the `automation-dev` automation account 
 ![](https://i.imgur.com/4T2TtM6.png)
 
 
-As shown above we only have the `Reader` role meaning we can't edit the Runbook, if we could we would append the following PowerShell to the script and see the credentials in the job output. 
+As shown above we only have the `Reader` role meaning we can't edit the Runbook, if we could, we would append the following PowerShell to the script and see the credentials in the job output. 
 
 ```powershell
 $cred = Get-AutomationPSCredential -Name automate-default
 $cred.GetNetworkCredential().UserName
 $cred.GetNetworkCredential().Password
 ```
+
+
+If you are still interested in knowing how to do this regardless then refer to my alternate blog, [Link Here](https://sec-fortress.github.io/posts/articles/posts/Edit%20a%20Runbook%20in%20Azure%20and%20append%20a%20PowerShell%20script%20to%20retrieve%20credentials.html).
 
 
 ## **Identifying Unencrypted Variables**
