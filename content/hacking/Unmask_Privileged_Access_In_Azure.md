@@ -699,6 +699,7 @@ Employees often unintentionally expose sensitive information on social media, wh
 
 ## **Resources**
 
+- **Lab Link :** [https://pwnedlabs.io/labs/unmask-privileged-access-in-azure](https://pwnedlabs.io/labs/unmask-privileged-access-in-azure)
 - [https://trustedsec.com/blog/hacking-your-cloud-tokens-edition-2-0](https://trustedsec.com/blog/hacking-your-cloud-tokens-edition-2-0)
 - [https://medium.com/@mgbecken/roadtools-1e9dabc2c8e9](https://medium.com/@mgbecken/roadtools-1e9dabc2c8e9)
 - [https://learn.microsoft.com/en-us/azure/automation/automation-security-overview](https://learn.microsoft.com/en-us/azure/automation/automation-security-overview)

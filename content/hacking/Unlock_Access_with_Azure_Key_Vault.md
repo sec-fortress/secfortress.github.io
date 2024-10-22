@@ -8,6 +8,7 @@ categories: [Cloud]
 
 **Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.**
 
+**Lab Link :** [https://pwnedlabs.io/labs/unlock-access-with-azure-key-vault](https://pwnedlabs.io/labs/unlock-access-with-azure-key-vault)
 
 ## **Overview**
 

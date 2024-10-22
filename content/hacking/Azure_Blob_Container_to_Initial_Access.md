@@ -370,7 +370,7 @@ That would be all for today ( -_•)︻デ═一
 
 ## **References & Mitigations**
 
-
+- **Lab Link :** [https://pwnedlabs.io/labs/azure-blob-container-to-initial-access](https://pwnedlabs.io/labs/azure-blob-container-to-initial-access)
 - [Security recommendations for Blob storage](https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations)
 - [Securing Azure Blob Storage: Set-Up Guide](https://www.varonis.com/blog/azure-blob-storage)
 - [Security best practices for Azure Blob Storage](https://learn.microsoft.com/en-us/shows/inside-azure-for-it/security-best-practices-for-azure-blob-storage)

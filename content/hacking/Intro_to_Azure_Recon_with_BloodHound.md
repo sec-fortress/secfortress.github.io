@@ -410,7 +410,7 @@ Have fun 𓆝 𓆟 𓆞 𓆝 𓆟
 
 ## **Resources** 
 
-
+- **Lab Link :** [https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound](https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound)
 - [https://learn.microsoft.com/en-us/entra/fundamentals/custom-security-attributes-overview](https://learn.microsoft.com/en-us/entra/fundamentals/custom-security-attributes-overview)
 - [https://blog.netwrix.com/2022/02/10/what-are-azure-ad-custom-security-attributes/](https://blog.netwrix.com/2022/02/10/what-are-azure-ad-custom-security-attributes/)
 - [https://posts.specterops.io/introducing-bloodhound-4-3-get-global-admin-more-often-5795cbf535b2](https://posts.specterops.io/introducing-bloodhound-4-3-get-global-admin-more-often-5795cbf535b2)

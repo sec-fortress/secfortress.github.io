@@ -7,7 +7,7 @@ description: "In this lab, We look ino the use of a tool, Graphrunner, a post-ex
 
 **Note : This article was inspired by content from [Pwned Labs](https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound). Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.**
 
-
+**Lab Link :** [https://pwnedlabs.io/labs/loot-exchange-teams-sharepoint-with-graphrunner](https://pwnedlabs.io/labs/loot-exchange-teams-sharepoint-with-graphrunner)
 
 > Overview -> Your red team is on an engagement and has successfully phished a Mega Big Tech employee to gain their credentials. So far increasing access within Azure has reached a dead end, and you have been tasked with unlocking further access. In scope is the entire on-premises and cloud infrastructure. Your goal is to gain access to customer records and demonstrate impact.
 
