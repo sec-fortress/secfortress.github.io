@@ -15,37 +15,37 @@
     <loc>http://localhost:1313/hacking/are_you_a_hacker/</loc>
     <lastmod>2024-09-13T13:44:33+01:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/tags/azure/</loc>
+    <lastmod>2024-10-28T14:13:44+01:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/</loc>
+    <lastmod>2024-10-28T14:13:44+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/categories/</loc>
+    <lastmod>2024-10-28T14:13:44+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/categories/cloud/</loc>
+    <lastmod>2024-10-28T14:13:44+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/entra-id/</loc>
     <lastmod>2024-10-28T14:13:44+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/hacking/</loc>
     <lastmod>2024-10-28T14:13:44+01:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/tags/powershell/</loc>
+    <lastmod>2024-10-28T14:13:44+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/red-teaming/</loc>
+    <lastmod>2024-10-28T14:13:44+01:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/</loc>
     <lastmod>2024-10-28T14:13:44+01:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/azure/</loc>
-    <lastmod>2024-10-16T11:54:55+01:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/categories/</loc>
-    <lastmod>2024-10-16T11:54:55+01:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/categories/cloud/</loc>
-    <lastmod>2024-10-16T11:54:55+01:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/entra-id/</loc>
-    <lastmod>2024-10-16T11:54:55+01:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/powershell/</loc>
-    <lastmod>2024-10-16T11:54:55+01:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/red-teaming/</loc>
-    <lastmod>2024-10-16T11:54:55+01:00</lastmod>
+    <loc>http://localhost:1313/tags/</loc>
+    <lastmod>2024-10-28T14:13:44+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/roadrecon/</loc>
-    <lastmod>2024-10-16T11:54:55+01:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/</loc>
     <lastmod>2024-10-16T11:54:55+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/hacking/unmask_privileged_access_in_azure/</loc>
