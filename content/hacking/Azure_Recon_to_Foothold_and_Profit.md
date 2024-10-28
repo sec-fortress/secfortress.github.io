@@ -1,7 +1,7 @@
 ---
 title: "Azure Recon to Foothold and Profit"
 date: 2024-10-28T14:13:44+01:00
-description: "Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes/weak point when setting up an environment"
+description: "Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment"
 categories: [Cloud]
 tags: [Azure, Red Teaming, Entra-ID, Powershell]
 ---
