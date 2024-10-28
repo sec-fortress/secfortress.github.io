@@ -8,6 +8,9 @@ tags: [Azure, Red Teaming, Entra-ID, Powershell]
 
 **Note : This article was inspired by content from [Pwned Labs](https://pwnedlabs.io/labs/azure-recon-to-foothold-and-profit). Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.**
 
+![](/b09c1a5729661d9abce16e7c454acadc.gif#center)
+
+
 ## **WalkThrough**
 
 A possible password leak was found on [pastebin](https://pastebin.com/ZfqZdpX8)
