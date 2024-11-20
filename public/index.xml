@@ -6,7 +6,7 @@
     <description>Recent content on SecFortess</description>
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 28 Oct 2024 14:13:44 +0100</lastBuildDate>
+    <lastBuildDate>Wed, 20 Nov 2024 02:03:30 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cooking With Fire</title>
@@ -42,6 +42,13 @@
       <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
       <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
       <description>The big question.....</description>
+    </item>
+    <item>
+      <title>Bypass Azure Web App Authentication with Path Traversal</title>
+      <link>http://localhost:1313/hacking/bypass_azure_web_app_authentication_with_path_traversal/</link>
+      <pubDate>Wed, 20 Nov 2024 02:03:30 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/bypass_azure_web_app_authentication_with_path_traversal/</guid>
+      <description>Learn how attackers exploit path traversal vulnerabilities to bypass authentication and gain unauthorized access to Azure Web Apps.</description>
     </item>
     <item>
       <title>Azure Recon to Foothold and Profit</title>
