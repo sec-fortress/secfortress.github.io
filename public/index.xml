@@ -6,7 +6,7 @@
     <description>Recent content on SecFortess</description>
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 20 Nov 2024 02:03:30 +0100</lastBuildDate>
+    <lastBuildDate>Sat, 30 Nov 2024 13:41:27 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cooking With Fire</title>
@@ -42,6 +42,13 @@
       <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
       <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
       <description>The big question.....</description>
+    </item>
+    <item>
+      <title>How threat actors take advantage of companies on holiday</title>
+      <link>http://localhost:1313/hacking/how_threat_actors_take_advantage_of_companies_on_holiday/</link>
+      <pubDate>Sat, 30 Nov 2024 13:41:27 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/how_threat_actors_take_advantage_of_companies_on_holiday/</guid>
+      <description>Overview During holiday periods, alot of companies scale down operations, whereas employees take time off work and most of all security teams operate with minimal staff. Threat Actors/Advanced Persistent Threats (APTs) use this as an avenue to launch cyberattacks as there are reduction in vigilance making this a prime window to carry out attacks like ransomeware, DDOS, Phishing and many other sophisticated cyber attacks. Here are few common tactics used by adversaries during holidays and recommendations to mitigate the risks.</description>
     </item>
     <item>
       <title>Bypass Azure Web App Authentication with Path Traversal</title>
