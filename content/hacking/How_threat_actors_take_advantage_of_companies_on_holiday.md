@@ -33,10 +33,11 @@ _19 Phishing email examples_. (n.d.). https://www.terranovasecurity.com/blog/top
 
 ## **3. Exploitation of Reduced Monitoring**
 
-There are several attacks caused due to this like ransomeware and Distributed Denial Of Service (DDOS) attacks, Infact according to Semperis'"2024 Ransomware Holiday Risk Report", 86 percent of organizations surveyed in the U.S., UK, France and Germany, are targeted by ransomware on a holiday or weekend and the most reason is due to the fact that companies/organizations are under staffed during this period leading to fallout in systems due to data breaches. An example is the Los Angeles Unified School District ransomeware attack which occurred over Labor Day weekend which was launched by a Russian-speaking ransomware gang known as VIce Society. This was confimred according to a tweet made by "*Jeremy Kirk*" a former infosec journalist on X at excatly **12:27 AM - Sep 9, 2022**.
+There are several attacks caused due to this like ransomeware and Distributed Denial Of Service (DDOS) attacks, Infact according to Semperis'"2024 Ransomware Holiday Risk Report", 86 percent of organizations surveyed in the U.S., UK, France and Germany, are targeted by ransomware on a holiday or weekend and the most reason is due to the fact that companies/organizations are under staffed during this period leading to fallout in systems due to data breaches. An example is the Los Angeles Unified School District ransomeware attack which occurred over Labor Day weekend which was launched by a Russian-speaking ransomware gang known as VIce Society. This was confimred according to a tweet made by the "*
+Los Angeles Unified*" official account on **September 6, 2022**.
 
 
-{{< twitter user="Jeremy_Kirk" id="1568018308078911490" >}}
+{{< twitter user="LASchools" id="1567019506299727872" >}}
 
 
 ## **4. Exploitation of Delayed Patch Management**
