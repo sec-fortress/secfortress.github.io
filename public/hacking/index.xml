@@ -6,7 +6,7 @@
     <description>Recent content in Hackings on SecFortess</description>
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 30 Nov 2024 13:41:27 +0100</lastBuildDate>
+    <lastBuildDate>Wed, 29 Jan 2025 23:14:03 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/hacking/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cooking With Fire</title>
@@ -42,6 +42,15 @@
       <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
       <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
       <description>The big question.....</description>
+    </item>
+    <item>
+      <title>Time Races Ahead Before You Blink</title>
+      <link>http://localhost:1313/hacking/time_races_ahead_before_you_blink/</link>
+      <pubDate>Wed, 29 Jan 2025 23:14:03 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/time_races_ahead_before_you_blink/</guid>
+      <description>Fear &amp;amp; Uncertainty I remember a conversation I had with a friend last year about fear and uncertainty. His response stuck with me both humorous and profound;
+At the time, we were both chasing similar dreams: landing the perfect job, securing the OSCP voucher, and ultimately gaining financial independence. We were filled with anticipation, unsure of what the future held but hopeful for what was to come.
+Fast forward to today, and while life isn’t perfect, it has been a steady journey forward, a coastal ride with its ups and downs.</description>
     </item>
     <item>
       <title>How threat actors take advantage of companies on holiday</title>
