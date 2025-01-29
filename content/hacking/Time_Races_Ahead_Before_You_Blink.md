@@ -21,6 +21,13 @@ Fast forward to today, and while life isn’t perfect, it has been a steady jour
 
 From January to August last year, life was intense but fulfilling. I was locked in, fully focused on conquering the Certified Red Team Professional (**CRTP**) and Certified Penetration Testing Specialist (**CPTS**) which I did, though the **CPTS** took me two tries. That second attempt, however, was a lesson in resilience. It reinforced something important: I had been investing my time in what truly mattered my skills.
 
+
+![](https://i.imgur.com/pAKcSKF.png#center)
+
+
+![](https://i.imgur.com/JRBpF1W.png#center)
+
+
 But after the certs, reality hit hard. I needed a new job. Not just for the money, but because my current one was taking a toll on me mentally. I wanted to quit so badly, but **life has a way of keeping you enrolled in its toughest lessons especially when you're drowning in uncertainty.**
 
 As much as I tried to stay afloat, the weight of it all was draining. Depression lurked around the edges, and my escape became late night hacking marathons. **Picture this:** loud music blaring, endless boxes to solve, energy drinks stacking up like trophies, and me reminding God **very loudly, might I add** that He really needed to open a door soon.
