@@ -90,7 +90,7 @@ At some point, I realized that life moves in phases. **Opportunities don’t alw
 Reminds me of these bars from **Roddy Ricch – "Lonely Road"**:
 
 
-![](https://i.imgur.com/g5gXYDE.png)
+![](https://i.imgur.com/g5gXYDE.png#center)
 
 ---
 
@@ -118,7 +118,7 @@ _This Isn't Exactly a FAQ... Or Maybe It Is_
 1. **Why don't you start bug bounty?**
 
 
-During the struggles, I got a lot of advice about starting bug bounty, but I had already been there. Trust me, I wasn’t ready for the **duplicates/N\A** frustration. Hopefully, I can dive into bug bounty again maybe under Web3, but right now, there are **more important things to focus on.** Setting priorities is the deal for now.
+During the struggles, I got a lot of advice about starting bug bounty, but I had already been there. Trust me, I wasn’t ready for the **duplicates/N\A** frustration. Hopefully, I can dive into bug bounty again maybe under Web3, but right now, there are **more important things to focus on.** Setting priorities for each and every goal, is the deal for now.
 
 
 
@@ -128,7 +128,8 @@ Here’s a piece of advice a mentor once gave me that truly worked:
 
 
 
-![](https://i.imgur.com/aeoIieT.png)
+![](https://i.imgur.com/aeoIieT.png#center)
+
 
 3. **Closing Phase....Nothing More 🤷‍♂️**
 
