@@ -49,7 +49,7 @@ Outside of cybersecurity, I am also passionate about other things. I enjoy makin
 
 ### ✨ Future plans
 
-I plan to pursue in the field of Cloud Security and Penetration Testing. My goal, is never to be the best but to always keep learning, improving, and making a meaningful impact in the field of cybersecurity.
+I plan to pursue in the field of Cloud Security and Penetration Testing. My goal, is never to be the best but to always keep learning, improving, and making a meaningful impact in the field of Cyber security.
 
 “The only way to do great work is to love what you do.” – Steve Jobs
 
