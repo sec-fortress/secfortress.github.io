@@ -19,7 +19,7 @@ With this, I was able to continue my learning journey with various other platfor
 
 I then landed my first role as a **web application penetration tester** at a company in India. From there, I secured another job in Nigeria as a **network penetration tester**, where I gained substantial experience in technical skills like **Active Directory** and **Linux administration**. Additionally, I developed soft skills in managing co-workers and working effectively as part of a team.
 
-I was fortunate to have all my **penetration testing exams sponsored**, for which I am truly grateful. I have also made a lot of trustworthy and 1337 friends like hac, obx, n16ht4wk, ramsey, rami, fr3y, nerdy, ezequiel and many others including someone who I am really looking upto, [@hackingdave](https://x.com/HackingDave). I don't know what the future holds, but **continuous learning** is key for me. I am eager to apply my skills and knowledge to real-world challenges in a dynamic company where I can contribute to and grow with the team.
+I was fortunate to have all my **penetration testing exams sponsored**, for which I am truly grateful. I have also made a lot of trustworthy and 1337 friends like hac, obx, n16ht4wk, ramsey, rami, fr3y, nerdy, ezequiel, Kunal and many others including someone who I am really looking upto, [@hackingdave](https://x.com/HackingDave). I don't know what the future holds, but **continuous learning** is key for me. I am eager to apply my skills and knowledge to real-world challenges in a dynamic company where I can contribute to and grow with the team.
 
 ---
 
