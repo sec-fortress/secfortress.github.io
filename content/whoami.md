@@ -8,7 +8,7 @@ description: WHO AM I THOUGH _<
 ---
 
 ### ❓ Introduction
-Hii, I am a 19 yr/old security researcher/penetration tester with extensive networking, scripting, linux administration, active directory and a little cloud experience. Familiarity with security frameworks including **OWASP Top 10, Microsoft SDL, MITRE ATT&CK Framework** and **SANS Top 25**. Knowledgeable on defensive security concepts including SIEM and threat hunting. Actively pursuing the OSCP certification and cloud security to further validate proficiency and skill set. 
+Hii, I am a 20 yr/old security researcher/penetration tester with extensive networking, scripting, linux administration, active directory and a little cloud experience. Familiarity with security frameworks including **OWASP Top 10, Microsoft SDL, MITRE ATT&CK Framework** and **SANS Top 25**. Knowledgeable on defensive security concepts including SIEM and threat hunting. Actively pursuing the OSCP certification and cloud security to further validate proficiency and skill set. 
 
 ---
 
