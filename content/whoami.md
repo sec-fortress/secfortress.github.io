@@ -37,7 +37,7 @@ This is a non-exhaustive list of certifications and courses I have taken.
     
 *   Currently reading the book [“Penetration Testing Azure for Ethical Hackers”](https://www.amazon.com/Penetration-Testing-Azure-Ethical-Hackers/dp/1839212934) by David Okeyode and Karl Fosaaen
     
-*   I’m also planning to take the **Offensive Security Certified Professional** (OSCP) exam _this year_.
+*   I’m also planning to take the **Offensive Security Certified Professional** (OSCP) exam in coming _months_.
 
 ---
 
