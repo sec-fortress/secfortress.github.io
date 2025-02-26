@@ -53,6 +53,8 @@ Outside of cybersecurity, I am also passionate about other things. I enjoy makin
 
 I plan to pursue in the field of Cloud Security and Penetration Testing. My goal, is never to be the best but to always keep learning, improving, and making a meaningful impact in the field of Cyber security.
 
-“The only way to do great work is to love what you do.” – Steve Jobs
+---
 
-![](https://i.pinimg.com/originals/45/f3/45/45f345f183f946bcdd039765783e3ce9.gif#center)
+The key to accomplishing all that you ever wanted, the key to changing who you are, the key to reaching new heights, the key to limitless personal power… Is just believing in yourself; - Mr. Ping
+
+![](https://i.pinimg.com/736x/0d/e0/b9/0de0b9248caa64b490c7ff044c4d9b37.jpg#center)
