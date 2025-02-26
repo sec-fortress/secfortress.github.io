@@ -23,7 +23,7 @@ I was fortunate to have all my **penetration testing exams sponsored**, for whic
 
 ---
 
-### 🏅 Courses and certifications
+### 🏅 Checklists and Certifications
 
 This is a non-exhaustive list of certifications and courses I have taken.
 
@@ -35,6 +35,8 @@ This is a non-exhaustive list of certifications and courses I have taken.
     
 *   Zephyr, Red Team Operator Level I lab [(badge here)](https://sec-fortress.github.io/Zephyr.jpg)
     
+*	Few CVEs under my belt; **_[CVE-2024-44871](https://vulners.com/cve/CVE-2024-44871)_**, **_[CVE-2024-44872](https://vulners.com/cve/CVE-2024-44872)_**, **_[CVE-2024-55341](https://vulners.com/cve/CVE-2024-55341)_**, **_[CVE-2024-55342](https://vulners.com/cve/CVE-2024-55342)_**
+
 *   Currently reading the book [“Penetration Testing Azure for Ethical Hackers”](https://www.amazon.com/Penetration-Testing-Azure-Ethical-Hackers/dp/1839212934) by David Okeyode and Karl Fosaaen
     
 *   I’m also planning to take the **Offensive Security Certified Professional** (OSCP) exam in coming _months_.
