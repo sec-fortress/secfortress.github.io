@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>ROADrecon on SecFortess</title>
+    <title>ROADrecon on SecFortress</title>
     <link>http://localhost:1313/tags/roadrecon/</link>
-    <description>Recent content in ROADrecon on SecFortess</description>
+    <description>Recent content in ROADrecon on SecFortress</description>
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <lastBuildDate>Wed, 16 Oct 2024 11:54:55 +0100</lastBuildDate>
