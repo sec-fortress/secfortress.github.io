@@ -1,6 +1,7 @@
 ---
 title: "From Proof.txt to Paychecks — Day One"
 date: 2025-06-06T18:46:03+01:00
+weight: 5
 ---
 
 
@@ -38,7 +39,7 @@ Now, let’s dive into why I decided to write this blog in the first place.
 
 
 
-## You always don't have to push beyond what you can't handle
+## **You always don't have to push beyond what you can't handle**
 
 
 Fast forward to about seven months ago, I got a firsthand experience of why some people endure pain even maltreatment without complaint. Sometimes, it’s not because they want to suffer, but because they have no real options, no one they can confide in, and no one they look up to who offers advice that makes them feel safe.
@@ -58,7 +59,7 @@ In my opinion, without self-improvement labs, research, learning. how can you ex
 Honestly, this was just the tip of the iceberg when it came to what I was facing. I won’t expose too much, out of respect, but I do sincerely wish them the best of luck in whatever they pursue next. Because if I ever started speaking out fully, I honestly believe that organization might not survive the fallout.
 
 
-## Moving in circles
+## **Moving in circles**
 
 
 I’ve come to a strong conclusion, not just an agreement that the best way to land a role is through building genuine relationships. Let people know about your struggles, your journey, and most importantly, your willingness to give your all to whatever is entrusted to you. Don’t put yourself above or below the bar; just show up consistently and let your true value shine. Demonstrate that you’re not only technically skilled but also respectful, open-minded, and genuinely interested in building meaningful connections.
@@ -68,7 +69,7 @@ On April 6th, 2025, I passed the OSCP and OSCP+ exams and honestly, that felt li
 I’m grateful I prepared ahead on my own; making cheat sheets, notes, and a quick-response plan to ensure I didn’t “run out of time before running out of options.” By God’s grace, I excelled. 
 
 
-## Things would move right; when you least expect
+## **Things would move right; when you least expect**
 
 My very close twin, _Rami_, passed his exams, and honestly, it was one of the best days of my life. We’ve never struggled so hard alongside someone else and for once, we both won together. This could very well have been our second big victory. On that day, I was overwhelmed with joy, I cried like never before, genuinely happy because everyone in our circle, not just Rami, had this achievement locked down through sheer, relentless hard work.
 
