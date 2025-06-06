@@ -101,7 +101,7 @@ To anyone out there grinding in silence, feeling unseen, doubting themselves; **
 
 This blog isn’t just a story, it’s a mirror of what it means to fight through the noise and still find your voice.
 
-To everyone who stood by me, my brother Rami, my family, my big bro Oxygen, my mentors, my team, and those silently rooting for me this win is ours.
+To everyone who stood by me, my brother Rami, my Family, my big bro Oxygen, my mentors, my team, and those silently rooting for me this win is ours.
 
 I’m not at the top yet, but I’m no longer at the bottom.
 
