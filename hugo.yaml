@@ -85,8 +85,8 @@ menu:
       name: 🇳🇬 Whoami
       url: whoami
       weight: 6
-    - identifier: blog
-      name: ✍️ Blog
+    - identifier: notes
+      name: ✍️ Notes
       url: https://sec-fortress.github.io/
       weight: 6
 
