@@ -19,7 +19,7 @@ Password reset flows generally follow a standard model:
 
 The assumption is that the reset token uniquely maps to the account that requested it. If this binding is broken, the entire mechanism collapses.
 
-![https://x.com/descopeinc/status/1597644569348558848](https://i.imgur.com/LnhDNZO.png)
+![https://x.com/descopeinc/status/1597644569348558848](https://i.imgur.com/LnhDNZO.png#center)
 
 ## **The vulnerability** 
 
