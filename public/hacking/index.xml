@@ -6,7 +6,7 @@
     <description>Recent content in Hackings on SecFortress</description>
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 06 Jun 2025 18:46:03 +0100</lastBuildDate>
+    <lastBuildDate>Thu, 04 Sep 2025 08:00:39 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/hacking/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cooking With Fire</title>
@@ -51,6 +51,13 @@ My name is Olaoluwa Olakojo, a 20-year-old born and raised in Lagos, the over-ra
       <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
       <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
       <description>The big question.....</description>
+    </item>
+    <item>
+      <title>How a Broken Password Reset Workflow Led to Account Takeover</title>
+      <link>http://localhost:1313/hacking/ato_via_forgot_password_bypass/</link>
+      <pubDate>Thu, 04 Sep 2025 08:00:39 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/ato_via_forgot_password_bypass/</guid>
+      <description>While testing the password reset functionality of an application, I discovered a critical logic flaw that allowed me to fully compromise user accounts without access to their email.</description>
     </item>
     <item>
       <title>Time Races Ahead Before You Blink</title>
