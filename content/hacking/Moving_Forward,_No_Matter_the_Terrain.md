@@ -13,6 +13,9 @@ date: 2025-09-21T21:26:34+01:00
 - Crossed a financial milestone, earning **seven figures consecutively in under three months** - a testament to persistence, faith, and growth.
 
 
+![](https://i.pinimg.com/1200x/22/d1/dd/22d1ddf6bdd6a3379cc960f4c3b12959.jpg#center)
+
+
 ### **Growth Never Stands Still**
 
 My life has turned sharply toward the light ever since I chose to be intentional with myself.  
@@ -69,3 +72,5 @@ I’m still building out my workspace, making sure it reflects both comfort and 
 One thing I realized is that; No season stays the same, life can take and give in the very same breath. In just a few months, I’ve tasted wins, losses, and lessons I never saw coming. If there’s one thing I’ve learned, it’s this: **keep showing up for yourself.** Stay humble in victory, patient in struggle, and grateful in every moment between.
 
 Keep investing in your growth, build genuine connections, and remember **even small, consistent steps compound into incredible change.** The journey isn’t about perfection, it’s about persistence. And as long as you keep moving forward, you’re already winning. LFG my gee!!!!
+
+![](https://i.pinimg.com/originals/6f/61/88/6f6188a052ec9a363bafd61aaec2d4a1.gif#center)
