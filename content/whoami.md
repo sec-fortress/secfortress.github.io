@@ -28,8 +28,12 @@ I was fortunate to have all my **penetration testing exams sponsored**, for whic
 This is a non-exhaustive list of certifications and courses I have taken.
 
 *   Certified Red Team Professional [(badge here)](https://www.credential.net/f40d1c27-2021-4dc6-82af-b6d8c3d744a5#gs.9g5oko)
+
+*	Offensive Security Certified Professional [(badge here)](https://credentials.offsec.com/de766d97-4eb1-4db8-aee3-00be1b0eb913#acc.ut0xF9WY)
     
 *   Certified Penetration Testing Specialist [(badge here)](https://sec-fortress.github.io/HTB%20Certified%20Penetration%20Testing%20Specialist_Certificate.jpg)
+
+*	Junior Penetration Tester (PT1) [(badge here)](https://www.credly.com/badges/49419b75-fa92-4214-8f81-662ce9bc7952)
     
 *   Dante, Penetration Tester Level II lab [(badge here)](https://sec-fortress.github.io/Dante_page-0001.jpg)
     
@@ -38,8 +42,6 @@ This is a non-exhaustive list of certifications and courses I have taken.
 *	Few CVEs under my belt; **_[CVE-2024-44871](https://vulners.com/cve/CVE-2024-44871)_**, **_[CVE-2024-44872](https://vulners.com/cve/CVE-2024-44872)_**, **_[CVE-2024-55341](https://vulners.com/cve/CVE-2024-55341)_**, **_[CVE-2024-55342](https://vulners.com/cve/CVE-2024-55342)_**
 
 *   Currently reading the book [“Penetration Testing Azure for Ethical Hackers”](https://www.amazon.com/Penetration-Testing-Azure-Ethical-Hackers/dp/1839212934) by David Okeyode and Karl Fosaaen
-    
-*   I’m also planning to take the **Offensive Security Certified Professional** (OSCP) exam in coming _months_.
 
 ---
 
