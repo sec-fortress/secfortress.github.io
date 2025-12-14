@@ -32,7 +32,7 @@ params:
 
   label:
     text: "SecFortress"
-    icon: "https://i.imgur.com/mStB3iJ.jpeg"
+    icon: "/images/avatar.jpeg"
     iconHeight: 25
 
   # profile-mode
@@ -40,7 +40,7 @@ params:
     enabled: true # needs to be explicitly set
     title: SecFortress
     subtitle: "Penetration Tester X Security Researcher X Avid CTF Player"
-    imageUrl: "https://i.imgur.com/mStB3iJ.jpeg"
+    imageUrl: "/images/avatar.jpeg"
     imageWidth: 130
     imageHeight: 130
    # imageTitle: dp
