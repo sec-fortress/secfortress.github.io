@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Phishing with cloudflare &#43; zoho mail | SecFortress</title>
+<meta name="keywords" content="">
+<meta name="description" content="The Hook
+There is only one reason why this blog is up; I tried running a phishing engagement requested by a client and &ldquo;Gophish&rdquo; &#43; &ldquo;SMTP&rdquo; setup had me hit a few blockers than I thought, due to compliance policies and time constraints.
+Even after reaching out to DO and Amazon for a valid reason like, &ldquo;the client is aware and this is done in a well controlled and authorized environment&rdquo;; to use their SES, it still didn’t sit well with their policies. And honestly, I completely understand. Some platforms simply won’t bend their rules, no matter how legitimate your use case is.">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/phishing_with_cloudflare_&#43;_zoho_mail/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/phishing_with_cloudflare_&#43;_zoho_mail/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/phishing_with_cloudflare_&#43;_zoho_mail/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="Phishing with cloudflare &#43; zoho mail">
+  <meta property="og:description" content="The Hook There is only one reason why this blog is up; I tried running a phishing engagement requested by a client and “Gophish” &#43; “SMTP” setup had me hit a few blockers than I thought, due to compliance policies and time constraints.
+Even after reaching out to DO and Amazon for a valid reason like, “the client is aware and this is done in a well controlled and authorized environment”; to use their SES, it still didn’t sit well with their policies. And honestly, I completely understand. Some platforms simply won’t bend their rules, no matter how legitimate your use case is.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2025-12-14T17:17:07+01:00">
+    <meta property="article:modified_time" content="2025-12-14T17:17:07+01:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Phishing with cloudflare &#43; zoho mail">
+<meta name="twitter:description" content="The Hook
+There is only one reason why this blog is up; I tried running a phishing engagement requested by a client and &ldquo;Gophish&rdquo; &#43; &ldquo;SMTP&rdquo; setup had me hit a few blockers than I thought, due to compliance policies and time constraints.
+Even after reaching out to DO and Amazon for a valid reason like, &ldquo;the client is aware and this is done in a well controlled and authorized environment&rdquo;; to use their SES, it still didn’t sit well with their policies. And honestly, I completely understand. Some platforms simply won’t bend their rules, no matter how legitimate your use case is.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Phishing with cloudflare + zoho mail",
+      "item": "http://localhost:1313/hacking/phishing_with_cloudflare_+_zoho_mail/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Phishing with cloudflare + zoho mail",
+  "name": "Phishing with cloudflare \u002b zoho mail",
+  "description": "The Hook There is only one reason why this blog is up; I tried running a phishing engagement requested by a client and \u0026ldquo;Gophish\u0026rdquo; + \u0026ldquo;SMTP\u0026rdquo; setup had me hit a few blockers than I thought, due to compliance policies and time constraints.\nEven after reaching out to DO and Amazon for a valid reason like, \u0026ldquo;the client is aware and this is done in a well controlled and authorized environment\u0026rdquo;; to use their SES, it still didn’t sit well with their policies. And honestly, I completely understand. Some platforms simply won’t bend their rules, no matter how legitimate your use case is.\n",
+  "keywords": [
+    
+  ],
+  "articleBody": "The Hook There is only one reason why this blog is up; I tried running a phishing engagement requested by a client and “Gophish” + “SMTP” setup had me hit a few blockers than I thought, due to compliance policies and time constraints.\nEven after reaching out to DO and Amazon for a valid reason like, “the client is aware and this is done in a well controlled and authorized environment”; to use their SES, it still didn’t sit well with their policies. And honestly, I completely understand. Some platforms simply won’t bend their rules, no matter how legitimate your use case is.\nBlocker 1: DigitalOcean blocks outbound SMTP connections by default to prevent spam and abuse. This meant I couldn’t connect GoPhish to external SMTP servers at all, instantly halting the initial setup pathway.\nBlocker 2: Amazon SES allows sending only to verified email addresses and domains when your account is in the sandbox environment. To move out of this restricted state, you must submit a detailed request explaining your use case and proving it is safe, compliant, and legitimate. Even with proper justification, approvals are not guaranteed and timelines can be unpredictable.\nThe Process You can go ahead and buy a similar looking domain to the original one at https://domains.cloudflare.com/\nUpon successful purchase of the domain, navigating to DNS -\u003e Records, you should have an empty dns record list like the below\nNavigate to https://www.zoho.com/mail/signup.html to create a mail account and fill in the requirements as splay\nYou should get a 7 digit OTP code to verify your account in the Email provided\nFill in the OTP to continue\nWe can skip the below page by starting the 15 days free trial (No credit card required)\nNext we can go ahead and select “Add an existing domain”\nThen add up the domain we created on cloud flare before and fill the organization name respectfully\nYou can then choose to authenticate\nOnce this is done navigate to https://directory.zoho.com/directory/[ORGANIZATION]/adminhome#/users/new\nSelect “USERS” Fill up field respectively imitating target email pattern Then click “Add” Below form imitates hr department at target organization\nProgress In Between Problems There are two blockers I encountered and solutions to solving them:\nOutlook/Gmail Deliverability Requirements:\nyou need to either find a way to boost the domain or work with the client’s IT team to allow list/approve your phishing domain. Without allowlisting, emails may land in Spam due to Microsoft’s filtering rules. Send test emails to confirm inbox delivery before launching the full campaign. The above mostly doesn’t affect gmail client. Using Client EML/ZIP Samples for Template Accuracy:\nIt is possible to request sample EML files from HR/IT strategically. Or even better get it via an ongoing red team engagement. Then we can Import the EML files into Zoho Mail to fine-tune your simulation, ensuring the messages align with the organization’s communication style and improve overall engagement accuracy. Login to zoho mail with the previous created account and click on the settings Icon at the top right\nYou should see a pop up window, scroll down and select “Import/Export Emails” » “Browse for eml or zip file”\nOnce this is done, the email template should be imported to your inbox If an email template has an image email signature, download the image and add it manually to zoho Re-adding email signature Navigate to settings as done previously\nClick on the drop down to add the downloaded image email signature\nYou can set other preferences also to make it comfortable sending multiple emails\nPlease ignore the dummy email signature as shown above\nExporting mails from outlook/gmail to import to zoho Below are the following steps to export an email template from outlook (Ask client to do this)\nBelow are the following steps to export an email template from gmail\nThe Tough Question Since this is a phishing campaign, a common question that often comes up is: How do we accurately measure success? How do we determine the percentage of users who clicked a link, submitted credentials, attempted to log in, or interacted with the payload in any way?\nWhile metrics are important, the more critical factor is the environment you’re testing. Every organization is different, and an effective phishing simulation requires a deep understanding of the client; how they communicate, what they’re accustomed to, and what they are most likely (or unlikely) to fall for.\nBefore execution, it’s essential to study the client thoroughly to understand these behavioral patterns. That insight ultimately determines the realism and effectiveness of the campaign.\nTo address this, I’ll walk you through a process I developed in collaboration with a highly skilled DevSecOps engineer. Together, we designed an approach that significantly improved the success of the phishing engagement. Below is a breakdown of the metrics we used to evaluate the campaign’s performance.\nUnfortunately, this is where I’ll have to bring this blog to an end. There are still many details I’m unable to disclose for personal and confidentiality reasons. That said, I genuinely hope this write-up helps someone navigating similar challenges or planning a similar engagement.\nSometimes, sharing just enough is enough to make a difference.\n",
+  "wordCount" : "852",
+  "inLanguage": "en",
+  "datePublished": "2025-12-14T17:17:07+01:00",
+  "dateModified": "2025-12-14T17:17:07+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/phishing_with_cloudflare_+_zoho_mail/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search">
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Phishing with cloudflare &#43; zoho mail
+    </h1>
+    <div class="post-meta"><span title='2025-12-14 17:17:07 +0100 WAT'>December 14, 2025</span>&nbsp;·&nbsp;<span>4 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#the-hook">The Hook</a></li>
+    <li><a href="#the-process">The Process</a></li>
+    <li><a href="#progress-in-between-problems">Progress In Between Problems</a>
+      <ul>
+        <li><a href="#re-adding-email-signature">Re-adding email signature</a></li>
+        <li><a href="#exporting-mails-from-outlookgmail-to-import-to-zoho">Exporting mails from outlook/gmail to import to zoho</a></li>
+      </ul>
+    </li>
+    <li><a href="#the-tough-question">The Tough Question</a></li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h2 id="the-hook">The Hook<a hidden class="anchor" aria-hidden="true" href="#the-hook">#</a></h2>
+<p>There is only one reason why this blog is up; I tried running a phishing engagement requested by a client and &ldquo;Gophish&rdquo; + &ldquo;SMTP&rdquo; setup had me hit a few blockers than I thought, due to compliance policies and time constraints.</p>
+<p>Even after reaching out to DO and Amazon for a valid reason like, &ldquo;the client is aware and this is done in a well controlled and authorized environment&rdquo;; to use their SES, it still didn’t sit well with their policies. And honestly, I completely understand. Some platforms simply won’t bend their rules, no matter how legitimate your use case is.</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/ABQQeBP.png"></p>
+<blockquote>
+<p>Blocker 1: DigitalOcean blocks outbound SMTP connections by default to prevent spam and abuse. This meant I couldn’t connect GoPhish to external SMTP servers at all, instantly halting the initial setup pathway.</p>
+</blockquote>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/qZc46ug.png"></p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/SS6tQVE.png"></p>
+<blockquote>
+<p>Blocker 2: Amazon SES allows sending only to <strong>verified email addresses and domains</strong> when your account is in the <em>sandbox</em> environment. To move out of this restricted state, you must submit a detailed request explaining your use case and proving it is safe, compliant, and legitimate. Even with proper justification, approvals are not guaranteed and timelines can be unpredictable.</p>
+</blockquote>
+<h2 id="the-process">The Process<a hidden class="anchor" aria-hidden="true" href="#the-process">#</a></h2>
+<p>You can go ahead and buy a similar looking domain to the original one at <a href="https://domains.cloudflare.com/">https://domains.cloudflare.com/</a></p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/8wAVpU2.png"></p>
+<p>Upon successful purchase of the domain, navigating to <strong>DNS</strong> -&gt; <strong>Records</strong>, you should have an empty dns record list like the below</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/6t80IWV.png"></p>
+<p>Navigate to <a href="https://www.zoho.com/mail/signup.html">https://www.zoho.com/mail/signup.html</a> to create a mail account and fill in the requirements as splay</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/9OdcRX5.png"></p>
+<p>You should get a 7 digit OTP code to verify your account in the Email provided</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/eVPFmQQ.png"></p>
+<p>Fill in the OTP to continue</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/HAPYmfq.png"></p>
+<p>We can skip the below page by starting the 15 days free trial (No credit card required)</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/B2FWhj6.png"></p>
+<p>Next we can go ahead and select &ldquo;<strong>Add an existing domain</strong>&rdquo;</p>
+<p>Then add up the domain we created on cloud flare before  and fill the organization name respectfully</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/S6hqDgK.png"></p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/McXG6zr.png"></p>
+<p>You can then choose to authenticate</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/xnI5SUF.png"></p>
+<p>Once this is done navigate to <a href="https://directory.zoho.com/directory/%5BORGANIZATION%5D/adminhome#/users/new">https://directory.zoho.com/directory/[ORGANIZATION]/adminhome#/users/new</a></p>
+<ul>
+<li>Select &ldquo;<strong>USERS</strong>&rdquo;</li>
+<li>Fill up field respectively imitating target email pattern</li>
+<li>Then click &ldquo;<strong>Add</strong>&rdquo;</li>
+</ul>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/aOwg3qT.png"></p>
+<blockquote>
+<p>Below form imitates hr department at target organization</p>
+</blockquote>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/0IjupPq.png"></p>
+<h2 id="progress-in-between-problems">Progress In Between Problems<a hidden class="anchor" aria-hidden="true" href="#progress-in-between-problems">#</a></h2>
+<p>There are two blockers I encountered and solutions to solving them:</p>
+<p>Outlook/Gmail Deliverability Requirements:</p>
+<ol>
+<li>you need to either find a way to boost the domain or work with the client’s IT team to allow list/approve your phishing domain.</li>
+<li>Without allowlisting, emails may land in Spam due to Microsoft’s filtering rules.</li>
+<li>Send test emails to confirm inbox delivery before launching the full campaign.</li>
+<li>The above mostly doesn&rsquo;t affect gmail client.</li>
+</ol>
+<p>Using Client EML/ZIP Samples for Template Accuracy:</p>
+<ol>
+<li>It is possible to request sample EML files from HR/IT strategically.</li>
+<li>Or even better get it via an ongoing red team engagement.</li>
+<li>Then we can Import the EML files into Zoho Mail to fine-tune your simulation, ensuring the messages align with the organization’s communication style and improve overall engagement accuracy.</li>
+</ol>
+<p>Login to zoho mail with the previous created account and click on the settings Icon at the top right</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/7Di7W0F.png"></p>
+<p>You should see a pop up window, scroll down and select &ldquo;<strong>Import/Export Emails</strong>&rdquo; &raquo; &ldquo;<strong>Browse for eml or zip file</strong>&rdquo;</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/QpJ73Cy.png"></p>
+<ul>
+<li>Once this is done, the email template should be imported to your <strong>inbox</strong></li>
+<li>If an email template has an image email signature, download the image and add it manually to zoho</li>
+</ul>
+<h3 id="re-adding-email-signature">Re-adding email signature<a hidden class="anchor" aria-hidden="true" href="#re-adding-email-signature">#</a></h3>
+<p>Navigate to settings as done previously</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/oXBPmh9.png"></p>
+<p>Click on the drop down to add the downloaded image email signature</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/DKIQs5E.png"></p>
+<p>You can set other preferences also to make it comfortable sending multiple emails</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/fBiH5Rd.png"></p>
+<blockquote>
+<p>Please ignore the dummy email signature as shown above</p>
+</blockquote>
+<h3 id="exporting-mails-from-outlookgmail-to-import-to-zoho">Exporting mails from outlook/gmail to import to zoho<a hidden class="anchor" aria-hidden="true" href="#exporting-mails-from-outlookgmail-to-import-to-zoho">#</a></h3>
+<p>Below are the following steps to export an email template from outlook (Ask client to do this)</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/2E5p22D.png"></p>
+<p>Below are the following steps to export an email template from gmail</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/PrcVYPC.png"></p>
+<h2 id="the-tough-question">The Tough Question<a hidden class="anchor" aria-hidden="true" href="#the-tough-question">#</a></h2>
+<p>Since this is a phishing campaign, a common question that often comes up is: How do we accurately measure success?
+How do we determine the percentage of users who clicked a link, submitted credentials, attempted to log in, or interacted with the payload in any way?</p>
+<p>While metrics are important, the more critical factor is the environment you’re testing. Every organization is different, and an effective phishing simulation requires a deep understanding of the client; how they communicate, what they’re accustomed to, and what they are most likely (or unlikely) to fall for.</p>
+<p>Before execution, it’s essential to study the client thoroughly to understand these behavioral patterns. That insight ultimately determines the realism and effectiveness of the campaign.</p>
+<p>To address this, I’ll walk you through a process I developed in collaboration with a highly skilled DevSecOps engineer. Together, we designed an approach that significantly improved the success of the phishing engagement. Below is a breakdown of the metrics we used to evaluate the campaign’s performance.</p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/sP92gzs.png"></p>
+<p><img alt="Image" loading="lazy" src="https://i.imgur.com/DdVXNro.png"></p>
+<p>Unfortunately, this is where I’ll have to bring this blog to an end. There are still many details I’m unable to disclose for personal and confidentiality reasons. That said, I genuinely hope this write-up helps someone navigating similar challenges or planning a similar engagement.</p>
+<p>Sometimes, <em>sharing just enough is enough to make a difference.</em></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

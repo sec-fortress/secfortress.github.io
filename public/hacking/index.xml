@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>SecFortress</title>
-    <link>http://localhost:1313/</link>
-    <description>Recent content on SecFortress</description>
+    <title>Hackings on SecFortress</title>
+    <link>http://localhost:1313/hacking/</link>
+    <description>Recent content in Hackings on SecFortress</description>
     <generator>Hugo -- 0.152.2</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 14 Dec 2025 17:17:07 +0100</lastBuildDate>
-    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/hacking/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Phishing with cloudflare &#43; zoho mail</title>
       <link>http://localhost:1313/hacking/phishing_with_cloudflare_&#43;_zoho_mail/</link>
