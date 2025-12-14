@@ -155,7 +155,7 @@ While metrics are important, the more critical factor is the environment you’r
 
 Before execution, it’s essential to study the client thoroughly to understand these behavioral patterns. That insight ultimately determines the realism and effectiveness of the campaign.
 
-To address this, I’ll walk you through a process I developed in collaboration with a highly skilled DevSecOps engineer. Together, we designed an approach that significantly improved the success of the phishing engagement. Below is a breakdown of the metrics we used to evaluate the campaign’s performance.
+To address this, I’ll walk you through a process I developed in collaboration with a highly skilled DevSecOps engineer, [@Saintmalik_](https://x.com/saintmalik_). Together, we designed an approach that significantly improved the success of the phishing engagement. Below is a breakdown of the metrics we used to evaluate the campaign’s performance.
 
 ![Image](https://i.imgur.com/sP92gzs.png)
 
