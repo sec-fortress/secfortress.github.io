@@ -17,5 +17,12 @@
 &lt;p&gt;There is only one reason why this blog is up; I tried running a phishing engagement requested by a client and &amp;ldquo;Gophish&amp;rdquo; + &amp;ldquo;SMTP&amp;rdquo; setup had me hit a few blockers than I thought, due to compliance policies and time constraints.&lt;/p&gt;
 &lt;p&gt;Even after reaching out to DO and Amazon for a valid reason like, &amp;ldquo;the client is aware and this is done in a well controlled and authorized environment&amp;rdquo;; to use their SES, it still didn’t sit well with their policies. And honestly, I completely understand. Some platforms simply won’t bend their rules, no matter how legitimate your use case is.&lt;/p&gt;</description>
     </item>
+    <item>
+      <title>Whoami</title>
+      <link>http://localhost:1313/whoami/</link>
+      <pubDate>Mon, 26 Aug 2024 21:53:51 +0100</pubDate>
+      <guid>http://localhost:1313/whoami/</guid>
+      <description>WHO AM I THOUGH _&amp;lt;</description>
+    </item>
   </channel>
 </rss>
