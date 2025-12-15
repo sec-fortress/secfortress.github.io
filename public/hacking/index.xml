@@ -9,6 +9,20 @@
     <lastBuildDate>Sun, 14 Dec 2025 17:17:07 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/hacking/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Cooking With Fire</title>
+      <link>http://localhost:1313/hacking/cooking_with_fire/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/hacking/cooking_with_fire/</guid>
+      <description>Just another yet random blog to practicing Kerberoasting on Linux and Windows, focusing on practical steps with tools like Rubeus and GetUserSPNs.py.</description>
+    </item>
+    <item>
+      <title>API Testing || Attacking REST, Swagger APIs {Portswigger}</title>
+      <link>http://localhost:1313/hacking/api_testing_portswigger/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/hacking/api_testing_portswigger/</guid>
+      <description>Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.</description>
+    </item>
+    <item>
       <title>Where I&#39;ve Been, Isn&#39;t Where I Am Going</title>
       <link>http://localhost:1313/hacking/the_unseen_struggles/</link>
       <pubDate>Fri, 06 Sep 2024 13:52:54 +0100</pubDate>
@@ -31,6 +45,13 @@
 &lt;p&gt;In my previous blog, &lt;strong&gt;&lt;em&gt;“Time Races Ahead Before You Blink,”&lt;/em&gt;&lt;/strong&gt; I shared the journey I’ve had alongside my brother navigating certifications, late-night streams, constant battles to move forward, balancing school, and leveling up mentally, physically, and emotionally.&lt;/p&gt;
 &lt;p&gt;This blog continues that story and dives deeper into the challenges and victories that have shaped my path in cybersecurity;&lt;/p&gt;
 &lt;p&gt;My name is Olaoluwa Olakojo, a 20-year-old born and raised in Lagos, the over-rated southwest region of Nigeria. I’ve been passionate about offensive security for six years, with five years of professional experience.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Am I a hecker yet 🤔? CVE-2024-44871 and CVE-2024-44872!</title>
+      <link>http://localhost:1313/hacking/are_you_a_hacker/</link>
+      <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
+      <description>The big question.....</description>
     </item>
     <item>
       <title>Phishing with cloudflare &#43; zoho mail</title>

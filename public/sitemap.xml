@@ -2,6 +2,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://localhost:1313/hacking/cooking_with_fire/</loc>
+  </url><url>
+    <loc>http://localhost:1313/hacking/api_testing_portswigger/</loc>
+  </url><url>
     <loc>http://localhost:1313/hacking/the_unseen_struggles/</loc>
     <lastmod>2024-09-06T13:52:54+01:00</lastmod>
   </url><url>
@@ -10,6 +14,9 @@
   </url><url>
     <loc>http://localhost:1313/hacking/from_proof.txt_to_paychecksday_one/</loc>
     <lastmod>2025-06-06T18:46:03+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/hacking/are_you_a_hacker/</loc>
+    <lastmod>2024-09-13T13:44:33+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/hacking/</loc>
     <lastmod>2025-12-14T17:17:07+01:00</lastmod>
@@ -92,6 +99,22 @@
     <loc>http://localhost:1313/whoami/</loc>
     <lastmod>2024-08-26T21:53:51+01:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/categories/active-directory/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/active-directory/</loc>
+  </url><url>
+    <loc>http://localhost:1313/categories/api/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/api/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/burpsuite/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/fuzzing/</loc>
+  </url><url>
     <loc>http://localhost:1313/search/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/web/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/windows/</loc>
   </url>
 </urlset>

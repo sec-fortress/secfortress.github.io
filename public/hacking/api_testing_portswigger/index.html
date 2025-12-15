@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>API Testing || Attacking REST, Swagger APIs {Portswigger} | SecFortress</title>
+<meta name="keywords" content="Web, Burpsuite, Fuzzing, API">
+<meta name="description" content="Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/api_testing_portswigger/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/api_testing_portswigger/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/api_testing_portswigger/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="API Testing || Attacking REST, Swagger APIs {Portswigger}">
+  <meta property="og:description" content="Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:tag" content="Web">
+    <meta property="article:tag" content="Burpsuite">
+    <meta property="article:tag" content="Fuzzing">
+    <meta property="article:tag" content="API">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="API Testing || Attacking REST, Swagger APIs {Portswigger}">
+<meta name="twitter:description" content="Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "API Testing || Attacking REST, Swagger APIs {Portswigger}",
+      "item": "http://localhost:1313/hacking/api_testing_portswigger/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "API Testing || Attacking REST, Swagger APIs {Portswigger}",
+  "name": "API Testing || Attacking REST, Swagger APIs {Portswigger}",
+  "description": "Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.",
+  "keywords": [
+    "Web", "Burpsuite", "Fuzzing", "API"
+  ],
+  "articleBody": "APIs (Application Programming Interfaces) enable software systems and applications to communicate and share data. API testing is important as vulnerabilities in APIs may undermine core aspects of a website’s confidentiality, integrity, and availability. Let dive into this lab dummy walkthrough :)\nExploiting an API endpoint using documentation Objective: To solve the lab, find the exposed API documentation and delete user carlos. You can log in to your own account using the following credentials: wiener:peter.\nLogin in as user wiener and sending a request to burp we have this :\nWe can then start to look for common API endpoints like the following. You can also try to fuzz for the API endpoints using the following wordlist here.\n/api /swagger/index.html /openapi.json Fortunately for me i was able to discover the API endpoint by just making a GET request to /api without fuzzing which returned the API documentation.\nI then made a GET request to retrieve series of account information trying out usernames we have at hand\n[User =\u003e Wiener]\n[User =\u003e Carlos]\n[User =\u003e Administrator ]\nWe can also change the email of a particular user take for example user wiener by using the PATCH request method together with an provided data in JSON format.\nChange request method to POST using burp functionality then manually change POST header to PATCH method. Change content-type to application/json Then use the JSON format to send the data. We can then finally delete the user carlos as requested by changing request method to GET and then changing GET to DELETE manually\nFinding and exploiting an unused API endpoint Objective: To solve the lab, exploit a hidden API endpoint to buy a “Lightweight l33t Leather Jacket”. You can log in to your own account using the following credentials: wiener:peter.\nAs said by the objective we need to first of all add the item to cart\nAfter moving this item to cart and login in with the given credentials we cannot purchase this item cos’ we have insufficient funds\nSince i am using burp pro we need to setup jython in other to be able to download some extensions that need this. Download the first file from the given link and import it to burpsuite as shown below in the BApp store.\nWe then need to download two burp extensions by navigating to the burp extender tab :\nWe can use the JS Link Finder BApp to crawl endpoints for sensitive files containing API information. We can use the Content type converter BApp to automatically convert data submitted within requests between XML and JSON. Once downloaded we are good to go, Navigate to Targets \u003e Site map, then click on the targets and select Engagements tools \u003e Find scripts\nThis would pull up all scripts and we can try to see if there are any scripts literally related/can serve as a documentation for the API endpoint.\nSending this to the repeater tab and checking the response we finally found an API endpoint in the following format : ${url.host}/api/products/${encodeURIComponent(productId)}/price\nWe can also attempt to find this hidden API endpoints by crawling the site using burp suite pro feature which should give you the API endpoints\n[API Endpoint Discovered]\nSending this requests to my repeater tab i noticed that the items are judged by their product ID which returns the price for that particular product.\nChanging product ID to 1 we can see the price for the “Lightweight “l33t” Leather Jacket” item\nSince there is typically no way to alter our own amount in our wallet we can actually alter the amount of the product changing it to $0.00 🤣.\nGo ahead and right click then select Extensions \u003e Content Type Converter \u003e Convert to JSON, this should change the request method to POST and also add a content-type value to the request\nAs shown below we get the error “Method not allowed”, well we can use the PATCH request method also as this is accepted by most APIs\nThis successfully changes the price to $0.00\nThen sending a GET request we can see that the product price has been changed to $0.00, sweet. Note that if you get the “Unauthorized” message then login as user wiener first before doing all of this (if possible you just need the new session key).\nNavigating back to the website we can see that we have successfully reduced the price of this product and can add it to cart now.\nYou should be able to solve the lab now by purchasing the item.\nExploiting a mass assignment vulnerability Objective: To solve the lab, find and exploit a mass assignment vulnerability to buy a Lightweight l33t Leather Jacket. You can log in to your own account using the following credentials: wiener:peter.\nThis vulnerability exists do to the fact that -:\nthe application supporting parameters that were never intended to be processed by the developer. For example, if a PATCH request is made to /api/users/ that allows users to update their data with the following result; { \"username\": \"wiener\", \"email\": \"wiener@example.com\", } A concurrent GET /api/users/123 request returns the following JSON data:\n{ \"id\": 123, \"name\": \"John Doe\", \"email\": \"john@example.com\", \"isAdmin\": \"false\" } This shows that the hidden id and isAdmin parameters are bound to the internal user object, alongside the updated username and email parameters.\nAn attacker can then send a PATCH request with the isAdmin parameter value set to true ;\n{ \"username\": \"wiener\", \"email\": \"wiener@example.com\", \"isAdmin\": true, } For the lab we need to download the Param miner BApp which guesses up to 65,536 param names per request, based on information taken from the scope. I won’t be using this though. but it is worth downloading. You can go ahead and the item to cart as requested. (Don’t forget to login as user wiener)\nThen intercept the request with burpsuite\nI noticed that after adding the item to cart an API request is made to /api/checkout as shown in the above screenshot.\nForwarding this request to the repeater tab, the response is a JSON data which contains the information about the present item we have in our cart\nDecided to check other request method accepted by this endpoint and as shown below it only accepts POST and GET request methods.\nSo i decided to alter the request first of, by changing the request method to POST (Change request method), Then i used the Content type converter extension we used in the last challenge to change request body to JSON, then copied the whole JSON data we got from the response to our request tab.\nAltering the item_price value to 0, nothing changes because we do not have that certain permission to do so as we can see below we are still getting the INSUFFICIENT_FUNDS error.\nThen i decided to alter the percentage discount value giving our self an 100% discount\n$$ \\text{Discount Percentage} = \\left( \\frac{1337 - 0}{1337} \\right) \\times 100 = 100% $$\nWe should now have the lab solved.\nExploiting server-side parameter pollution in a query string Query syntax characters like #, \u0026, and = can be used to test for this vulnerability An attacker can then observe how the application responds. It is also crucial to URL-encode this characters. Otherwise the front-end application will interpret it as a fragment identifier and it won’t be passed to the internal API. Objective: To solve the lab, log in as the administrator and delete carlos.\nFirst of all we start by intercepting the login page cos’ we have not been given a username neither a password.\nWe can then provide wrong credentials and intercept, sending the request to the repeater tab\nAfter several enumeration figured out there is probably no way in the previous endpoint and started to focus on the /forgot-password endpoint\nadding a parameter with the URL encoded character of \u0026 as %26, i figured out that the extra username parameter is not been read at all so specifying wrong input in the first parameter leads to an “Invalid Username” error\nMean while reversing the case as shown below we have a valid response\nThen i decided to move a step further by adding the # encoded character %23 to the end of the query and we have the error “Field not specified”\nThen decided to bruteforce this parameter by sending this to the intruder tab and selecting the second parameter as this position point for this attack. The major reason for doing this is because there is an hidden parameter which could be altered if we know it.\nThen navigate to Payloads \u003e Payload Options [Simple list] \u003e Add from list and select “Server-side variable names” as the wordlist.\nStart the attack and as shown below the length of the response from the “field” parameter is SUS\nChanging the field value to username we can see that there is a change in the output.\nUsing burp pro crawling feature i was able to find the /static/js/forgotPassword.js endpoint with the following hidden reset_token parameter\nforgotPwdReady(() =\u003e { const queryString = window.location.search; const urlParams = new URLSearchParams(queryString); const resetToken = urlParams.get('reset-token'); if (resetToken) { window.location.href = `/forgot-password?reset_token=${resetToken}`; } else { const forgotPasswordBtn = document.getElementById(\"forgot-password-btn\"); forgotPasswordBtn.addEventListener(\"click\", displayMsg); } Parsing the resest_token parameter as a value to the field variable, we have a reset token.\nCopied this reset token and went over to the URL specified in the JS file /forgot-password?reset_token=${resetToken} specifying the reset token given which referred me to a page to reset the administrator password “admin:admin”\nSuccessfully logged in as administrator and deleted the user carlos to complete the challenge\nExploiting server-side parameter pollution in a REST URL Objective: To solve the lab, log in as the administrator and delete carlos.\nREST APIs may place parameter names and values in URL path, rather than the query string.\nFor example requests are made to the following endpoint as:\nGET /edit_profile.php?name=peter This results in the following server-side request:\nGET /api/private/users/peter Just as mentioned in the academy section of this challenge we have to combine path traversal sequences to modify parameters and observe how the application responds.\nFirst of we start by traversing twice and seeing if this application is truly vulnerable as shown below.\nAgain i tried to guess the users path by traversing 3 times which worked as shown below meaning there is correct path like ../../../users/carlos\nTook it a step further again by guessing the field variable just as used in the previous challenge and we could actually read the email field correctly.\nusername=administrator..%2f..%2f..%2fusers%2fcarlos%2ffield%2femail%23\nJust to be sure this parameter actually exists i decided to change the field value to username instead and got the below error talk about the API version.\nStarting to research i came across this blog talking about API versioning and discovered we can traverse 4 times and then start our query with a encoded /v1.... which worked.\nadministrator..%2f..%2f..%2f..%2fv1%2fusers%2fcarlos%2ffield%2fusername%23\nNow we need to find the hidden parameter for the password reset token. I started to look up JS files by using the crawl feature of burpsuite as used in other challenges and came across a JS file located at /static/js/forgotPassword.js which revealed the hidden parameter (passwordResetToken)\nforgotPwdReady(() =\u003e { const queryString = window.location.search; const urlParams = new URLSearchParams(queryString); const resetToken = urlParams.get('reset-token'); if (resetToken) { window.location.href = `/forgot-password?passwordResetToken=${resetToken}`; } else { const forgotPasswordBtn = document.getElementById(\"forgot-password-btn\"); forgotPasswordBtn.addEventListener(\"click\", displayMsg); } }); Made a request and this was successful as expected we got the reset token value. administrator..%2f..%2f..%2f..%2fv1%2fusers%2fadministrator%2ffield%2fpasswordResetToken%23\nWe can place this value in the following parameter on your browser /forgot-password?passwordResetToken=${resetToken}, which should give you access to a password reset page.\nThen we can login as user administrator and delete the user carlos as requested.\nResources https://hackerone.com/reports/1695454 https://hackerone.com/reports/1218680 https://hackerone.com/reports/1218461 https://hackerone.com/reports/232650 https://github.com/reddelexc/hackerone-reports/blob/master/tops_by_bug_type/TOPAPI.md https://hackerone.com/reports/1140631 https://hackerone.com/reports/745171 https://hackerone.com/reports/220774 https://medium.com/techiepedia/api-exploitation-business-logic-bug-c176d9df47ee https://github.com/z5jt/API-documentation-Wordlist/ ",
+  "wordCount" : "1947",
+  "inLanguage": "en",
+  "datePublished": "0001-01-01T00:00:00Z",
+  "dateModified": "0001-01-01T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/api_testing_portswigger/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      API Testing || Attacking REST, Swagger APIs {Portswigger}
+    </h1>
+    <div class="post-description">
+      Started researching on attacking APIs few days ago, which has been fun....In the below walkthrough i have solved all API testing labs on portswigger.
+    </div>
+    <div class="post-meta"><span>10 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#exploiting-an-api-endpoint-using-documentation"><strong>Exploiting an API endpoint using documentation</strong></a></li>
+    <li><a href="#finding-and-exploiting-an-unused-api-endpoint"><strong>Finding and exploiting an unused API endpoint</strong></a></li>
+    <li><a href="#exploiting-a-mass-assignment-vulnerability"><strong>Exploiting a mass assignment vulnerability</strong></a></li>
+    <li><a href="#exploiting-server-side-parameter-pollution-in-a-query-string"><strong>Exploiting server-side parameter pollution in a query string</strong></a></li>
+    <li><a href="#exploiting-server-side-parameter-pollution-in-a-rest-url"><strong>Exploiting server-side parameter pollution in a REST URL</strong></a>
+      <ul>
+        <li><a href="#resources"><strong>Resources</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><strong>APIs (Application Programming Interfaces) enable software systems and applications to communicate and share data. API testing is important as vulnerabilities in APIs may undermine core aspects of a website&rsquo;s confidentiality, integrity, and availability. Let dive into this lab dummy walkthrough :)</strong></p>
+<h2 id="exploiting-an-api-endpoint-using-documentation"><strong>Exploiting an API endpoint using documentation</strong><a hidden class="anchor" aria-hidden="true" href="#exploiting-an-api-endpoint-using-documentation">#</a></h2>
+<p><strong>Objective:</strong> To solve the lab, find the exposed API documentation and delete user <code>carlos</code>. You can log in to your own account using the following credentials: <code>wiener:peter</code>.</p>
+<p>Login in as user wiener and sending a request to burp we have this :</p>
+<p><img loading="lazy" src="https://i.imgur.com/z9B4syr.png"></p>
+<p>We can then start to look for common API endpoints like the following. You can also try to fuzz for the API endpoints using the following wordlist <a href="https://gist.github.com/yassineaboukir/8e12adefbd505ef704674ad6ad48743d">here</a>.</p>
+<ul>
+<li><code>/api</code></li>
+<li><code>/swagger/index.html</code></li>
+<li><code>/openapi.json</code></li>
+</ul>
+<p>Fortunately for me i was able to discover the API endpoint by just making a GET request to <code>/api</code> without fuzzing which returned the API documentation.</p>
+<p><img loading="lazy" src="https://i.imgur.com/8AjRUgt.png"></p>
+<p>I then made a GET request to retrieve series of account information trying out usernames we have at hand</p>
+<p><img loading="lazy" src="https://i.imgur.com/5UVtpzp.png">
+[User =&gt; Wiener]</p>
+<p><img loading="lazy" src="https://i.imgur.com/AbSV5My.png">
+[User =&gt; Carlos]</p>
+<p><img loading="lazy" src="https://i.imgur.com/YtzUYaD.png">
+[User =&gt; Administrator ]</p>
+<p>We can also change the email of a particular user take for example user <code>wiener</code> by using the <strong>PATCH</strong> request method together with an provided data in JSON format.</p>
+<ul>
+<li>Change request method to <strong>POST</strong> using burp functionality then manually change <strong>POST</strong> header to <strong>PATCH</strong> method.</li>
+<li>Change <code>content-type</code> to <code>application/json</code></li>
+<li>Then use the JSON format to send the data.</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/I18zhbt.png"></p>
+<p>We can then finally delete the user <code>carlos</code>  as requested by changing request method to <strong>GET</strong> and then changing <strong>GET</strong> to <strong>DELETE</strong> manually</p>
+<p><img loading="lazy" src="https://i.imgur.com/PdtIJf4.png"></p>
+<h2 id="finding-and-exploiting-an-unused-api-endpoint"><strong>Finding and exploiting an unused API endpoint</strong><a hidden class="anchor" aria-hidden="true" href="#finding-and-exploiting-an-unused-api-endpoint">#</a></h2>
+<p><strong>Objective:</strong> To solve the lab, exploit a hidden API endpoint to buy a &ldquo;<strong>Lightweight l33t Leather Jacket</strong>&rdquo;. You can log in to your own account using the following credentials: <code>wiener:peter</code>.</p>
+<p>As said by the objective we need to first of all add the item to cart</p>
+<p><img loading="lazy" src="https://i.imgur.com/R6NMtSp.png"></p>
+<p>After moving this item to cart and login in with the given credentials we cannot purchase this item cos&rsquo; we have insufficient funds</p>
+<p><img loading="lazy" src="https://i.imgur.com/0c8k7Ox.png"></p>
+<p>Since i am using burp pro we need to setup <a href="https://repo1.maven.org/maven2/org/python/jython-slim/2.7.4/">jython</a> in other to be able to download some extensions that need this. Download the first file from the given link and import it to burpsuite as shown below in the BApp store.</p>
+<p><img loading="lazy" src="https://i.imgur.com/rYcJ59n.png"></p>
+<p>We then need to download two burp extensions by navigating to the burp extender tab :</p>
+<ol>
+<li>We can use the <a href="https://portswigger.net/bappstore/0e61c786db0c4ac787a08c4516d52ccf">JS Link Finder</a> BApp to crawl endpoints for sensitive files containing API information.</li>
+<li>We can use the <a href="https://portswigger.net/bappstore/db57ecbe2cb7446292a94aa6181c9278">Content type converter</a> BApp to automatically convert data submitted within requests between XML and JSON.</li>
+</ol>
+<p>Once downloaded we are good to go, Navigate to <strong>Targets</strong> &gt; <strong>Site map</strong>, then click on the targets and select <strong>Engagements tools</strong> &gt; <strong>Find scripts</strong></p>
+<p><img loading="lazy" src="https://i.imgur.com/3RtAl4L.png"></p>
+<p>This would pull up all scripts and we can try to see if there are any scripts literally related/can serve as a documentation for the API endpoint.</p>
+<p><img loading="lazy" src="https://i.imgur.com/XSvv85M.png"></p>
+<p>Sending this to the repeater tab and checking the response we finally found an API endpoint in the following format : <code>${url.host}/api/products/${encodeURIComponent(productId)}/price</code></p>
+<p><img loading="lazy" src="https://i.imgur.com/E5YtCiF.png"></p>
+<p>We can also attempt to find this hidden API endpoints by crawling the site using burp suite pro feature which should give you the API endpoints</p>
+<p><img loading="lazy" src="https://i.imgur.com/idNuSdo.png"></p>
+<p><img loading="lazy" src="https://i.imgur.com/la4ea0n.png">
+[API Endpoint Discovered]</p>
+<p>Sending this requests to my repeater tab i noticed that the items are judged by their product ID which returns the price for that particular product.</p>
+<p><img loading="lazy" src="https://i.imgur.com/0ysIwkc.png"></p>
+<p>Changing product ID to 1 we can see the price for the &ldquo;Lightweight &ldquo;l33t&rdquo; Leather Jacket&rdquo; item</p>
+<p><img loading="lazy" src="https://i.imgur.com/lk0THN2.png"></p>
+<p><img loading="lazy" src="https://i.imgur.com/c5UaZ2r.png"></p>
+<p>Since there is typically no way to alter our own amount in our wallet we can actually alter the amount of the product changing it to <code>$0.00</code> 🤣.</p>
+<p>Go ahead and right click then select <strong>Extensions</strong> &gt; <strong>Content Type Converter</strong> &gt; <strong>Convert to JSON</strong>, this should change the request method to <strong>POST</strong> and also add a <code>content-type</code> value to the request</p>
+<p><img loading="lazy" src="https://i.imgur.com/gYEN9ZW.png"></p>
+<p>As shown below we get the error &ldquo;<strong>Method not allowed</strong>&rdquo;, well we can use the <strong>PATCH</strong> request method also as this is accepted by most APIs</p>
+<p><img loading="lazy" src="https://i.imgur.com/n9qhRs4.png"></p>
+<p>This successfully changes the price to <code>$0.00</code></p>
+<p><img loading="lazy" src="https://i.imgur.com/02yvlII.png"></p>
+<p>Then sending a GET request we can see that the product price has been changed to <code>$0.00</code>, sweet. Note that if you get the <strong>&ldquo;Unauthorized&rdquo;</strong> message then login as user <code>wiener</code> first before doing all of this (if possible you just need the new session key).</p>
+<p><img loading="lazy" src="https://i.imgur.com/dbJcOV3.png"></p>
+<p>Navigating back to the website we can see that we have successfully reduced the price of this product and can add it to cart now.</p>
+<p><img loading="lazy" src="https://i.imgur.com/hMvapxe.png"></p>
+<p>You should be able to solve the lab now by purchasing the item.</p>
+<p><img loading="lazy" src="https://i.imgur.com/NfMkBcB.png"></p>
+<h2 id="exploiting-a-mass-assignment-vulnerability"><strong>Exploiting a mass assignment vulnerability</strong><a hidden class="anchor" aria-hidden="true" href="#exploiting-a-mass-assignment-vulnerability">#</a></h2>
+<p><strong>Objective:</strong> To solve the lab, find and exploit a mass assignment vulnerability to buy a <strong>Lightweight l33t Leather Jacket</strong>. You can log in to your own account using the following credentials: <code>wiener:peter</code>.</p>
+<p>This vulnerability exists do to the fact that -:</p>
+<ul>
+<li>the application supporting parameters that were never intended to be processed by the developer.</li>
+<li>For example, if a <code>PATCH</code> request is made to <code>/api/users/</code></li>
+<li>that allows users to update their data with the following result;</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;username&#34;</span><span class="p">:</span> <span class="s2">&#34;wiener&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;email&#34;</span><span class="p">:</span> <span class="s2">&#34;wiener@example.com&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>A concurrent <code>GET /api/users/123</code> request returns the following JSON data:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">123</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;John Doe&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;email&#34;</span><span class="p">:</span> <span class="s2">&#34;john@example.com&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;isAdmin&#34;</span><span class="p">:</span> <span class="s2">&#34;false&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>This shows that the hidden <code>id</code> and <code>isAdmin</code> parameters are bound to the internal user object, alongside the updated username and email parameters.</p>
+</blockquote>
+<p>An attacker can then send a <code>PATCH</code> request with the <code>isAdmin</code> parameter value set to <code>true</code> ;</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;username&#34;</span><span class="p">:</span> <span class="s2">&#34;wiener&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;email&#34;</span><span class="p">:</span> <span class="s2">&#34;wiener@example.com&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;isAdmin&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>For the lab we need to download the <a href="https://portswigger.net/bappstore/17d2949a985c4b7ca092728dba871943">Param miner</a> BApp which guesses up to 65,536 param names per request, based on information taken from the scope. I won&rsquo;t be using this though. but it is worth downloading. You can go ahead and the item to cart as requested. (Don&rsquo;t forget to login as user <code>wiener</code>)</p>
+<p><img loading="lazy" src="https://i.imgur.com/UaPkbEw.png"></p>
+<p>Then intercept the request with burpsuite</p>
+<p><img loading="lazy" src="https://i.imgur.com/82f6tCp.png"></p>
+<p>I noticed that after adding the item to cart an API request is made to <code>/api/checkout</code> as shown in the above screenshot.</p>
+<p>Forwarding this request to the repeater tab, the response is a JSON data which contains the information about the present item we have in our cart</p>
+<p><img loading="lazy" src="https://i.imgur.com/0gqyoL9.png"></p>
+<p>Decided to check other request method accepted by this endpoint and as shown below it only accepts <strong>POST</strong> and <strong>GET</strong> request methods.</p>
+<p><img loading="lazy" src="https://i.imgur.com/UC8HhzT.png"></p>
+<p>So i decided to alter the request first of, by changing the request method to <strong>POST</strong> (<code>Change request method</code>), Then i used the <code>Content type converter</code> extension we used in the last challenge to change request body to JSON, then copied the whole JSON data we got from the response to our request tab.</p>
+<p>Altering the <code>item_price</code> value to 0, nothing changes because we do not have that certain permission to do so as we can see below we are still getting the <strong>INSUFFICIENT_FUNDS</strong> error.</p>
+<p><img loading="lazy" src="https://i.imgur.com/VRoi8Mi.png"></p>
+<p>Then i decided to alter the <code>percentage</code> discount value giving our self an 100% discount</p>
+<p>$$
+\text{Discount Percentage} = \left( \frac{1337 - 0}{1337} \right) \times 100 = 100%
+$$</p>
+<p><img loading="lazy" src="https://i.imgur.com/H9jQxi9.png"></p>
+<p>We should now have the lab solved.</p>
+<p><img loading="lazy" src="https://i.imgur.com/KuGvQqS.png"></p>
+<h2 id="exploiting-server-side-parameter-pollution-in-a-query-string"><strong>Exploiting server-side parameter pollution in a query string</strong><a hidden class="anchor" aria-hidden="true" href="#exploiting-server-side-parameter-pollution-in-a-query-string">#</a></h2>
+<ul>
+<li>Query syntax characters like <code>#</code>, <code>&amp;</code>, and <code>=</code> can be used to test for this vulnerability</li>
+<li>An attacker can then observe how the application responds.</li>
+<li>It is also crucial to URL-encode this characters.
+<ul>
+<li>Otherwise the front-end application will interpret it as a fragment identifier and it won&rsquo;t be passed to the internal API.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Objective:</strong> To solve the lab, log in as the <code>administrator</code> and delete <code>carlos</code>.</p>
+<p>First of all we start by intercepting the login page cos&rsquo; we have not been given a <strong>username</strong> neither a <strong>password</strong>.</p>
+<p><img loading="lazy" src="https://i.imgur.com/j1UAid6.png"></p>
+<p>We can then provide wrong credentials and intercept, sending the request to the repeater tab</p>
+<p><img loading="lazy" src="https://i.imgur.com/5lZbdys.png"></p>
+<p>After several enumeration figured out there is probably no way in the previous endpoint and started to focus on the <code>/forgot-password</code> endpoint</p>
+<p><img loading="lazy" src="https://i.imgur.com/OMnk6qw.png"></p>
+<p>adding a parameter with the URL encoded character of <code>&amp;</code> as <code>%26</code>, i figured out that the extra username parameter is not been read at all so specifying wrong input in the first parameter leads to an &ldquo;<strong>Invalid Username</strong>&rdquo; error</p>
+<p><img loading="lazy" src="https://i.imgur.com/jhETqA5.png"></p>
+<p>Mean while reversing the case as shown below we have a valid response</p>
+<p><img loading="lazy" src="https://i.imgur.com/62qlHUM.png"></p>
+<p>Then i decided to move a step further by adding the <code>#</code> encoded character <code>%23</code> to the end of the query and we have the error &ldquo;<strong>Field not specified</strong>&rdquo;</p>
+<p><img loading="lazy" src="https://i.imgur.com/L57Ubaa.png"></p>
+<p>Then decided to bruteforce this parameter by sending this to the intruder tab and selecting the second parameter as this position point for this attack. The major reason for doing this is because there is an hidden parameter which could be altered if we know it.</p>
+<p><img loading="lazy" src="https://i.imgur.com/qS1uUJM.png"></p>
+<p>Then navigate to <strong>Payloads</strong> &gt; <strong>Payload Options [Simple list]</strong> &gt; <strong>Add from list</strong> and select &ldquo;Server-side variable names&rdquo; as the wordlist.</p>
+<p><img loading="lazy" src="https://i.imgur.com/hxnSim2.png"></p>
+<p>Start the attack and as shown below the length of the response from the &ldquo;<code>field</code>&rdquo; parameter is SUS</p>
+<p><img loading="lazy" src="https://i.imgur.com/gsUa9Ls.png"></p>
+<p>Changing the <code>field</code> value to <code>username</code> we can see that there is a change in the output.</p>
+<p><img loading="lazy" src="https://i.imgur.com/fP5QoHL.png"></p>
+<p>Using burp pro crawling feature i was able to find the <code>/static/js/forgotPassword.js</code> endpoint with the following hidden <code>reset_token</code> parameter</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl"><span class="nx">forgotPwdReady</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="nx">queryString</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">search</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="nx">urlParams</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">URLSearchParams</span><span class="p">(</span><span class="nx">queryString</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="nx">resetToken</span> <span class="o">=</span> <span class="nx">urlParams</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;reset-token&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">resetToken</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span> <span class="o">=</span> <span class="sb">`/forgot-password?reset_token=</span><span class="si">${</span><span class="nx">resetToken</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kr">const</span> <span class="nx">forgotPasswordBtn</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;forgot-password-btn&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">forgotPasswordBtn</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s2">&#34;click&#34;</span><span class="p">,</span> <span class="nx">displayMsg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></div><p>Parsing the <code>resest_token</code> parameter as a value to the <code>field</code> variable, we have a reset token.</p>
+<p><img loading="lazy" src="https://i.imgur.com/GuoFSk4.png"></p>
+<p>Copied this reset token and went over to the URL specified in the JS file <code>/forgot-password?reset_token=${resetToken}</code> specifying the reset token given which referred me to a page to reset the administrator password &ldquo;<code>admin:admin</code>&rdquo;</p>
+<p><img loading="lazy" src="https://i.imgur.com/BP8wtoN.png"></p>
+<p>Successfully logged in as administrator and deleted the user <code>carlos</code> to complete the challenge</p>
+<p><img loading="lazy" src="https://i.imgur.com/E7EsztQ.png"></p>
+<h2 id="exploiting-server-side-parameter-pollution-in-a-rest-url"><strong>Exploiting server-side parameter pollution in a REST URL</strong><a hidden class="anchor" aria-hidden="true" href="#exploiting-server-side-parameter-pollution-in-a-rest-url">#</a></h2>
+<p><strong>Objective:</strong> To solve the lab, log in as the <code>administrator</code> and delete <code>carlos</code>.</p>
+<ul>
+<li>
+<p>REST APIs may place parameter names and values in URL path, rather than the query string.</p>
+</li>
+<li>
+<p>For example requests are made to the following endpoint as:</p>
+<pre tabindex="0"><code>GET /edit_profile.php?name=peter
+</code></pre></li>
+<li>
+<p>This results in the following server-side request:</p>
+</li>
+</ul>
+<pre tabindex="0"><code>GET /api/private/users/peter
+</code></pre><p>Just as mentioned in the <a href="https://portswigger.net/web-security/api-testing/server-side-parameter-pollution#testing-for-server-side-parameter-pollution-in-rest-paths">academy</a> section of this challenge we have to combine <a href="https://portswigger.net/web-security/file-path-traversal">path traversal</a> sequences to modify parameters and observe how the application responds.</p>
+<p>First of we start by traversing twice and seeing if this application is truly vulnerable as shown below.</p>
+<p><img loading="lazy" src="https://i.imgur.com/M902zMN.png"></p>
+<p>Again i tried to guess the users path by traversing 3 times which worked as shown below meaning there is correct path like <code>../../../users/carlos</code></p>
+<p><img loading="lazy" src="https://i.imgur.com/fXSqCsL.png"></p>
+<p>Took it a step further again by guessing the <code>field</code> variable just as used in the previous challenge and we could actually read the email field correctly.</p>
+<p><code>username=administrator..%2f..%2f..%2fusers%2fcarlos%2ffield%2femail%23</code></p>
+<p><img loading="lazy" src="https://i.imgur.com/l9EinZR.png"></p>
+<p>Just to be sure this parameter actually exists i decided to change the field value to <code>username</code> instead and got the below error talk about the API version.</p>
+<p><img loading="lazy" src="https://i.imgur.com/WJXXpCB.png"></p>
+<p>Starting to research i came across this <a href="https://medium.com/apis-you-wont-hate/api-versioning-has-no-right-way-f3c75457c0b7">blog</a> talking about API versioning and discovered we can traverse 4 times and then start our query with a encoded <code>/v1....</code> which worked.</p>
+<p><code>administrator..%2f..%2f..%2f..%2fv1%2fusers%2fcarlos%2ffield%2fusername%23</code></p>
+<p><img loading="lazy" src="https://i.imgur.com/TlCi4xe.png"></p>
+<p>Now we need to find the hidden parameter for the password reset token. I started to look up JS files by using the crawl feature of burpsuite as used in other challenges and came across a JS file located at <code>/static/js/forgotPassword.js</code>  which revealed the hidden parameter (<code>passwordResetToken</code>)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-JS" data-lang="JS"><span class="line"><span class="cl"><span class="nx">forgotPwdReady</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="nx">queryString</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">search</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="nx">urlParams</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">URLSearchParams</span><span class="p">(</span><span class="nx">queryString</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="nx">resetToken</span> <span class="o">=</span> <span class="nx">urlParams</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;reset-token&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">resetToken</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span> <span class="o">=</span> <span class="sb">`/forgot-password?passwordResetToken=</span><span class="si">${</span><span class="nx">resetToken</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kr">const</span> <span class="nx">forgotPasswordBtn</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;forgot-password-btn&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">forgotPasswordBtn</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s2">&#34;click&#34;</span><span class="p">,</span> <span class="nx">displayMsg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span></code></pre></div><p>Made a request and this was successful as expected we got the reset token value.
+<code>administrator..%2f..%2f..%2f..%2fv1%2fusers%2fadministrator%2ffield%2fpasswordResetToken%23</code></p>
+<p><img loading="lazy" src="https://i.imgur.com/tJNuSvD.png"></p>
+<p>We can place this value in the following parameter on your browser <code>/forgot-password?passwordResetToken=${resetToken}</code>, which should give you access to a password reset page.</p>
+<p><img loading="lazy" src="https://i.imgur.com/v64wSwe.png"></p>
+<p>Then we can login as user <code>administrator</code> and delete the user <code>carlos</code> as requested.</p>
+<p><img loading="lazy" src="https://i.imgur.com/aWUzfBh.png"></p>
+<h3 id="resources"><strong>Resources</strong><a hidden class="anchor" aria-hidden="true" href="#resources">#</a></h3>
+<ul>
+<li><a href="https://hackerone.com/reports/1695454">https://hackerone.com/reports/1695454</a></li>
+<li><a href="https://hackerone.com/reports/1218680">https://hackerone.com/reports/1218680</a></li>
+<li><a href="https://hackerone.com/reports/1218461">https://hackerone.com/reports/1218461</a></li>
+<li><a href="https://hackerone.com/reports/232650">https://hackerone.com/reports/232650</a></li>
+<li><a href="https://github.com/reddelexc/hackerone-reports/blob/master/tops_by_bug_type/TOPAPI.md">https://github.com/reddelexc/hackerone-reports/blob/master/tops_by_bug_type/TOPAPI.md</a></li>
+<li><a href="https://hackerone.com/reports/1140631">https://hackerone.com/reports/1140631</a></li>
+<li><a href="https://hackerone.com/reports/745171">https://hackerone.com/reports/745171</a></li>
+<li><a href="https://hackerone.com/reports/220774">https://hackerone.com/reports/220774</a></li>
+<li><a href="https://medium.com/techiepedia/api-exploitation-business-logic-bug-c176d9df47ee">https://medium.com/techiepedia/api-exploitation-business-logic-bug-c176d9df47ee</a></li>
+<li><a href="https://github.com/z5jt/API-documentation-Wordlist/">https://github.com/z5jt/API-documentation-Wordlist/</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/web/">Web</a></li>
+      <li><a href="http://localhost:1313/tags/burpsuite/">Burpsuite</a></li>
+      <li><a href="http://localhost:1313/tags/fuzzing/">Fuzzing</a></li>
+      <li><a href="http://localhost:1313/tags/api/">API</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/cooking_with_fire/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Cooking With Fire</span>
+  </a>
+  <a class="next" href="http://localhost:1313/hacking/the_unseen_struggles/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Where I&#39;ve Been, Isn&#39;t Where I Am Going</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

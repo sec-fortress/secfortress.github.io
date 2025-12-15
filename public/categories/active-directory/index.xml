@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Active Directory on SecFortress</title>
+    <link>http://localhost:1313/categories/active-directory/</link>
+    <description>Recent content in Active Directory on SecFortress</description>
+    <generator>Hugo -- 0.152.2</generator>
+    <language>en-us</language>
+    <atom:link href="http://localhost:1313/categories/active-directory/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Cooking With Fire</title>
+      <link>http://localhost:1313/hacking/cooking_with_fire/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/hacking/cooking_with_fire/</guid>
+      <description>Just another yet random blog to practicing Kerberoasting on Linux and Windows, focusing on practical steps with tools like Rubeus and GetUserSPNs.py.</description>
+    </item>
+  </channel>
+</rss>
