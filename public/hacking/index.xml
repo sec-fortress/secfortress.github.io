@@ -17,5 +17,20 @@
 &lt;p&gt;There is only one reason why this blog is up; I tried running a phishing engagement requested by a client and &amp;ldquo;Gophish&amp;rdquo; + &amp;ldquo;SMTP&amp;rdquo; setup had me hit a few blockers than I thought, due to compliance policies and time constraints.&lt;/p&gt;
 &lt;p&gt;Even after reaching out to DO and Amazon for a valid reason like, &amp;ldquo;the client is aware and this is done in a well controlled and authorized environment&amp;rdquo;; to use their SES, it still didn’t sit well with their policies. And honestly, I completely understand. Some platforms simply won’t bend their rules, no matter how legitimate your use case is.&lt;/p&gt;</description>
     </item>
+    <item>
+      <title>Moving Forward, No Matter the Terrain</title>
+      <link>http://localhost:1313/hacking/moving_forward_no_matter_the_terrain/</link>
+      <pubDate>Sun, 21 Sep 2025 21:26:34 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/moving_forward_no_matter_the_terrain/</guid>
+      <description>&lt;h3 id=&#34;september-21-2025--a-snapshot-of-my-journey&#34;&gt;&lt;strong&gt;September 21, 2025 – A Snapshot of My Journey&lt;/strong&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Landed a &lt;strong&gt;remote role&lt;/strong&gt; :: a step closer to the life I’ve been building.&lt;/li&gt;
+&lt;li&gt;Began crafting a &lt;strong&gt;dedicated workspace&lt;/strong&gt;, shaping an environment that fuels focus and creativity.&lt;/li&gt;
+&lt;li&gt;Faced the heartbreak of &lt;strong&gt;relationships ending&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Said goodbye to my &lt;strong&gt;second pet cat&lt;/strong&gt;, lost to a tragic accident ;; proof that even small companions leave big spaces in our hearts.&lt;/li&gt;
+&lt;li&gt;Crossed a financial milestone, earning &lt;strong&gt;seven figures consecutively in under three months&lt;/strong&gt; - a testament to persistence, faith, and growth.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img loading=&#34;lazy&#34; src=&#34;https://i.pinimg.com/1200x/22/d1/dd/22d1ddf6bdd6a3379cc960f4c3b12959.jpg#center&#34;&gt;&lt;/p&gt;</description>
+    </item>
   </channel>
 </rss>
