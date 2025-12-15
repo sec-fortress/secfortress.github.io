@@ -104,6 +104,13 @@
       <description>After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.</description>
     </item>
     <item>
+      <title>Embracing the Chaos; My Journey Through Uncertainty</title>
+      <link>http://localhost:1313/hacking/journey_through_uncertainty/</link>
+      <pubDate>Sun, 13 Oct 2024 19:18:06 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/journey_through_uncertainty/</guid>
+      <description>Arhhh, You don&amp;#39;t have to understand......</description>
+    </item>
+    <item>
       <title>Loot Exchange, Teams and SharePoint with GraphRunner</title>
       <link>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</link>
       <pubDate>Fri, 04 Oct 2024 10:46:06 +0100</pubDate>
@@ -123,6 +130,13 @@
       <pubDate>Sat, 28 Sep 2024 06:53:07 +0100</pubDate>
       <guid>http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/</guid>
       <description>BloodHound together with an ingestor Azurehound can map Azure AD relationships, revealing roles, permissions, and attack paths, helping identify misconfigurations and privilege escalation opportunities in cloud environments.</description>
+    </item>
+    <item>
+      <title>Azure Blob Container to Initial Access</title>
+      <link>http://localhost:1313/hacking/azure_blob_container_to_initial_access/</link>
+      <pubDate>Thu, 26 Sep 2024 23:32:03 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/azure_blob_container_to_initial_access/</guid>
+      <description>Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them</description>
     </item>
     <item>
       <title>Whoami</title>

@@ -43,5 +43,12 @@
       <guid>http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/</guid>
       <description>BloodHound together with an ingestor Azurehound can map Azure AD relationships, revealing roles, permissions, and attack paths, helping identify misconfigurations and privilege escalation opportunities in cloud environments.</description>
     </item>
+    <item>
+      <title>Azure Blob Container to Initial Access</title>
+      <link>http://localhost:1313/hacking/azure_blob_container_to_initial_access/</link>
+      <pubDate>Thu, 26 Sep 2024 23:32:03 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/azure_blob_container_to_initial_access/</guid>
+      <description>Discover how Azure Blob Containers can be exploited for initial access in cloud environments and learn best practices to secure them</description>
+    </item>
   </channel>
 </rss>

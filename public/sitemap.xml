@@ -68,6 +68,9 @@
     <loc>http://localhost:1313/hacking/unmask_privileged_access_in_azure/</loc>
     <lastmod>2024-10-16T11:54:55+01:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/hacking/journey_through_uncertainty/</loc>
+    <lastmod>2024-10-13T19:18:06+01:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</loc>
     <lastmod>2024-10-04T10:46:06+01:00</lastmod>
   </url><url>
@@ -82,6 +85,9 @@
   </url><url>
     <loc>http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/</loc>
     <lastmod>2024-09-28T06:53:07+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/hacking/azure_blob_container_to_initial_access/</loc>
+    <lastmod>2024-09-26T23:32:03+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/whoami/</loc>
     <lastmod>2024-08-26T21:53:51+01:00</lastmod>
