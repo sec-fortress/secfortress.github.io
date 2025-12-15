@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Intro to Azure Recon with BloodHound | SecFortress</title>
+<meta name="keywords" content="Azure, Red Teaming, Entra-ID, Powershell, Bloodhound">
+<meta name="description" content="BloodHound together with an ingestor Azurehound can map Azure AD relationships, revealing roles, permissions, and attack paths, helping identify misconfigurations and privilege escalation opportunities in cloud environments.">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="Intro to Azure Recon with BloodHound">
+  <meta property="og:description" content="BloodHound together with an ingestor Azurehound can map Azure AD relationships, revealing roles, permissions, and attack paths, helping identify misconfigurations and privilege escalation opportunities in cloud environments.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2024-09-28T06:53:07+01:00">
+    <meta property="article:modified_time" content="2024-09-28T06:53:07+01:00">
+    <meta property="article:tag" content="Azure">
+    <meta property="article:tag" content="Red Teaming">
+    <meta property="article:tag" content="Entra-ID">
+    <meta property="article:tag" content="Powershell">
+    <meta property="article:tag" content="Bloodhound">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Intro to Azure Recon with BloodHound">
+<meta name="twitter:description" content="BloodHound together with an ingestor Azurehound can map Azure AD relationships, revealing roles, permissions, and attack paths, helping identify misconfigurations and privilege escalation opportunities in cloud environments.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Intro to Azure Recon with BloodHound",
+      "item": "http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Intro to Azure Recon with BloodHound",
+  "name": "Intro to Azure Recon with BloodHound",
+  "description": "BloodHound together with an ingestor Azurehound can map Azure AD relationships, revealing roles, permissions, and attack paths, helping identify misconfigurations and privilege escalation opportunities in cloud environments.",
+  "keywords": [
+    "Azure", "Red Teaming", "Entra-ID", "Powershell", "Bloodhound"
+  ],
+  "articleBody": "Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.\nOverview =\u003e After discovering that a public company GitHub repository contained accidentally committed credentials, Mega Big Tech has requested us to investigate the extent of potential exposure. They want to determine if these credentials can be used to access their cloud environment and if any confidential data is at risk.\nSetting Up Download the latest azurehound binary from here Unzip and and move to /bin for faster access ❯ unzip azurehound-linux-amd64.zip ❯ sudo mv azurehound /bin/ ❯ sudo chmod 777 /bin/azurehound Just as we need credential access when enumerating On-Prem, we also need credential access here too. Credentials have been given for this lab though :\nIAM user : Jose.Rodriguez@megabigtech.com Password : [REDACTED] Login Portal : https://portal.azure.com/ Azure tenant ID : Find this on portal or by running * az login * az account show { --SNIP-- \"tenantId\": \"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\", --SNIP-- } To run azurehound we need the tenantID, Username and the Password. Just as shown above, you can get the tenantID by using Azure-CLI\nazurehound -u \"Jose.Rodriguez@megabigtech.com\" -p '[REDACTED]' list --tenant \"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\" -o output.json Start up both neo4j and bloodhound\n❯ sudo neo4j console ❯ sudo bloodhound Then go ahead and upload the output.json data created by azurehound\nScrolling down under the Database Info tab you should see “Azure Objects”\nAs user we start by enumerating the properties which our current user has\nNodes and Edges BloodHound consists of nodes and edges, which together form a graph that reveals potential attack paths and privilege relationships within the environment ;\nNodes : represent entities or objects in Azure AD. Few examples include: Users: Azure AD accounts. Groups: Security or distribution groups in Azure AD. Applications: Azure AD applications that use service principals. Service Principals: Representations of applications within Azure. Subscriptions: Azure subscription resources. Edges ; represent the relationships or permissions between nodes. Membership: A user or service principal being a member of a group. Ownership: A user or group owning a service principal or application. Role Assignments: Showing roles that provide permissions over resources like subscriptions or resource groups. Privileges: Showing a user’s privileged access over an entity (e.g., a user having Owner or Contributor role over a resource). Edges are far more important in Azure has they show us the permission resources have over each other, As attackers it reveals attack paths show ways one can navigate from a low-privilege node to a high-privilege node. Lot of Az edges have been discussed here\nBloodhound tells us that our current user belongs to 5 Az admin roles with an assigned role named UPDATE MANAGER and four roles inherited from the IT-Helpdesk group.\nUpdate Manager: Allows helpdesk to update manager roles when users change teams; low security impact. Directory Readers: Allows users to read basic directory info, excluding sensitive data. Printer Technician: Allows managing printers; low security interest. Attribute Definition Reader: Can read definitions of custom security attributes. Attribute Assignment Reader: Can read custom security attribute keys and values for Microsoft Entra objects. Cypher Queries Overview Since generally there are no much queries like “Find All Domain Admins” in bloodhound for azure we can start by creating our own custom cypher query, This cheatsheet contains alot of cypher queries\nFor example, the below returns all Members of the Global Administrator role.\nMATCH p =(n)-[r:AZGlobalAdmin*1..]-\u003e(m) RETURN p Note : Azure Global Administrator role is equivalent to the Domain Admin privilege in Active Directory.\nSetting Up Query :\nExecuting Query To List All Global Admins :\nHunting for custom security attributes This feature was released in Azure on December of 2021 This was introduced to roll-out of Attribute Based Access Control (ABAC) Used to store sensitive data which is a potential target for attackers Go ahead and install the Microsoft.Graph module as described by Microsoft on how to query for custom security attributes\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Install-Module Microsoft.Graph Then run the below command to perform authentication request as our current Azure AD user.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Connect-MgGraph Welcome to Microsoft Graph! Connected via delegated access using 14d82eec-204b-4c2f-b7e8-296a70dab67e Readme: https://aka.ms/graph/sdk/powershell SDK Docs: https://aka.ms/graph/sdk/powershell/docs API Docs: https://aka.ms/graph/docs NOTE: You can use the -NoWelcome parameter to suppress this message. The below script then connects to Microsoft Graph, retrieves all users in Azure AD, and loops through each user to display their custom security attributes.\n# Connect to Microsoft Graph Connect-MgGraph # Retrieve all users $allUsers = Get-MgUser -All # Loop through all users and retrieve their custom security attributes foreach ($user in $allUsers) { $userAttributes = Get-MgUser -UserId $user.Id -Property \"customSecurityAttributes\" # Display the additional properties of custom security attributes for each user Write-Host \"User: $($user.UserPrincipalName)\" $userAttributes.CustomSecurityAttributes.AdditionalProperties | Format-List Write-Host \"---------------------------------------------\" } As shown in the below screenshot the user archive@megabigtech.com has a custom security attribute named Helpdesk that seems to store the password of the user.\nlogging into to the Azure Portal as user jose...., we can lookup the archive@megabigtech.com user in the console.\nWe see that Helpdesk staff added the attribute to allow them to login and troubleshoot as this user.\nManual Enumeration - Bloodhound misses BloodHound effectively identifies directory roles like this but currently misses Azure role assignments made at the subscription, management group, resource group, or resource level.\nNavigating to the Azure portal we can go ahead and select “Microsoft Entra ID” Then click on “Groups” Search for the helpdesk group and select the IT-Helpdesk to bring up its properties as shown in bloodhound previously. Now click Azure role assignments. As shown below the group, “IT-Helpdesk” is assigned the Reader role, with the scope set to the SECURITY-PC virtual machine.\nWe could also have done the above using the PowerShell Az module and the Get-AzRoleAssignment cmdlet.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Connect-AzAccount Please select the account you want to login with. Retrieving subscriptions for the selection... Subscription name Tenant ----------------- ------ Microsoft Azure Sponsorship Default Directory PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzRoleAssignment RoleAssignmentName : 4b5ae432-6902-4ca2-bbed-815492eef631 RoleAssignmentId : /subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourcegroups/content-static-2/providers/Microsoft.Compute/virtualMachines/SECURITY-PC/providers/Microsoft.Authoriz ation/roleAssignments/4b5ae432-6902-4ca2-bbed-815492eef631 Scope : /subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourcegroups/content-static-2/providers/Microsoft.Compute/virtualMachines/SECURITY-PC DisplayName : IT-HELPDESK SignInName : RoleDefinitionName : Reader RoleDefinitionId : acdd72a7-3385-48ef-bd42-f606fba81ae7 ObjectId : 8a517e87-6b05-45ae-b1ca-7436f1682602 ObjectType : Group CanDelegate : False Description : ConditionVersion : Condition : Extracting Credentials Since we have Reader access to a virtual machine, something that is worth checking is custom user data fields, Go ahead and click the SECURITY-PC resource\nClick on the Operating system menu under the Settings section, the User data field we see that an Azure CLI command has been added, including a comment with credentials!\n# Credentials: User: security-user | Password: Imp0sec0sT! az storage blob download --account-name securityconfigs --container-name security-pc --name config-latest.xml --auth-mode login We can get the virtual machine user data from the command line instead of using the Az portal as we did previously, as shown below.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzVM -ResourceGroupName \"content-static-2\" -Name \"SECURITY-PC\" -UserData ResourceGroupName : content-static-2 Id : /subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/content-static-2/providers/Microsoft.Compute/virtualMachines/SECURITY-PC VmId : 648c8a08-c90a-4a95-8922-4cbf28375bcb Name : SECURITY-PC Type : Microsoft.Compute/virtualMachines Location : eastus LicenseType : Windows_Client Tags : {} HardwareProfile : {VmSize} NetworkProfile : {NetworkInterfaces} SecurityProfile : {UefiSettings, SecurityType} OSProfile : {ComputerName, AdminUsername, WindowsConfiguration, Secrets, AllowExtensionOperations, RequireGuestProvisionSignal} ProvisioningState : Succeeded StorageProfile : {ImageReference, OsDisk, DataDisks, DiskControllerType} Identity : {PrincipalId, TenantId, Type} Zones : {1} UserData : IyBDcmVkZW50aWFsczogVXNlcjogc2VjdXJpdHktdXNlciB8IFBhc3N3b3JkOiBJbXAwc2VjMHNUIQpheiBzdG9yYWdlIGJsb2IgZG93bmxvYWQgLS1hY2NvdW50LW5hbWUgc2VjdXJpdHljb25maWdzIC0tY29udGFpbmVyL W5hbWUgc2VjdXJpdHktcGMgLS1uYW1lIGNvbmZpZy1sYXRlc3QueG1sIC0tYXV0aC1tb2RlIGxvZ2luCg== TimeCreated : 10/31/2023 3:24:18PM Etag : \"16\" The UserData variable is what we need which is in base64 format, we can go ahead and decode this using your linux OS\n❯ echo \"IyBDcmVkZW50aWFsczogVXNlcjogc2VjdXJpdHktdXNlciB8IFBhc3N3b3JkOiBJbXAwc2VjMHNUIQpheiBzdG9yYWdlIGJsb2IgZG93bmxvYWQgLS1hY2NvdW50LW5hbWUgc2VjdXJpdHljb25maWdzIC0tY29udGFpbmVyL W5hbWUgc2VjdXJpdHktcGMgLS1uYW1lIGNvbmZpZy1sYXRlc3QueG1sIC0tYXV0aC1tb2RlIGxvZ2luCg==\" | base64 -d # Credentials: User: security-user | Password: Imp0sec0sT! az storage blob download --account-name securityconfigs --container-name security-pc --name config-latest.xml --auth-mode login Now trying to use the command shown after decoding the b64 text we have the following error cos we are not yet logged in as the security-user who has the permission to do so.\nRun the below command on pwsh to log in as the security-user user for privileged access\naz login --scope https://storage.azure.com/.default # When prompted fill in the below Username : security-user@megabigtech.com Passowrd : ************* If we run the command again we have alot of config output and sensitive information including global administrator credentials\nWe can also view this config files using the Az portal, Log in as the security-user user and search for the securityconfigs resource (storage account name)\nUnder the “Data Storage” drop down select the Containers menu\nThen click on the security-pc container name\nWe can then see the config file we accessed earlier including the flag.txt file for this challenge lab\nGo ahead and download the flag file using the Azure-CLI tool as used earlier\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az storage blob download --account-name securityconfigs --container-name security-pc --name flag.txt --auth-mode login Finished[#############################################################] 100.0000% ****************************** Have fun 𓆝 𓆟 𓆞 𓆝 𓆟\nResources Lab Link : https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound https://learn.microsoft.com/en-us/entra/fundamentals/custom-security-attributes-overview https://blog.netwrix.com/2022/02/10/what-are-azure-ad-custom-security-attributes/ https://posts.specterops.io/introducing-bloodhound-4-3-get-global-admin-more-often-5795cbf535b2 ",
+  "wordCount" : "1450",
+  "inLanguage": "en",
+  "datePublished": "2024-09-28T06:53:07+01:00",
+  "dateModified": "2024-09-28T06:53:07+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/intro_to_azure_recon_with_bloodhound/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Intro to Azure Recon with BloodHound
+    </h1>
+    <div class="post-description">
+      BloodHound together with an ingestor Azurehound can map Azure AD relationships, revealing roles, permissions, and attack paths, helping identify misconfigurations and privilege escalation opportunities in cloud environments.
+    </div>
+    <div class="post-meta"><span title='2024-09-28 06:53:07 +0100 WAT'>September 28, 2024</span>&nbsp;·&nbsp;<span>7 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#setting-up"><strong>Setting Up</strong></a></li>
+    <li><a href="#nodes-and-edges"><strong>Nodes and Edges</strong></a></li>
+    <li><a href="#cypher-queries-overview"><strong>Cypher Queries Overview</strong></a></li>
+    <li><a href="#hunting-for-custom-security-attributes"><strong>Hunting for custom security attributes</strong></a></li>
+    <li><a href="#manual-enumeration---bloodhound-misses"><strong>Manual Enumeration - Bloodhound misses</strong></a></li>
+    <li><a href="#extracting-credentials"><strong>Extracting Credentials</strong></a></li>
+    <li><a href="#resources"><strong>Resources</strong></a></li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><strong>Note : This article was inspired by content from <a href="https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound">Pwned Labs</a>. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.</strong></p>
+<blockquote>
+<p>Overview =&gt; After discovering that a public company GitHub repository contained accidentally committed credentials, Mega Big Tech has requested us to investigate the extent of potential exposure. They want to determine if these credentials can be used to access their cloud environment and if any confidential data is at risk.</p>
+</blockquote>
+<h2 id="setting-up"><strong>Setting Up</strong><a hidden class="anchor" aria-hidden="true" href="#setting-up">#</a></h2>
+<ul>
+<li>Download the latest <code>azurehound</code> binary from <a href="https://github.com/bloodhoundad/azurehound/releases">here</a></li>
+<li>Unzip and and move to <code>/bin</code> for faster access</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ unzip azurehound-linux-amd64.zip 
+</span></span><span class="line"><span class="cl">❯ sudo mv azurehound /bin/
+</span></span><span class="line"><span class="cl">❯ sudo chmod <span class="m">777</span> /bin/azurehound
+</span></span></code></pre></div><p>Just as we need credential access when enumerating On-Prem, we also need credential access here too. Credentials have been given for this lab though :</p>
+<pre tabindex="0"><code>IAM user : Jose.Rodriguez@megabigtech.com
+Password : [REDACTED]
+Login Portal : https://portal.azure.com/
+Azure tenant ID : Find this on portal or by running 
+	* az login
+	* az account show
+
+{
+  --SNIP--
+  &#34;tenantId&#34;: &#34;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&#34;,
+  --SNIP--
+}
+</code></pre><p>To run <code>azurehound</code> we need the <code>tenantID</code>, Username and the Password. Just as shown above, you can get the <code>tenantID</code> by using <code>Azure-CLI</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">azurehound -u <span class="s2">&#34;Jose.Rodriguez@megabigtech.com&#34;</span> -p <span class="s1">&#39;[REDACTED]&#39;</span> list --tenant <span class="s2">&#34;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&#34;</span> -o output.json 
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/VumnEvW.jpeg"></p>
+<p>Start up both <code>neo4j</code> and <code>bloodhound</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ sudo neo4j console
+</span></span><span class="line"><span class="cl">❯ sudo bloodhound
+</span></span></code></pre></div><p>Then go ahead and upload the <code>output.json</code> data created by <code>azurehound</code></p>
+<p><img loading="lazy" src="https://i.imgur.com/ybktVk3.png"></p>
+<p>Scrolling down under the <strong>Database Info</strong> tab you should see &ldquo;Azure Objects&rdquo;</p>
+<p><img loading="lazy" src="https://i.imgur.com/75QO2zg.png"></p>
+<p>As user we start by enumerating the properties which our current user has</p>
+<p><img loading="lazy" src="https://i.imgur.com/rliIHD5.png"></p>
+<h2 id="nodes-and-edges"><strong>Nodes and Edges</strong><a hidden class="anchor" aria-hidden="true" href="#nodes-and-edges">#</a></h2>
+<p>BloodHound consists of nodes and edges, which together form a graph that reveals potential attack paths and privilege relationships within the environment ;</p>
+<ul>
+<li>Nodes : represent <strong>entities</strong> or <strong>objects</strong> in Azure AD. Few examples include:
+<ul>
+<li><strong>Users</strong>: Azure AD accounts.</li>
+<li><strong>Groups</strong>: Security or distribution groups in Azure AD.</li>
+<li><strong>Applications</strong>: Azure AD applications that use service principals.</li>
+<li><strong>Service Principals</strong>: Representations of applications within Azure.</li>
+<li><strong>Subscriptions</strong>: Azure subscription resources.</li>
+</ul>
+</li>
+<li>Edges ; represent the <strong>relationships</strong> or <strong>permissions</strong> between nodes.
+<ul>
+<li><strong>Membership</strong>: A user or service principal being a member of a group.</li>
+<li><strong>Ownership</strong>: A user or group owning a service principal or application.</li>
+<li><strong>Role Assignments</strong>: Showing roles that provide permissions over resources like subscriptions or resource groups.</li>
+<li><strong>Privileges</strong>: Showing a user&rsquo;s privileged access over an entity (e.g., a user having <code>Owner</code> or <code>Contributor</code> role over a resource).</li>
+</ul>
+</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/v61NxEV.png"></p>
+<blockquote>
+<p>Edges are far more important in Azure has they show us the permission resources have over each other, As attackers it reveals <strong>attack paths</strong> show ways one can navigate from a low-privilege node to a high-privilege node. Lot of <code>Az</code> edges have been discussed <a href="https://bloodhound.readthedocs.io/en/latest/data-analysis/edges.html">here</a></p>
+</blockquote>
+<p>Bloodhound tells us that our current user belongs to 5 <code>Az</code> admin roles with an assigned role named <code>UPDATE MANAGER</code> and four roles inherited from the <code>IT-Helpdesk</code> group.</p>
+<p><img loading="lazy" src="https://i.imgur.com/wcYUmtv.png"></p>
+<ul>
+<li><strong>Update Manager</strong>: Allows helpdesk to update manager roles when users change teams; low security impact.</li>
+<li><strong>Directory Readers</strong>: Allows users to read basic directory info, excluding sensitive data.</li>
+<li><strong>Printer Technician</strong>: Allows managing printers; low security interest.</li>
+<li><strong>Attribute Definition Reader</strong>: Can read definitions of custom security attributes.</li>
+<li><strong>Attribute Assignment Reader</strong>: Can read custom security attribute keys and values for Microsoft Entra objects.</li>
+</ul>
+<h2 id="cypher-queries-overview"><strong>Cypher Queries Overview</strong><a hidden class="anchor" aria-hidden="true" href="#cypher-queries-overview">#</a></h2>
+<p>Since generally there are no much queries like &ldquo;<strong>Find All Domain Admins</strong>&rdquo; in bloodhound for azure we can start by creating our own custom cypher query, This <a href="https://raw.githubusercontent.com/LuemmelSec/Custom-BloodHound-Queries/main/README.md">cheatsheet</a> contains alot of cypher queries</p>
+<p>For example, the below returns all Members of the Global Administrator role.</p>
+<pre tabindex="0"><code class="language-cypher" data-lang="cypher">MATCH p =(n)-[r:AZGlobalAdmin*1..]-&gt;(m) RETURN p
+</code></pre><blockquote>
+<p>Note : Azure Global Administrator role is equivalent to the Domain Admin privilege in Active Directory.</p>
+</blockquote>
+<p><em><strong>Setting Up Query :</strong></em></p>
+<p><img loading="lazy" src="https://i.imgur.com/ZyqSA60.png"></p>
+<p><em><strong>Executing Query To List All Global Admins :</strong></em></p>
+<p><img loading="lazy" src="https://i.imgur.com/lsWBOo2.png"></p>
+<h2 id="hunting-for-custom-security-attributes"><strong>Hunting for custom security attributes</strong><a hidden class="anchor" aria-hidden="true" href="#hunting-for-custom-security-attributes">#</a></h2>
+<ul>
+<li>This feature was released in Azure on December of 2021</li>
+<li>This was introduced to  roll-out of Attribute Based Access Control (ABAC)</li>
+<li>Used to store sensitive data which is a potential target for attackers</li>
+</ul>
+<p>Go ahead and install the <code>Microsoft.Graph</code> module as described by <a href="https://learn.microsoft.com/en-us/entra/identity/users/users-custom-security-attributes?tabs=ms-graph#get-the-custom-security-attribute-assignments-for-a-user">Microsoft</a> on how to query for custom security attributes</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span>  <span class="nb">Install-Module</span> <span class="n">Microsoft</span><span class="p">.</span><span class="py">Graph</span>
+</span></span></code></pre></div><p>Then run the below command to perform authentication request as our current Azure AD user.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Connect-MgGraph</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Welcome</span> <span class="n">to</span> <span class="n">Microsoft</span> <span class="n">Graph</span><span class="p">!</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Connected</span> <span class="n">via</span> <span class="n">delegated</span> <span class="n">access</span> <span class="n">using</span> <span class="n">14d82eec</span><span class="p">-</span><span class="n">204b</span><span class="p">-</span><span class="n">4c2f-b7e8</span><span class="p">-</span><span class="n">296a70dab67e</span>
+</span></span><span class="line"><span class="cl"><span class="n">Readme</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">aka</span><span class="p">.</span><span class="n">ms</span><span class="p">/</span><span class="n">graph</span><span class="p">/</span><span class="n">sdk</span><span class="p">/</span><span class="n">powershell</span>
+</span></span><span class="line"><span class="cl"><span class="n">SDK</span> <span class="n">Docs</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">aka</span><span class="p">.</span><span class="n">ms</span><span class="p">/</span><span class="n">graph</span><span class="p">/</span><span class="n">sdk</span><span class="p">/</span><span class="n">powershell</span><span class="p">/</span><span class="n">docs</span>
+</span></span><span class="line"><span class="cl"><span class="n">API</span> <span class="n">Docs</span><span class="err">:</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">aka</span><span class="p">.</span><span class="n">ms</span><span class="p">/</span><span class="n">graph</span><span class="p">/</span><span class="n">docs</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">NOTE</span><span class="err">:</span> <span class="n">You</span> <span class="n">can</span> <span class="n">use</span> <span class="n">the</span> <span class="n">-NoWelcome</span> <span class="nb">parameter</span> <span class="n">to</span> <span class="n">suppress</span> <span class="n">this</span> <span class="n">message</span><span class="p">.</span>
+</span></span></code></pre></div><p>The below script then connects to Microsoft Graph, retrieves all users in Azure AD, and loops through each user to display their custom security attributes.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># Connect to Microsoft Graph</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Connect-MgGraph</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Retrieve all users</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$allUsers</span> <span class="p">=</span> <span class="nb">Get-MgUser</span> <span class="n">-All</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Loop through all users and retrieve their custom security attributes</span>
+</span></span><span class="line"><span class="cl"><span class="k">foreach</span> <span class="p">(</span><span class="nv">$user</span> <span class="k">in</span> <span class="nv">$allUsers</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$userAttributes</span> <span class="p">=</span> <span class="nb">Get-MgUser</span> <span class="n">-UserId</span> <span class="nv">$user</span><span class="p">.</span><span class="py">Id</span> <span class="n">-Property</span> <span class="s2">&#34;customSecurityAttributes&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c"># Display the additional properties of custom security attributes for each user</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Write-Host</span> <span class="s2">&#34;User: </span><span class="p">$(</span><span class="nv">$user</span><span class="p">.</span><span class="n">UserPrincipalName</span><span class="p">)</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$userAttributes</span><span class="p">.</span><span class="py">CustomSecurityAttributes</span><span class="p">.</span><span class="py">AdditionalProperties</span> <span class="p">|</span> <span class="nb">Format-List</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Write-Host</span> <span class="s2">&#34;---------------------------------------------&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>As shown in the below screenshot the user <code>archive@megabigtech.com</code> has a custom security attribute named <code>Helpdesk</code> that seems to store the password of the user.</p>
+<p><img loading="lazy" src="https://i.imgur.com/Olfp8E5.jpeg"></p>
+<p>logging into to the <a href="https://portal.azure.com/">Azure Portal</a> as user <code>jose....</code>, we can lookup the <code>archive@megabigtech.com</code> user in the console.</p>
+<p><img loading="lazy" src="https://i.imgur.com/uQxUFCB.png"></p>
+<p>We see that <code>Helpdesk</code> staff added the attribute to allow them to login and troubleshoot as this user.</p>
+<p><img loading="lazy" src="https://i.imgur.com/tKM3MqK.png"></p>
+<h2 id="manual-enumeration---bloodhound-misses"><strong>Manual Enumeration - Bloodhound misses</strong><a hidden class="anchor" aria-hidden="true" href="#manual-enumeration---bloodhound-misses">#</a></h2>
+<p>BloodHound effectively identifies directory roles like this but currently misses Azure role assignments made at the subscription, management group, resource group, or resource level.</p>
+<ul>
+<li>Navigating to the Azure portal we can go ahead and select <strong>&ldquo;Microsoft Entra ID&rdquo;</strong></li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/8hH4Xia.png"></p>
+<ul>
+<li>Then click on <strong>&ldquo;Groups&rdquo;</strong></li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/ibuk4kK.png"></p>
+<ul>
+<li>Search for the helpdesk group and select the <code>IT-Helpdesk</code> to bring up its properties as shown in <code>bloodhound</code> previously.</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/zjXA8J7.png"></p>
+<ul>
+<li>Now click <code>Azure role assignments</code>.</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/awTdTBN.png"></p>
+<p>As shown below the group, &ldquo;<code>IT-Helpdesk</code>&rdquo; is assigned the <code>Reader</code> role, with the scope set to the <code>SECURITY-PC</code> virtual machine.</p>
+<p><img loading="lazy" src="https://i.imgur.com/DIlMhGd.png"></p>
+<p>We could also have done the above using the PowerShell <code>Az</code> module and the <code>Get-AzRoleAssignment</code> cmdlet.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Connect-AzAccount</span>   
+</span></span><span class="line"><span class="cl"><span class="n">Please</span> <span class="nb">select </span><span class="n">the</span> <span class="n">account</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">login</span> <span class="n">with</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Retrieving</span> <span class="n">subscriptions</span> <span class="k">for</span> <span class="n">the</span> <span class="n">selection</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Subscription</span> <span class="n">name</span>           <span class="n">Tenant</span>
+</span></span><span class="line"><span class="cl"><span class="p">-----------------</span>           <span class="p">------</span>
+</span></span><span class="line"><span class="cl"><span class="n">Microsoft</span> <span class="n">Azure</span> <span class="n">Sponsorship</span> <span class="k">Default</span> <span class="n">Directory</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AzRoleAssignment</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">RoleAssignmentName</span> <span class="err">:</span> <span class="n">4b5ae432</span><span class="p">-</span><span class="mf">6902</span><span class="p">-</span><span class="n">4ca2-bbed</span><span class="p">-</span><span class="n">815492eef631</span>
+</span></span><span class="line"><span class="cl"><span class="n">RoleAssignmentId</span>   <span class="err">:</span> <span class="p">/</span><span class="n">subscriptions</span><span class="p">/</span><span class="nb">ceff06cb-e29d</span><span class="p">-</span><span class="mf">4486</span><span class="n">-a3ae-eaaec5689f94</span><span class="p">/</span><span class="n">resourcegroups</span><span class="p">/</span><span class="nb">content-static</span><span class="p">-</span><span class="mf">2</span><span class="p">/</span><span class="n">providers</span><span class="p">/</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Compute</span><span class="p">/</span><span class="n">virtualMachines</span><span class="p">/</span><span class="nb">SECURITY-PC</span><span class="p">/</span><span class="n">providers</span><span class="p">/</span><span class="n">Microsoft</span><span class="p">.</span><span class="py">Authoriz</span>
+</span></span><span class="line"><span class="cl">                     <span class="n">ation</span><span class="p">/</span><span class="n">roleAssignments</span><span class="p">/</span><span class="n">4b5ae432</span><span class="p">-</span><span class="mf">6902</span><span class="p">-</span><span class="n">4ca2-bbed</span><span class="p">-</span><span class="n">815492eef631</span>
+</span></span><span class="line"><span class="cl"><span class="n">Scope</span>              <span class="err">:</span> <span class="p">/</span><span class="n">subscriptions</span><span class="p">/</span><span class="nb">ceff06cb-e29d</span><span class="p">-</span><span class="mf">4486</span><span class="n">-a3ae-eaaec5689f94</span><span class="p">/</span><span class="n">resourcegroups</span><span class="p">/</span><span class="nb">content-static</span><span class="p">-</span><span class="mf">2</span><span class="p">/</span><span class="n">providers</span><span class="p">/</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Compute</span><span class="p">/</span><span class="n">virtualMachines</span><span class="p">/</span><span class="nb">SECURITY-PC</span>
+</span></span><span class="line"><span class="cl"><span class="n">DisplayName</span>        <span class="err">:</span> <span class="nb">IT-HELPDESK</span>
+</span></span><span class="line"><span class="cl"><span class="n">SignInName</span>         <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">RoleDefinitionName</span> <span class="err">:</span> <span class="n">Reader</span>
+</span></span><span class="line"><span class="cl"><span class="n">RoleDefinitionId</span>   <span class="err">:</span> <span class="n">acdd72a7</span><span class="p">-</span><span class="mf">3385</span><span class="p">-</span><span class="n">48ef-bd42-f606fba81ae7</span>
+</span></span><span class="line"><span class="cl"><span class="n">ObjectId</span>           <span class="err">:</span> <span class="n">8a517e87</span><span class="p">-</span><span class="n">6b05</span><span class="p">-</span><span class="n">45ae-b1ca</span><span class="p">-</span><span class="n">7436f1682602</span>
+</span></span><span class="line"><span class="cl"><span class="n">ObjectType</span>         <span class="err">:</span> <span class="nb">Group
+</span></span></span><span class="line"><span class="cl"><span class="nb"></span><span class="n">CanDelegate</span>        <span class="err">:</span> <span class="n">False</span>
+</span></span><span class="line"><span class="cl"><span class="n">Description</span>        <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">ConditionVersion</span>   <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Condition</span>          <span class="err">:</span> 
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/L5Sodhg.png"></p>
+<h2 id="extracting-credentials"><strong>Extracting Credentials</strong><a hidden class="anchor" aria-hidden="true" href="#extracting-credentials">#</a></h2>
+<p>Since we have <code>Reader</code> access to a virtual machine, something that is worth checking is custom user data fields, Go ahead and click the <code>SECURITY-PC</code> resource</p>
+<p><img loading="lazy" src="https://i.imgur.com/kZqoiYd.png"></p>
+<p>Click on the <code>Operating system</code> menu under the <code>Settings</code> section, the <code>User data</code> field we see that an Azure CLI command has been added, including a comment with credentials!</p>
+<p><img loading="lazy" src="https://i.imgur.com/mqUAOGb.png"></p>
+<pre tabindex="0"><code># Credentials: User: security-user | Password: Imp0sec0sT! az storage blob download --account-name securityconfigs --container-name security-pc --name config-latest.xml --auth-mode login
+</code></pre><p>We can get the virtual machine user data from the command line instead of using the Az portal as we did previously, as shown below.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AzVM</span> <span class="n">-ResourceGroupName</span> <span class="s2">&#34;content-static-2&#34;</span> <span class="n">-Name</span> <span class="s2">&#34;SECURITY-PC&#34;</span> <span class="n">-UserData</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">ResourceGroupName</span> <span class="err">:</span> <span class="nb">content-static</span><span class="p">-</span><span class="mf">2</span>
+</span></span><span class="line"><span class="cl"><span class="n">Id</span>                <span class="err">:</span> <span class="p">/</span><span class="n">subscriptions</span><span class="p">/</span><span class="nb">ceff06cb-e29d</span><span class="p">-</span><span class="mf">4486</span><span class="n">-a3ae-eaaec5689f94</span><span class="p">/</span><span class="n">resourceGroups</span><span class="p">/</span><span class="nb">content-static</span><span class="p">-</span><span class="mf">2</span><span class="p">/</span><span class="n">providers</span><span class="p">/</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Compute</span><span class="p">/</span><span class="n">virtualMachines</span><span class="p">/</span><span class="nb">SECURITY-PC</span>
+</span></span><span class="line"><span class="cl"><span class="n">VmId</span>              <span class="err">:</span> <span class="n">648c8a08-c90a</span><span class="p">-</span><span class="n">4a95</span><span class="p">-</span><span class="mf">8922</span><span class="p">-</span><span class="n">4cbf28375bcb</span>
+</span></span><span class="line"><span class="cl"><span class="n">Name</span>              <span class="err">:</span> <span class="nb">SECURITY-PC</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Type </span>             <span class="err">:</span> <span class="n">Microsoft</span><span class="p">.</span><span class="n">Compute</span><span class="p">/</span><span class="n">virtualMachines</span>
+</span></span><span class="line"><span class="cl"><span class="n">Location</span>          <span class="err">:</span> <span class="n">eastus</span>
+</span></span><span class="line"><span class="cl"><span class="n">LicenseType</span>       <span class="err">:</span> <span class="n">Windows_Client</span>
+</span></span><span class="line"><span class="cl"><span class="n">Tags</span>              <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">HardwareProfile</span>   <span class="err">:</span> <span class="p">{</span><span class="n">VmSize</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">NetworkProfile</span>    <span class="err">:</span> <span class="p">{</span><span class="n">NetworkInterfaces</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">SecurityProfile</span>   <span class="err">:</span> <span class="p">{</span><span class="n">UefiSettings</span><span class="p">,</span> <span class="n">SecurityType</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">OSProfile</span>         <span class="err">:</span> <span class="p">{</span><span class="n">ComputerName</span><span class="p">,</span> <span class="n">AdminUsername</span><span class="p">,</span> <span class="n">WindowsConfiguration</span><span class="p">,</span> <span class="n">Secrets</span><span class="p">,</span> <span class="n">AllowExtensionOperations</span><span class="p">,</span> <span class="n">RequireGuestProvisionSignal</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">ProvisioningState</span> <span class="err">:</span> <span class="n">Succeeded</span>
+</span></span><span class="line"><span class="cl"><span class="n">StorageProfile</span>    <span class="err">:</span> <span class="p">{</span><span class="n">ImageReference</span><span class="p">,</span> <span class="n">OsDisk</span><span class="p">,</span> <span class="n">DataDisks</span><span class="p">,</span> <span class="n">DiskControllerType</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">Identity</span>          <span class="err">:</span> <span class="p">{</span><span class="n">PrincipalId</span><span class="p">,</span> <span class="n">TenantId</span><span class="p">,</span> <span class="n">Type</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">Zones</span>             <span class="err">:</span> <span class="p">{</span><span class="mf">1</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">UserData</span>          <span class="err">:</span> <span class="n">IyBDcmVkZW50aWFsczogVXNlcjogc2VjdXJpdHktdXNlciB8IFBhc3N3b3JkOiBJbXAwc2VjMHNUIQpheiBzdG9yYWdlIGJsb2IgZG93bmxvYWQgLS1hY2NvdW50LW5hbWUgc2VjdXJpdHljb25maWdzIC0tY29udGFpbmVyL</span>
+</span></span><span class="line"><span class="cl"><span class="n">W5hbWUgc2VjdXJpdHktcGMgLS1uYW1lIGNvbmZpZy1sYXRlc3QueG1sIC0tYXV0aC1tb2RlIGxvZ2luCg</span><span class="p">==</span>
+</span></span><span class="line"><span class="cl"><span class="n">TimeCreated</span>       <span class="err">:</span> <span class="mf">10</span><span class="p">/</span><span class="mf">31</span><span class="p">/</span><span class="mf">2023</span> <span class="mf">3</span><span class="err">:</span><span class="mf">24</span><span class="err">:</span><span class="n">18PM</span>
+</span></span><span class="line"><span class="cl"><span class="n">Etag</span>              <span class="err">:</span> <span class="s2">&#34;16&#34;</span>
+</span></span></code></pre></div><p>The <code>UserData</code> variable is what we need which is in base64 format, we can go ahead and decode this using your linux OS</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ <span class="nb">echo</span> <span class="s2">&#34;IyBDcmVkZW50aWFsczogVXNlcjogc2VjdXJpdHktdXNlciB8IFBhc3N3b3JkOiBJbXAwc2VjMHNUIQpheiBzdG9yYWdlIGJsb2IgZG93bmxvYWQgLS1hY2NvdW50LW5hbWUgc2VjdXJpdHljb25maWdzIC0tY29udGFpbmVyL
+</span></span></span><span class="line"><span class="cl"><span class="s2">W5hbWUgc2VjdXJpdHktcGMgLS1uYW1lIGNvbmZpZy1sYXRlc3QueG1sIC0tYXV0aC1tb2RlIGxvZ2luCg==&#34;</span> <span class="p">|</span> base64 -d
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Credentials: User: security-user | Password: Imp0sec0sT!</span>
+</span></span><span class="line"><span class="cl">az storage blob download --account-name securityconfigs --container-name security-pc --name config-latest.xml --auth-mode login
+</span></span></code></pre></div><p>Now trying to use the command shown after decoding the <code>b64</code> text we have the following error cos we are not yet logged in as the <code>security-user</code> who has the permission to do so.</p>
+<p><img loading="lazy" src="https://i.imgur.com/jaPApg7.png"></p>
+<p>Run the below command on <code>pwsh</code> to log in as the <code>security-user</code> user for privileged access</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">az</span> <span class="n">login</span> <span class="p">-</span><span class="n">-scope</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">storage</span><span class="p">.</span><span class="py">azure</span><span class="p">.</span><span class="n">com</span><span class="p">/.</span><span class="k">default</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># When prompted fill in the below</span>
+</span></span><span class="line"><span class="cl"><span class="n">Username</span> <span class="err">:</span> <span class="nb">security-user</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="n">Passowrd</span> <span class="err">:</span> <span class="p">*************</span>
+</span></span></code></pre></div><p>If we run the command again we have alot of config output and sensitive information including global administrator credentials</p>
+<p><img loading="lazy" src="https://i.imgur.com/zQCsW0e.jpeg"></p>
+<p>We can also view this config files using the Az portal, Log in as the <code>security-user</code> user and search for the <code>securityconfigs</code> resource (storage account name)</p>
+<p><img loading="lazy" src="https://i.imgur.com/DirawvP.png"></p>
+<p>Under the &ldquo;<strong>Data Storage</strong>&rdquo; drop down select the <code>Containers</code> menu</p>
+<p><img loading="lazy" src="https://i.imgur.com/r75ffnW.png"></p>
+<p>Then click on the <code>security-pc</code> container name</p>
+<p><img loading="lazy" src="https://i.imgur.com/TFll4vS.png"></p>
+<p>We can then see the config file we accessed earlier including the <code>flag.txt</code> file for this challenge lab</p>
+<p><img loading="lazy" src="https://i.imgur.com/12YfIvo.png"></p>
+<p>Go ahead and download the flag file using the <code>Azure-CLI</code> tool as used earlier</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">storage</span> <span class="n">blob</span> <span class="n">download</span> <span class="p">-</span><span class="n">-account-name</span> <span class="n">securityconfigs</span> <span class="p">-</span><span class="n">-container-name</span> <span class="nb">security-pc</span> <span class="p">-</span><span class="n">-name</span> <span class="n">flag</span><span class="p">.</span><span class="py">txt</span> <span class="p">-</span><span class="n">-auth-mode</span> <span class="n">login</span>         
+</span></span><span class="line"><span class="cl"><span class="n">Finished</span><span class="p">[</span><span class="c">#############################################################]  100.0000%</span>
+</span></span><span class="line"><span class="cl"><span class="p">******************************</span>
+</span></span></code></pre></div><p>Have fun 𓆝 𓆟 𓆞 𓆝 𓆟</p>
+<h2 id="resources"><strong>Resources</strong><a hidden class="anchor" aria-hidden="true" href="#resources">#</a></h2>
+<ul>
+<li><strong>Lab Link :</strong> <a href="https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound">https://pwnedlabs.io/labs/intro-to-azure-recon-with-bloodhound</a></li>
+<li><a href="https://learn.microsoft.com/en-us/entra/fundamentals/custom-security-attributes-overview">https://learn.microsoft.com/en-us/entra/fundamentals/custom-security-attributes-overview</a></li>
+<li><a href="https://blog.netwrix.com/2022/02/10/what-are-azure-ad-custom-security-attributes/">https://blog.netwrix.com/2022/02/10/what-are-azure-ad-custom-security-attributes/</a></li>
+<li><a href="https://posts.specterops.io/introducing-bloodhound-4-3-get-global-admin-more-often-5795cbf535b2">https://posts.specterops.io/introducing-bloodhound-4-3-get-global-admin-more-often-5795cbf535b2</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/azure/">Azure</a></li>
+      <li><a href="http://localhost:1313/tags/red-teaming/">Red Teaming</a></li>
+      <li><a href="http://localhost:1313/tags/entra-id/">Entra-ID</a></li>
+      <li><a href="http://localhost:1313/tags/powershell/">Powershell</a></li>
+      <li><a href="http://localhost:1313/tags/bloodhound/">Bloodhound</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/unlock_access_with_azure_key_vault/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Unlock Access with Azure Key Vault</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

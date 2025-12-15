@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>MS SQL on SecFortress</title>
+    <link>http://localhost:1313/tags/ms-sql/</link>
+    <description>Recent content in MS SQL on SecFortress</description>
+    <generator>Hugo -- 0.152.2</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 04 Oct 2024 10:46:06 +0100</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/ms-sql/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Loot Exchange, Teams and SharePoint with GraphRunner</title>
+      <link>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</link>
+      <pubDate>Fri, 04 Oct 2024 10:46:06 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/loot_exchange_teams_and_sharepoint_with_graphrunner/</guid>
+      <description>In this lab, We look ino the use of a tool, Graphrunner, a post-exploitation toolset for interacting with the Microsoft Graph API......:D</description>
+    </item>
+  </channel>
+</rss>
