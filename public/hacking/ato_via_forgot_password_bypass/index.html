@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>How a Broken Password Reset Workflow Led to Account Takeover | SecFortress</title>
+<meta name="keywords" content="">
+<meta name="description" content="While testing the password reset functionality of an application, I discovered a critical logic flaw that allowed me to fully compromise user accounts without access to their email.">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/ato_via_forgot_password_bypass/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/ato_via_forgot_password_bypass/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/ato_via_forgot_password_bypass/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="How a Broken Password Reset Workflow Led to Account Takeover">
+  <meta property="og:description" content="While testing the password reset functionality of an application, I discovered a critical logic flaw that allowed me to fully compromise user accounts without access to their email.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2025-09-04T08:00:39+01:00">
+    <meta property="article:modified_time" content="2025-09-04T08:00:39+01:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="How a Broken Password Reset Workflow Led to Account Takeover">
+<meta name="twitter:description" content="While testing the password reset functionality of an application, I discovered a critical logic flaw that allowed me to fully compromise user accounts without access to their email.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "How a Broken Password Reset Workflow Led to Account Takeover",
+      "item": "http://localhost:1313/hacking/ato_via_forgot_password_bypass/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "How a Broken Password Reset Workflow Led to Account Takeover",
+  "name": "How a Broken Password Reset Workflow Led to Account Takeover",
+  "description": "While testing the password reset functionality of an application, I discovered a critical logic flaw that allowed me to fully compromise user accounts without access to their email.",
+  "keywords": [
+    
+  ],
+  "articleBody": "Overview Password reset mechanisms are among the most security-critical features in modern web applications. They are intended to provide users with a secure fallback in case of lost credentials, but design flaws in their implementation can convert them into direct vectors for account takeover. This research dissects a real-world vulnerability where the password reset token was incorrectly bound, enabling attackers to hijack arbitrary accounts through crafted API requests.\nPassword reset flows generally follow a standard model:\nUser requests a reset → system generates a one-time token.\nToken is delivered to the user via a trusted channel (usually email or SMS).\nUser presents the token along with a new password → server validates both and updates credentials.\nThe assumption is that the reset token uniquely maps to the account that requested it. If this binding is broken, the entire mechanism collapses.\nThe vulnerability Initiate Reset with Attacker Account : The attacker begins by attempting to log in and selecting the “Forgot Password” option. They provide their own registered email address on the application, which triggers the system to send an OTP to their inbox.\nIntercept the Reset Request : Using a proxy tool such as Burp Suite, the attacker captures the final password reset request, which contains the following structure:\nPOST /api/v2/auth/forgot-password/reset Content-Type: application/json { \"password\":\"newPassword123\", \"email\":\"attacker@example.com\", \"token\":\"256504\" } At this stage, the server expects a valid token and the new password.\nManipulate the Email Parameter Instead of leaving the email field as their own, the attacker substitutes it with the target user’s email address: { \"password\": \"newPassword123\", \"email\": \"victim@example.com\", \"token\": \"256504\" } Crucially, the backend fails to validate that the token was originally generated for the supplied email address.\nResult: Unauthorized Account Takeover The server responds with a success message: {\"status\":true,\"message\":\"Password change was successful\"} In reality, the victim’s account password has now been overwritten with the attacker’s chosen password, granting the attacker full access.\nThis vulnerability arises because the reset token was only validated in isolation, without ensuring a strict binding to the original account for which it was issued. As a result, the attacker is able to weaponize their own valid reset token to reset the password of any arbitrary account.\nWhy This Was Possible: Over-trust in client input → the backend trusted the email parameter from the request body instead of binding the reset process solely to the token.\nImproper state management → the token should have been uniquely associated with the user account at issuance, but the system treated token and email as independent variables.\nConfused deputy problem → the server acted on behalf of the attacker (who held a valid token) to reset the password of a different identity, effectively misusing its own authority.\nSecurity Implications: This flaw allows full account takeover without access to the victim’s inbox. In real-world terms:\nAttacks scale easily — attackers can automate password resets against large user bases.\nPrivileged accounts (admins, agents, support) are equally vulnerable.\nSecondary attacks such as data exfiltration, privilege escalation, or fraud could follow.\nMitigation Strategies: Token-Account Binding → When a reset token is generated, store it server-side with a strict reference to the account. The client should never need to submit the email parameter during reset.\nSingle Source of Truth → The reset token alone should determine which account is updated.\nMinimal Client Input → Reduce parameters; unnecessary fields like email in sensitive flows should be removed.\nAudit \u0026 Test Reset Flows → Include logic flaw testing in QA, not just brute-force or expiry testing.\nConclusion: This case illustrates how subtle logic oversights in authentication workflows can escalate into systemic vulnerabilities. Security in password reset flows does not only depend on cryptographic strength (like token randomness) but also on sound state management and parameter validation. The failure to enforce a strong binding between token and identity allowed a trivial yet devastating exploit: turning a self-reset into universal account takeover.\n",
+  "wordCount" : "644",
+  "inLanguage": "en",
+  "datePublished": "2025-09-04T08:00:39+01:00",
+  "dateModified": "2025-09-04T08:00:39+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/ato_via_forgot_password_bypass/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      How a Broken Password Reset Workflow Led to Account Takeover
+    </h1>
+    <div class="post-description">
+      While testing the password reset functionality of an application, I discovered a critical logic flaw that allowed me to fully compromise user accounts without access to their email.
+    </div>
+    <div class="post-meta"><span title='2025-09-04 08:00:39 +0100 WAT'>September 4, 2025</span>&nbsp;·&nbsp;<span>4 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#overview"><strong>Overview</strong></a></li>
+    <li><a href="#the-vulnerability"><strong>The vulnerability</strong></a></li>
+    <li><a href="#why-this-was-possible"><strong>Why This Was Possible:</strong></a></li>
+    <li><a href="#security-implications"><strong>Security Implications:</strong></a></li>
+    <li><a href="#mitigation-strategies"><strong>Mitigation Strategies:</strong></a></li>
+    <li><a href="#conclusion"><strong>Conclusion:</strong></a></li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h2 id="overview"><strong>Overview</strong><a hidden class="anchor" aria-hidden="true" href="#overview">#</a></h2>
+<p>Password reset mechanisms are among the most security-critical features in modern web applications. They are intended to provide users with a secure fallback in case of lost credentials, but design flaws in their implementation can convert them into direct vectors for account takeover. This research dissects a real-world vulnerability where the password reset token was incorrectly bound, enabling attackers to hijack arbitrary accounts through crafted API requests.</p>
+<p>Password reset flows generally follow a standard model:</p>
+<ol>
+<li>
+<p>User requests a reset → system generates a one-time token.</p>
+</li>
+<li>
+<p>Token is delivered to the user via a trusted channel (usually email or SMS).</p>
+</li>
+<li>
+<p>User presents the token along with a new password → server validates both and updates credentials.</p>
+</li>
+</ol>
+<p>The assumption is that the reset token uniquely maps to the account that requested it. If this binding is broken, the entire mechanism collapses.</p>
+<p><img alt="https://x.com/descopeinc/status/1597644569348558848" loading="lazy" src="https://i.imgur.com/LnhDNZO.png#center"></p>
+<h2 id="the-vulnerability"><strong>The vulnerability</strong><a hidden class="anchor" aria-hidden="true" href="#the-vulnerability">#</a></h2>
+<ol>
+<li>
+<p><strong>Initiate Reset with Attacker Account</strong> :
+The attacker begins by attempting to log in and selecting the “Forgot Password” option. They provide their own registered email address on the application, which triggers the system to send an OTP to their inbox.</p>
+</li>
+<li>
+<p><strong>Intercept the Reset Request</strong> :
+Using a proxy tool such as Burp Suite, the attacker captures the final password reset request, which contains the following structure:</p>
+</li>
+</ol>
+<pre tabindex="0"><code>POST /api/v2/auth/forgot-password/reset
+Content-Type: application/json
+
+{
+	&#34;password&#34;:&#34;newPassword123&#34;,
+	&#34;email&#34;:&#34;attacker@example.com&#34;,
+	&#34;token&#34;:&#34;256504&#34;
+}
+</code></pre><blockquote>
+<p>At this stage, the server expects a valid token and the new password.</p>
+</blockquote>
+<ol start="3">
+<li><strong>Manipulate the Email Parameter</strong>
+Instead of leaving the <code>email</code> field as their own, the attacker substitutes it with the target user’s email address:</li>
+</ol>
+<pre tabindex="0"><code>{
+  &#34;password&#34;: &#34;newPassword123&#34;,
+  &#34;email&#34;: &#34;victim@example.com&#34;,
+  &#34;token&#34;: &#34;256504&#34;
+}
+</code></pre><blockquote>
+<p>Crucially, the backend fails to validate that the token was originally generated for the supplied email address.</p>
+</blockquote>
+<ol start="4">
+<li><strong>Result: Unauthorized Account Takeover</strong>
+The server responds with a success message:</li>
+</ol>
+<pre tabindex="0"><code>{&#34;status&#34;:true,&#34;message&#34;:&#34;Password change was successful&#34;}
+</code></pre><blockquote>
+<p>In reality, the victim’s account password has now been overwritten with the attacker’s chosen password, granting the attacker full access.</p>
+</blockquote>
+<p><em>This vulnerability arises because the reset token was only validated in isolation, without ensuring a strict binding to the original account for which it was issued. As a result, the attacker is able to weaponize their own valid reset token to reset the password of any arbitrary account.</em></p>
+<h2 id="why-this-was-possible"><strong>Why This Was Possible:</strong><a hidden class="anchor" aria-hidden="true" href="#why-this-was-possible">#</a></h2>
+<ul>
+<li>
+<p>Over-trust in client input → the backend trusted the <code>email</code> parameter from the request body instead of binding the reset process solely to the token.</p>
+</li>
+<li>
+<p>Improper state management → the token should have been uniquely associated with the user account at issuance, but the system treated <strong>token</strong> and <strong>email</strong> as independent variables.</p>
+</li>
+<li>
+<p>Confused deputy problem → the server acted on behalf of the attacker (who held a valid <strong>token</strong>) to reset the password of a different identity, effectively misusing its own authority.</p>
+</li>
+</ul>
+<h2 id="security-implications"><strong>Security Implications:</strong><a hidden class="anchor" aria-hidden="true" href="#security-implications">#</a></h2>
+<p>This flaw allows full account takeover without access to the victim’s inbox. In real-world terms:</p>
+<ul>
+<li>
+<p>Attacks scale easily — attackers can automate password resets against large user bases.</p>
+</li>
+<li>
+<p>Privileged accounts (admins, agents, support) are equally vulnerable.</p>
+</li>
+<li>
+<p>Secondary attacks such as data exfiltration, privilege escalation, or fraud could follow.</p>
+</li>
+</ul>
+<h2 id="mitigation-strategies"><strong>Mitigation Strategies:</strong><a hidden class="anchor" aria-hidden="true" href="#mitigation-strategies">#</a></h2>
+<ul>
+<li>
+<p>Token-Account Binding → When a reset token is generated, store it server-side with a strict reference to the account. The client should never need to submit the email parameter during reset.</p>
+</li>
+<li>
+<p>Single Source of Truth → The reset token alone should determine which account is updated.</p>
+</li>
+<li>
+<p>Minimal Client Input → Reduce parameters; unnecessary fields like email in sensitive flows should be removed.</p>
+</li>
+<li>
+<p>Audit &amp; Test Reset Flows → Include logic flaw testing in QA, not just brute-force or expiry testing.</p>
+</li>
+</ul>
+<h2 id="conclusion"><strong>Conclusion:</strong><a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h2>
+<p>This case illustrates how subtle logic oversights in authentication workflows can escalate into systemic vulnerabilities. Security in password reset flows does not only depend on cryptographic strength (like token randomness) but also on sound state management and parameter validation. The failure to enforce a strong binding between token and identity allowed a trivial yet devastating exploit: turning a self-reset into universal account takeover.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/moving_forward_no_matter_the_terrain/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Moving Forward, No Matter the Terrain</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

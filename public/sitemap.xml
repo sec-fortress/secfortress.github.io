@@ -2,6 +2,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://localhost:1313/hacking/from_proof.txt_to_paychecksday_one/</loc>
+    <lastmod>2025-06-06T18:46:03+01:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/hacking/</loc>
     <lastmod>2025-12-14T17:17:07+01:00</lastmod>
   </url><url>
@@ -13,6 +16,9 @@
   </url><url>
     <loc>http://localhost:1313/hacking/moving_forward_no_matter_the_terrain/</loc>
     <lastmod>2025-09-21T21:26:34+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/hacking/ato_via_forgot_password_bypass/</loc>
+    <lastmod>2025-09-04T08:00:39+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/whoami/</loc>
     <lastmod>2024-08-26T21:53:51+01:00</lastmod>

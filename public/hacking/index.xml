@@ -9,6 +9,16 @@
     <lastBuildDate>Sun, 14 Dec 2025 17:17:07 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/hacking/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>From Proof.txt to Paychecks — Day One</title>
+      <link>http://localhost:1313/hacking/from_proof.txt_to_paychecksday_one/</link>
+      <pubDate>Fri, 06 Jun 2025 18:46:03 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/from_proof.txt_to_paychecksday_one/</guid>
+      <description>&lt;h2 id=&#34;we-knew-where-we-came-from&#34;&gt;&lt;strong&gt;We knew where we came from&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;In my previous blog, &lt;strong&gt;&lt;em&gt;“Time Races Ahead Before You Blink,”&lt;/em&gt;&lt;/strong&gt; I shared the journey I’ve had alongside my brother navigating certifications, late-night streams, constant battles to move forward, balancing school, and leveling up mentally, physically, and emotionally.&lt;/p&gt;
+&lt;p&gt;This blog continues that story and dives deeper into the challenges and victories that have shaped my path in cybersecurity;&lt;/p&gt;
+&lt;p&gt;My name is Olaoluwa Olakojo, a 20-year-old born and raised in Lagos, the over-rated southwest region of Nigeria. I’ve been passionate about offensive security for six years, with five years of professional experience.&lt;/p&gt;</description>
+    </item>
+    <item>
       <title>Phishing with cloudflare &#43; zoho mail</title>
       <link>http://localhost:1313/hacking/phishing_with_cloudflare_&#43;_zoho_mail/</link>
       <pubDate>Sun, 14 Dec 2025 17:17:07 +0100</pubDate>
@@ -31,6 +41,13 @@
 &lt;li&gt;Crossed a financial milestone, earning &lt;strong&gt;seven figures consecutively in under three months&lt;/strong&gt; - a testament to persistence, faith, and growth.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;img loading=&#34;lazy&#34; src=&#34;https://i.pinimg.com/1200x/22/d1/dd/22d1ddf6bdd6a3379cc960f4c3b12959.jpg#center&#34;&gt;&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>How a Broken Password Reset Workflow Led to Account Takeover</title>
+      <link>http://localhost:1313/hacking/ato_via_forgot_password_bypass/</link>
+      <pubDate>Thu, 04 Sep 2025 08:00:39 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/ato_via_forgot_password_bypass/</guid>
+      <description>While testing the password reset functionality of an application, I discovered a critical logic flaw that allowed me to fully compromise user accounts without access to their email.</description>
     </item>
   </channel>
 </rss>
