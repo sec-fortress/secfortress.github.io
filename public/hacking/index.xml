@@ -56,5 +56,16 @@
       <guid>http://localhost:1313/hacking/ato_via_forgot_password_bypass/</guid>
       <description>While testing the password reset functionality of an application, I discovered a critical logic flaw that allowed me to fully compromise user accounts without access to their email.</description>
     </item>
+    <item>
+      <title>Time Races Ahead Before You Blink</title>
+      <link>http://localhost:1313/hacking/time_races_ahead_before_you_blink/</link>
+      <pubDate>Wed, 29 Jan 2025 23:14:03 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/time_races_ahead_before_you_blink/</guid>
+      <description>&lt;h2 id=&#34;fear--uncertainty&#34;&gt;&lt;strong&gt;Fear &amp;amp; Uncertainty&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;I remember a conversation I had with a friend last year about fear and uncertainty. His response stuck with me both humorous and profound;&lt;/p&gt;
+&lt;p&gt;&lt;img loading=&#34;lazy&#34; src=&#34;https://i.imgur.com/8ysFq1C.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;At the time, we were both chasing similar dreams: landing the perfect job, securing the OSCP voucher, and ultimately gaining financial independence. We were filled with anticipation, unsure of what the future held but hopeful for what was to come.&lt;/p&gt;
+&lt;p&gt;Fast forward to today, and while life isn’t perfect, it has been a steady journey forward, a coastal ride with its ups and downs. Looking back, this is where the story truly began;&lt;/p&gt;</description>
+    </item>
   </channel>
 </rss>
