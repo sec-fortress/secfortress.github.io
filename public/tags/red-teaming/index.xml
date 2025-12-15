@@ -22,5 +22,12 @@
       <guid>http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/</guid>
       <description>Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment</description>
     </item>
+    <item>
+      <title>Unmask Privileged Access In Azure</title>
+      <link>http://localhost:1313/hacking/unmask_privileged_access_in_azure/</link>
+      <pubDate>Wed, 16 Oct 2024 11:54:55 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/unmask_privileged_access_in_azure/</guid>
+      <description>After leveraging a password found in an image and gaining access to Azure as Matteus Lundgren, we escalated privileges by adding ourselves to the DEVICE-ADMINS group, granting us access to critical resources, including an SSH key for the VM AUTOMAT01.</description>
+    </item>
   </channel>
 </rss>

