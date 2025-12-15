@@ -68,6 +68,14 @@
 &lt;p&gt;Fast forward to today, and while life isn’t perfect, it has been a steady journey forward, a coastal ride with its ups and downs. Looking back, this is where the story truly began;&lt;/p&gt;</description>
     </item>
     <item>
+      <title>How threat actors take advantage of companies on holiday</title>
+      <link>http://localhost:1313/hacking/how_threat_actors_take_advantage_of_companies_on_holiday/</link>
+      <pubDate>Sat, 30 Nov 2024 13:41:27 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/how_threat_actors_take_advantage_of_companies_on_holiday/</guid>
+      <description>&lt;h2 id=&#34;overview&#34;&gt;&lt;strong&gt;Overview&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;During holiday periods, alot of companies scale down operations, whereas employees take time off work and most of all security teams operate with minimal staff. &lt;strong&gt;Threat Actors/Advanced Persistent Threats (APTs)&lt;/strong&gt; use this as an avenue to launch cyberattacks as there are reduction in vigilance making this a prime window to carry out attacks like ransomeware, DDOS, Phishing and many other sophisticated cyber attacks. Here are few common tactics used by adversaries during holidays and recommendations to mitigate the risks.&lt;/p&gt;</description>
+    </item>
+    <item>
       <title>Whoami</title>
       <link>http://localhost:1313/whoami/</link>
       <pubDate>Mon, 26 Aug 2024 21:53:51 +0100</pubDate>
