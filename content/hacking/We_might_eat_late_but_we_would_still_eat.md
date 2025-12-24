@@ -74,7 +74,7 @@ I would apply to jobs without no response, I would just spray and pray lol, but 
 
 # **_UNTIL I MADE A PLAN_**
 
-I would draft my resume template with latex template from https://www.overleaf.com/ and started to apply for roles, sooner enough I was getting rejections lol, the rejections were too much I knew I was making a wrong decision somewhere but this was progress lmao, a big progress because I now knew were the mistakes were coming from. 
+I would draft my resume template with latex template from [https://www.overleaf.com/](https://www.overleaf.com/) and started to apply for roles, sooner enough I was getting rejections lol, the rejections were too much I knew I was making a wrong decision somewhere but this was progress lmao, a big progress because I now knew were the mistakes were coming from. 
 
 I started to target specific people in my niche and would build relationships on discord by joining voice channels to connect with like minded individuals, would cold DM CTOs, Team leads, Senior penetration testers asking if they would be free for interview like questions just to build relationship and see if they were willing to put me on, genuinely this almost led me to getting a job at capital one, but the location problem gave me out.
 
@@ -106,6 +106,7 @@ Lest I forget, here is a piece of advice for someone out there;
 This is a psychology issue lmao, some people can't genuinely handle success and they just tend to shower it off on you with attitude but when you are not alright they would show up to cheer and tell you that it will be fine, hence it get better, they are happy low key. yeah, you read right, this set of people exist and it is better to always _Watch and pray, that ye enter not into temptation: the spirit indeed is willing, but the flesh is weak._ (Matthew 26:41)
 
 Greater 2026 to **YOU**!!
+
 Written by : _A Trench Kid_
 
 ![](https://i.pinimg.com/originals/f0/15/0c/f0150c5a6f0809d224b79e14ea33609a.gif#center)
