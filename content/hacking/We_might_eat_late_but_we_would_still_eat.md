@@ -45,7 +45,7 @@ Well, I did the interview and it was splendid, secured their cloud infrastructur
 
 # **_I MANIFESTED AGAIN!!_**
 
-This was were everything changed for me, A organization a _**trusted**_ friend referred me to in 2023 reached out to me one afternoon in 2025 around September and told me they would give me a Security Consultant role, I was so excited because to be very honest, I so much love remote roles, it gives me the opportunity to grow while learning alongside including a clear head to give my all to whatever organization it is.
+This was were everything changed for me, An organization a _**trusted**_ friend referred me to in 2023 reached out to me one afternoon in 2025 around September and told me they would give me a Security Consultant role, I was so excited because to be very honest, I so much love remote roles, it gives me the opportunity to grow while learning alongside including a clear head to give my all to whatever organization it is.
 
 They were willing to pay me twice my previous 7 figure earnings and I truly know I am worth more than that, but yeahhh, This was another opportunity to grow with A brand new team, A brand new environment, A brand new mindset and more Interestingly A brand new paycheck.
 
