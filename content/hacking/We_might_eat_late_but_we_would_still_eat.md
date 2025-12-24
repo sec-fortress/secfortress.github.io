@@ -82,14 +82,14 @@ This was the perfect strategy that worked for me and put me in where I am at now
 
 ![Image](https://i.imgur.com/uV6ONcN.png#center)
 
-To whoever out there with a plan that yields just 1% daily, stick to it and build on it to something great, you never know what small progress is shaping till you hit the jackpot!!
+To whoever out there with a plan that yields just 1% daily, stick to it and build on it, to something great, you never know what small progress is shaping till you hit the jackpot!!
 
 
 ## **The right people are still not good people**
 
 **_YES_**, You read that well, brings me back to the statement of **_TRUST_**; "One of the delusional watchword for people who think they are even to be trusted in the first place"
 
-If there is something 2023 to 2025 has taught, it is finding FORM in GROWTH. I don't think you understand me just yet, I said you have to find "FORM in GROWTH"!!! 
+If there is something 2023 to 2025 has taught me, it is finding FORM in GROWTH. I don't think you understand me just yet, I said you have to find "FORM in GROWTH"!!! 
 
 Yes, to my young self or whoever has gotten to this part of this blog, Please don't out shape yourself while trying to grow, be careful of who you let into your life, who you give your peace to, who you open up to, who you tell your secret, who you choose to confide in, all of this matters, don't allow chaos into your peace, don't ever risk chaos for peace.
 
