@@ -37,7 +37,7 @@ Lot of questions came out that day, but to be honest, it felt like a beast final
 # _**I WAS SCARED BUT CONFIDENT**_
 
 
-I never knew how I was gonna rock the next few months left off 2025, All the people I spoke to me never got to understood me, I was loosing my mind gradually!! But sometimes YOU are the only person who is the best position to understand yourself and to make things work out for yourself, meaning you are the only person who not only need to start taking action but to manifest and tell yourself that your ACTIONS must WORK!!!
+I never knew how I was gonna rock the next few months left off 2025, All the people I spoke to never got to understood me, I was loosing my mind gradually!! But sometimes YOU are the only person who is the best position to understand yourself and to make things work out for yourself, meaning you are the only person who not only need to start taking action but to manifest and tell yourself that your ACTIONS must WORK!!!
 
 Fast forward few weeks after, A long time OG called me, Told me "_Ola, I am building a team of quality Application Security Engineers in a fintech and I would want you to be my web app and cloud (azure) pentest go-to guy_". This felt surreal for me cos I had total faith in myself that somehow I would get my sanity back.
 
