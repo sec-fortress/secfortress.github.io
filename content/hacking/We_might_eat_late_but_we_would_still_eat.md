@@ -53,9 +53,9 @@ I was on boarded quickly it felt like a dream to me and trust me there is more!!
 
 ![Image](https://i.imgur.com/9KQ7y0S.png#center)
 
-It been 3 months in this fantastic organization and I have worked on several projects including internal and external, even got a full account takeover on a pentest recently hehe and I love my manager so much, a cool and straight forward human for real.
+It been 3 months in this fantastic organization and I have worked on several projects including internal and external, even got a full account takeover on a pentest recently hehe and I love and respect my manager so much, a cool and straight forward human for real.
 
-This is the probably the best result of manifestation, telling yourself and letting the people around you know that you are the best at what you do and you can always give your all in action and character, Not just prayer but every morning you wake up, look at yourself in that mirror and tell yourself, you are a beast at what you do and you would make it and that you would do this thing to take yourself out trenches, envy no MAN!!!
+This is probably the best result of manifestation, telling yourself and letting the people around you know that you are the best at what you do and you can always give your all in action and character, Not just prayer but every morning you wake up, look at yourself in that mirror and tell yourself, you are a beast at what you do and you would make it and that you would do this thing to take yourself out trenches, envy no MAN!!!
 
 
 ## **The plan is the plan**
