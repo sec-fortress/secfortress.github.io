@@ -103,7 +103,7 @@ Lest I forget, here is a piece of advice for someone out there;
 
 > Watch out for people who would mourn with you on your worst days and are no where to be found on your best days.
 
-This is a psychology issue lmao, some people can't genuinely handle success and they just tend to shower it off on you with attitude but when you are not alright they would show up to cheer and tell you that it will be fine, hence it get better, they are happy low key. yeah, you read right, this set of people exist and it is better to always _Watch and pray, that ye enter not into temptation: the spirit indeed is willing, but the flesh is weak._ (Matthew 26:41)
+This is a psychology issue lmao, some people can't genuinely handle success and they just tend to shower it off on you with attitude but when you are not alright they would show up to cheer and tell you that it will be fine, hence it actually get better, where as they are never happy for you low key. yeah, you read right, this set of people exist and it is better to always _Watch and pray, that ye enter not into temptation: the spirit indeed is willing, but the flesh is weak._ (Matthew 26:41)
 
 Greater 2026 to **YOU**!!
 
