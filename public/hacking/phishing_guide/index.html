@@ -10,7 +10,7 @@
 <meta name="description" content="Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD">
 <meta name="author" content="SecFortress">
 <link rel="canonical" href="http://localhost:1313/hacking/phishing_guide/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.89ca4972ab5e6aaa05e9a0dae0c4bb64b26585bc79e36f5cf33614eea0283abe.css" integrity="sha256-icpJcqteaqoF6aDa4MS7ZLJlhbx5429c8zYU7qAoOr4=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
@@ -31,14 +31,15 @@
   <meta property="og:site_name" content="SecFortress">
   <meta property="og:title" content="Bait, Hook, and Hack">
   <meta property="og:description" content="Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD">
-  <meta property="og:locale" content="en-us">
+  <meta property="og:locale" content="en_us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="hacking">
     <meta property="article:published_time" content="2024-09-07T07:40:10+01:00">
     <meta property="article:modified_time" content="2024-09-07T07:40:10+01:00">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Bait, Hook, and Hack">
-<meta name="twitter:description" content="Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Bait, Hook, and Hack">
+  <meta name="twitter:description" content="Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD">
 
 
 <script type="application/ld+json">
@@ -97,15 +98,13 @@
 </head>
 <body id="top">
     <header class="header">
-    <nav class="nav">
+    <nav class="header-nav">
         <div class="logo">
             <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
                 <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
                     height="25">SecFortress</a>
-            <div class="logo-switches">
-            </div>
         </div>
-        <ul id="menu">
+        <ul id="menu" class="menu">
             <li>
                 <a href="http://localhost:1313/" title="Home">
                     <span>Home</span>
@@ -149,23 +148,35 @@
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">Home</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/hacking/">Hackings</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
     <h1 class="post-title entry-hint-parent">
       Bait, Hook, and Hack
     </h1>
     <div class="post-description">
       Few tactics and techniques behind phishing attacks i have came accrossed in simulated labs xD
     </div>
-    <div class="post-meta"><span title='2024-09-07 07:40:10 +0100 WAT'>September 7, 2024</span>&nbsp;·&nbsp;<span>5 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+    <div class="post-meta">
+
+<span title='2024-09-07 07:40:10 +0100 WAT'>September 7, 2024</span>&nbsp;·&nbsp;<span>5 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
 
 </div>
-  </header> <div class="toc">
-    <details >
-        <summary accesskey="c" title="(Alt + C)">
-            <span class="details">Table of Contents</span>
-        </summary>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">Table of Contents</span>
+    </summary>
 
-        <div class="inner"><nav id="TableOfContents">
+    <div class="inner"><nav id="TableOfContents">
   <ul>
     <li><a href="#scenario-1--linking-to-trouble"><strong>Scenario 1 : Linking to Trouble</strong></a></li>
     <li><a href="#scenario-2--macro-mayhem"><strong>Scenario 2 : Macro Mayhem</strong></a></li>
@@ -173,11 +184,10 @@
     <li><a href="#resources"><strong>Resources</strong></a></li>
   </ul>
 </nav>
-        </div>
-    </details>
-</div>
+    </div>
+</details>
 
-  <div class="post-content"><p>Phishing is like fishing with a twist—except instead of catching fish, you&rsquo;re trying to reel in sensitive information. Cybercriminals use cunning tactics to craft emails and websites that look all too real, hoping you&rsquo;ll bite. In this post, we&rsquo;re going to break down the phishing process from the initial bait to the final hook. You&rsquo;ll learn how these attacks are set up, how to spot them, and what you can do to protect yourself.</p>
+  <div class="post-content md-content"><p>Phishing is like fishing with a twist—except instead of catching fish, you&rsquo;re trying to reel in sensitive information. Cybercriminals use cunning tactics to craft emails and websites that look all too real, hoping you&rsquo;ll bite. In this post, we&rsquo;re going to break down the phishing process from the initial bait to the final hook. You&rsquo;ll learn how these attacks are set up, how to spot them, and what you can do to protect yourself.</p>
 <p><img loading="lazy" src="https://i.pinimg.com/originals/69/d8/57/69d857971d2740bad7ba184aa1ffc52e.gif#center"></p>
 <p>In my simulated lab experiences, I’ve encountered several phishing scenarios that highlight the sophistication of these attacks. From deceptive emails that mimic trusted sources to cleverly disguised phishing websites, these examples offer valuable insights into how attackers operate. Understanding these tactics not only helps in recognizing potential threats but also enhances your ability to defend against them effectively.</p>
 <h2 id="scenario-1--linking-to-trouble"><strong>Scenario 1 : Linking to Trouble</strong><a hidden class="anchor" aria-hidden="true" href="#scenario-1--linking-to-trouble">#</a></h2>
@@ -291,12 +301,10 @@
 <nav class="paginav">
   <a class="prev" href="http://localhost:1313/hacking/the_unseen_struggles/">
     <span class="title">« Prev</span>
-    <br>
     <span>Where I&#39;ve Been, Isn&#39;t Where I Am Going</span>
   </a>
   <a class="next" href="http://localhost:1313/hacking/from_proof.txt_to_paychecksday_one/">
     <span class="title">Next »</span>
-    <br>
     <span>From Proof.txt to Paychecks — Day One</span>
   </a>
 </nav>
@@ -306,17 +314,21 @@
     </main>
     
 <footer class="footer">
-        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+        <span>&copy; 2026 <a href="http://localhost:1313/">SecFortress</a></span> · 
 
+    
+    
     <span>
         Powered by
-        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
         <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
     </span>
 </footer>
-<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
-        <path d="M12 6H0l6-6z" />
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
     </svg>
 </a>
 
@@ -355,14 +367,13 @@
 
 </script>
 <script>
-    var mybutton = document.getElementById("top-link");
+    var toplink = document.getElementById("top-link");
     window.onscroll = function () {
-        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
-            mybutton.style.visibility = "visible";
-            mybutton.style.opacity = "1";
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
         } else {
-            mybutton.style.visibility = "hidden";
-            mybutton.style.opacity = "0";
+            toplink.classList.add("hidden");
         }
     };
 

