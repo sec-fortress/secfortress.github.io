@@ -25,7 +25,7 @@ I started learning filmmaking last December, and somehow I enjoy creating just a
 
 ![](https://i.pinimg.com/originals/0c/03/ef/0c03ef1259361f41ba86d6a1cc24d3dd.gif#center)
 
-Overall, I recently returned to school after being away for over a year, stepping back because of work and some personal battles I’ve been pushing through. On top of that, I’m still working as a security consultant. I’m excited about where I am, but I’m definitely not comfortable, because I believe there’s still so much more to unveil. With time and consistency, everything eventually takes shape.
+Overall, I recently returned to school after being away for over a year, stepping back because of work and some personal shenanigan I’ve been pushing through. On top of that, I’m still working as a security consultant. I’m excited about where I am, but I’m definitely not comfortable, because I believe there’s still so much more to unveil. With time and consistency, everything eventually takes shape.
 
 
 
