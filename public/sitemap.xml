@@ -18,11 +18,14 @@
     <loc>http://localhost:1313/hacking/are_you_a_hacker/</loc>
     <lastmod>2024-09-13T13:44:33+01:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/hacking/csrf_chained_xss_leading_to_account_takeover/</loc>
+    <lastmod>2026-10-27T22:56:23+01:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/hacking/</loc>
-    <lastmod>2026-10-14T12:38:47+01:00</lastmod>
+    <lastmod>2026-10-27T22:56:23+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/</loc>
-    <lastmod>2026-10-14T12:38:47+01:00</lastmod>
+    <lastmod>2026-10-27T22:56:23+01:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/hacking/we_must_keep_fighting/</loc>
     <lastmod>2026-10-14T12:38:47+01:00</lastmod>

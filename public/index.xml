@@ -6,7 +6,7 @@
     <description>Recent content on SecFortress</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 14 Oct 2026 12:38:47 +0100</lastBuildDate>
+    <lastBuildDate>Tue, 27 Oct 2026 22:56:23 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cooking With Fire</title>
@@ -52,6 +52,13 @@
       <pubDate>Fri, 13 Sep 2024 13:44:33 +0100</pubDate>
       <guid>http://localhost:1313/hacking/are_you_a_hacker/</guid>
       <description>The big question.....</description>
+    </item>
+    <item>
+      <title>CSRF Chained To XSS Leading To Account Takeover</title>
+      <link>http://localhost:1313/hacking/csrf_chained_xss_leading_to_account_takeover/</link>
+      <pubDate>Tue, 27 Oct 2026 22:56:23 +0100</pubDate>
+      <guid>http://localhost:1313/hacking/csrf_chained_xss_leading_to_account_takeover/</guid>
+      <description>In this blog, I found an XSS vulnerability chained together with a CSRF misconfiguration on a live target leading to ATO</description>
     </item>
     <item>
       <title>WE MUST KEEP FIGHTING!&gt;</title>
