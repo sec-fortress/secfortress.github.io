@@ -6,6 +6,8 @@ description: "In this blog, I found an XSS vulnerability chained together with a
 
 In this blog, I discovered a **Cross-Site Scripting (XSS)** vulnerability, a bug that can allow an attacker to execute malicious JavaScript in another user's browser, and chained it with a **Cross-Site Request Forgery (CSRF)** misconfiguration, which can trick a logged-in user’s browser into performing unwanted actions. Together, these flaws created a path to **Account Takeover (ATO)**, potentially allowing an attacker to _gain control of another user's account_.
 
+![](https://i.imgur.com/F8ZHChD.png)
+
 Recently Came across a web application with the below request field
 
 ```bash
