@@ -174,6 +174,7 @@
   </header> 
 
   <div class="post-content md-content"><p>In this blog, I discovered a <strong>Cross-Site Scripting (XSS)</strong> vulnerability, a bug that can allow an attacker to execute malicious JavaScript in another user&rsquo;s browser, and chained it with a <strong>Cross-Site Request Forgery (CSRF)</strong> misconfiguration, which can trick a logged-in user’s browser into performing unwanted actions. Together, these flaws created a path to <strong>Account Takeover (ATO)</strong>, potentially allowing an attacker to <em>gain control of another user&rsquo;s account</em>.</p>
+<p><img loading="lazy" src="https://i.imgur.com/F8ZHChD.png"></p>
 <p>Recently Came across a web application with the below request field</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">POST /wp-admin/admin-ajax.php HTTP/1.1
 </span></span><span class="line"><span class="cl">Host: example.com
